@@ -1,3 +1,10 @@
 {
-  "indice_pergunta_frio_chuva": 2
+  "indice_pergunta_frio_chuva": 2,
+  "ultima_leitura": {
+    "Volta Redonda": 15.4,
+    "Barra Mansa": 15.6,
+    "Resende": 15.9,
+    "Porto Real": 15.5,
+    "Angra dos Reis": 17.2
+  }
 }
