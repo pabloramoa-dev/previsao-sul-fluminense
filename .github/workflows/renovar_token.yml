@@ -1,0 +1,35 @@
+name: Lembrete de Renovacao do Token (mensal)
+
+on:
+  schedule:
+    - cron: "0 12 1 * *"   # todo dia 1o, 09h BRT
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  lembrete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Abrir issue de lembrete
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const hoje = new Date().toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Renovar IG_ACCESS_TOKEN - ${hoje}`,
+              body: [
+                "O token de longa duracao do Instagram expira em ~60 dias.",
+                "",
+                "Passos:",
+                "1. Gere um novo token de longa duracao no Facebook Developers.",
+                "2. Atualize o GitHub Secret IG_ACCESS_TOKEN.",
+                "3. Rode qualquer workflow em modo dry-run para validar.",
+                "",
+                "Este lembrete e automatico (renovar_token.yml)."
+              ].join("\n"),
+              labels: ["manutencao", "token"]
+            });
