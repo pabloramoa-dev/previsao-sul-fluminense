@@ -23,11 +23,11 @@ from . import clima, historico, indices, perguntas, captions
 from . import gerar_carrossel as gc
 from . import gerar_story, publicar
 
-try:
-    from . import astronomia
-    _fase_lua = astronomia.fase_lua_atual
-except Exception:
-    def _fase_lua():
+def _fase_lua() -> str:
+    try:
+        from . import astronomia
+        return astronomia.fase_da_lua().get("nome", "indisponivel")
+    except Exception:
         return "indisponivel"
 
 
