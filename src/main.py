@@ -40,7 +40,6 @@ def _coletar():
 def rodar_manha(dry_run: bool) -> None:
     cidades, resumo = _coletar()
 
-    # Recorde e comparacao (antes de registrar o dia)
     recorde = historico.checar_recorde(
         cidades[0].nome, cidades[0].tmin, cidades[0].tmax)
 
@@ -53,19 +52,14 @@ def rodar_manha(dry_run: bool) -> None:
 
     slides = gc.gerar_carrossel_manha(cidades, resumo, itens, pergunta, fase, recorde)
     caption = captions.caption_manha(
-        resumo["data_extenso"],
-        [c.como_dict() for c in cidades],
-        pergunta,
-    )
+        resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
 
     publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
 
-    # Story
     a, b = gerar_story.dividir_opcoes(pergunta)
     story = gerar_story.gerar_story(pergunta, a, b, "manha")
     publicar.publicar_story(story, dry_run=dry_run)
 
-    # Persistencia
     historico.registrar_dia(cidades)
 
 
@@ -75,10 +69,7 @@ def rodar_noite(dry_run: bool) -> None:
     fase = _fase_lua()
     slides = gc.gerar_carrossel_noite(cidades, resumo, pergunta, fase)
     caption = captions.caption_noite(
-        resumo["data_extenso"],
-        [c.como_dict() for c in cidades],
-        pergunta,
-    )
+        resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
     publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
     a, b = gerar_story.dividir_opcoes(pergunta)
     story = gerar_story.gerar_story(pergunta, a, b, "noite")
@@ -107,32 +98,30 @@ def rodar_alertas(dry_run: bool) -> None:
 def rodar_fim_semana(dry_run: bool) -> None:
     cidades, resumo = _coletar()
     pergunta = "Fim de semana: praia em Angra ou cachoeira em Resende?"
-    # Capa + slides simples reaproveitando templates
     slides = [gc.slide_capa("fim_de_semana", "COMO VAI SER O FIM DE SEMANA?",
                             resumo["data_extenso"], "SUL FLUMINENSE")]
     for i, c in enumerate(cidades, start=1):
         slides.append(gc.slide_cidade("fim_de_semana", c, i))
     slides.append(gc.slide_pergunta("fim_de_semana", pergunta))
-    cap = captions.caption_fim_de_semana(resumo["data_extenso"],
-                                         [c.como_dict() for c in cidades], pergunta) \
-        if hasattr(captions, "caption_fim_de_semana") else \
-        captions.caption_manha(resumo["data_extenso"],
-                               [c.como_dict() for c in cidades], pergunta)
+    cap = captions.caption_manha(
+        resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
     publicar.publicar_carrossel(slides, cap, dry_run=dry_run)
 
 
 def rodar_curiosidade(dry_run: bool) -> None:
-    from . import curiosidade
-    item = curiosidade.proxima_curiosidade() if hasattr(curiosidade, "proxima_curiosidade") \
-        else {"titulo": "Curiosidade do tempo", "resposta": "", "explicacao": ""}
+    from . import curiosidades
+    item = curiosidades.escolher_curiosidade()
+    corpo = item.get("explicacao", "")
+    if item.get("regional"):
+        corpo = corpo + " " + item["regional"]
     slides = [
         gc.slide_texto_livre("curiosidade", "MITO OU VERDADE?", item.get("titulo", ""), "capa"),
-        gc.slide_texto_livre("curiosidade", item.get("resposta", ""),
-                             item.get("explicacao", ""), "resposta"),
+        gc.slide_texto_livre("curiosidade", item.get("veredito", ""), corpo, "resposta"),
         gc.slide_pergunta("curiosidade", "Voce ja sabia dessa? Conta pra gente!"),
     ]
-    cap = captions.caption_curiosidade(item) if hasattr(captions, "caption_curiosidade") \
-        else item.get("titulo", "")
+    cap = (f"MITO OU VERDADE? {item.get('titulo','')}\n\n"
+           f"{item.get('veredito','')}: {corpo}\n\n"
+           "#sulfluminense #previsaodotempo #curiosidades")
     publicar.publicar_carrossel(slides, cap, dry_run=dry_run)
 
 
@@ -155,7 +144,7 @@ def main() -> int:
         MODOS[args.modo](args.dry_run)
         print("=== Concluido com sucesso ===")
         return 0
-    except Exception as e:  # log claro, nunca post pela metade
+    except Exception as e:
         print("=== FALHA ===", file=sys.stderr)
         print(str(e), file=sys.stderr)
         traceback.print_exc()
