@@ -1,3 +1,3 @@
-requests==2.32.3
-Pillow==10.4.0
-astral==3.2
+requests>=2.31,<3
+Pillow>=10.2,<11
+astral>=3.2,<4
