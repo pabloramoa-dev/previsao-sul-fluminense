@@ -1,0 +1,48 @@
+name: Monitor de Alertas (a cada 2h, 7h-19h BRT)
+
+on:
+  schedule:
+    - cron: "0 10-22/2 * * *"   # 07h-19h BRT, de 2 em 2 horas
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Rodar em modo dry-run (nao publica)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  monitorar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Detectar e publicar alertas
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python -m src.main alertas --dry-run
+          else
+            python -m src.main alertas
+          fi
+
+      - name: Commit estado (anti-spam)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/output src/estado.json || true
+          git commit -m "chore: monitor alertas $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
+          git push || echo "Nada para enviar"
