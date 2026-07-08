@@ -14,6 +14,7 @@ captions.py, indices.py, alertas.py e historico.py.
 from __future__ import annotations
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
@@ -22,6 +23,7 @@ import requests
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 TIMEZONE = "America/Sao_Paulo"
+_TZ = ZoneInfo(TIMEZONE)
 TIMEOUT = 30
 
 # Cidades cobertas (nome -> coordenadas)
@@ -46,7 +48,7 @@ MESES = [
 
 def data_por_extenso(d: dt.date | None = None) -> str:
     """Retorna algo como 'Segunda-feira, 6 de julho de 2026'."""
-    d = d or dt.date.today()
+    d = d or dt.datetime.now(_TZ).date()
     return f"{DIAS_SEMANA[d.weekday()]}, {d.day} de {MESES[d.month]} de {d.year}"
 
 
@@ -144,7 +146,7 @@ def coletar_qualidade_ar(cidade: dict[str, Any]) -> int:
 
 def _indice_hora(horas: list[str], alvo_hora: int, dia_offset: int = 0) -> int | None:
     """Encontra o indice da lista horaria para uma hora do dia (0-23)."""
-    hoje = dt.date.today() + dt.timedelta(days=dia_offset)
+    hoje = dt.datetime.now(_TZ).date() + dt.timedelta(days=dia_offset)
     alvo = f"{hoje.isoformat()}T{alvo_hora:02d}:00"
     for i, h in enumerate(horas):
         if h == alvo:
