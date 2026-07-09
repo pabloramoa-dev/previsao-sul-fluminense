@@ -5,6 +5,14 @@ publicar.py - Publicacao no Instagram via Graph API v22.0.
 Suporta: carrossel (feed), imagem unica (alerta) e story.
 Modo --dry-run gera tudo e loga o que faria, SEM publicar.
 
+Fases (via env PUBLICAR_FASE):
+- "completo" (default): gera E publica na mesma execucao (uso local/dry-run).
+- "gerar": NAO publica; enfileira os itens (paths + caption + tipo) em
+  assets/output/_fila_publicacao.json. As imagens ja foram salvas pela etapa
+  de geracao. O workflow deve commitar/pushar assets/output ANTES de publicar.
+- "publicar": ignora geracao; le a fila e publica os itens ja pushados,
+  garantindo que as URLs raw do GitHub estejam acessiveis.
+
 Credenciais lidas SOMENTE de variaveis de ambiente (GitHub Secrets):
 - IG_ACCESS_TOKEN : token de longa duracao (~60 dias)
 - IG_USER_ID      : ID da conta Instagram (default 27148485038175)
@@ -16,9 +24,11 @@ Configure RAW_BASE_URL apontando para assets/output no branch principal.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -36,6 +46,12 @@ RAW_BASE_URL = os.environ.get(
     "https://raw.githubusercontent.com/pabloramoa-dev/previsao-sul-fluminense/main/assets/output",
 )
 
+# Fase de execucao: completo | gerar | publicar
+FASE = os.environ.get("PUBLICAR_FASE", "completo").strip().lower()
+
+# Arquivo de fila usado para desacoplar geracao de publicacao.
+FILA_PATH = Path("assets/output/_fila_publicacao.json")
+
 
 class PublicacaoError(Exception):
     pass
@@ -50,6 +66,48 @@ def _checar_credenciais() -> None:
     if not IG_ACCESS_TOKEN:
         raise PublicacaoError(
             "IG_ACCESS_TOKEN ausente. Configure o GitHub Secret antes de publicar.")
+
+
+# ----------------------- FILA (fases gerar/publicar) -----------------------
+
+def _reset_fila() -> None:
+    FILA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    FILA_PATH.write_text("[]", encoding="utf-8")
+
+
+def _enfileirar(item: dict[str, Any]) -> None:
+    FILA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    fila: list[dict[str, Any]] = []
+    if FILA_PATH.exists():
+        try:
+            fila = json.loads(FILA_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            fila = []
+    fila.append(item)
+    FILA_PATH.write_text(json.dumps(fila, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[FILA] Enfileirado tipo={item['tipo']} ({len(item.get('caminhos', []))} img)")
+
+
+def publicar_fila() -> None:
+    """Le assets/output/_fila_publicacao.json e publica cada item (fase 'publicar')."""
+    if not FILA_PATH.exists():
+        raise PublicacaoError(f"Fila nao encontrada em {FILA_PATH}. Rode a fase 'gerar' antes.")
+    fila = json.loads(FILA_PATH.read_text(encoding="utf-8"))
+    if not fila:
+        print("[FILA] Vazia, nada a publicar.")
+        return
+    _checar_credenciais()
+    for item in fila:
+        tipo = item["tipo"]
+        if tipo == "carrossel":
+            _publicar_carrossel_real(item["caminhos"], item["caption"])
+        elif tipo == "imagem":
+            _publicar_imagem_real(item["caminhos"][0], item["caption"])
+        elif tipo == "story":
+            _publicar_story_real(item["caminhos"][0])
+        else:
+            raise PublicacaoError(f"Tipo desconhecido na fila: {tipo}")
+    print(f"[FILA] {len(fila)} item(ns) publicado(s) com sucesso.")
 
 
 def _post(endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -85,20 +143,11 @@ def _aguardar_pronto(container_id: str, tentativas: int = 20) -> None:
     raise PublicacaoError(f"Container {container_id} nao ficou pronto a tempo")
 
 
-def publicar_carrossel(caminhos: list[str], caption: str,
-                       dry_run: bool = False) -> dict[str, Any] | None:
-    urls = [_url_publica(c) for c in caminhos]
-    if dry_run:
-        print("[DRY-RUN] Carrossel com", len(urls), "slides:")
-        for u in urls:
-            print("   -", u)
-        print("[DRY-RUN] Caption:\n", caption)
-        return None
+# ----------------------- IMPLEMENTACOES REAIS -----------------------
 
-    _checar_credenciais()
+def _publicar_carrossel_real(caminhos: list[str], caption: str) -> dict[str, Any]:
+    urls = [_url_publica(c) for c in caminhos]
     children = [_criar_item_carrossel(u) for u in urls]
-    for cid in children:
-        _aguardar_pronto(cid)
     container = _post(f"{IG_USER_ID}/media", {
         "media_type": "CAROUSEL",
         "children": ",".join(children),
@@ -112,15 +161,8 @@ def publicar_carrossel(caminhos: list[str], caption: str,
     return resultado
 
 
-def publicar_imagem(caminho: str, caption: str,
-                    dry_run: bool = False) -> dict[str, Any] | None:
+def _publicar_imagem_real(caminho: str, caption: str) -> dict[str, Any]:
     url = _url_publica(caminho)
-    if dry_run:
-        print("[DRY-RUN] Imagem unica:", url)
-        print("[DRY-RUN] Caption:\n", caption)
-        return None
-
-    _checar_credenciais()
     container = _post(f"{IG_USER_ID}/media", {"image_url": url, "caption": caption})
     _aguardar_pronto(container["id"])
     resultado = _post(f"{IG_USER_ID}/media_publish", {"creation_id": container["id"]})
@@ -128,18 +170,57 @@ def publicar_imagem(caminho: str, caption: str,
     return resultado
 
 
-def publicar_story(caminho: str, dry_run: bool = False) -> dict[str, Any] | None:
+def _publicar_story_real(caminho: str) -> dict[str, Any]:
     url = _url_publica(caminho)
-    if dry_run:
-        print("[DRY-RUN] Story:", url)
-        return None
-
-    _checar_credenciais()
     container = _post(f"{IG_USER_ID}/media", {"image_url": url, "media_type": "STORIES"})
     _aguardar_pronto(container["id"])
     resultado = _post(f"{IG_USER_ID}/media_publish", {"creation_id": container["id"]})
     print("[OK] Story publicado:", resultado)
     return resultado
+
+
+# ----------------------- API PUBLICA (usada por main.py) -----------------------
+
+def publicar_carrossel(caminhos: list[str], caption: str,
+                       dry_run: bool = False) -> dict[str, Any] | None:
+    urls = [_url_publica(c) for c in caminhos]
+    if dry_run:
+        print("[DRY-RUN] Carrossel com", len(urls), "slides:")
+        for u in urls:
+            print("   -", u)
+        print("[DRY-RUN] Caption:\n", caption)
+        return None
+    if FASE == "gerar":
+        _enfileirar({"tipo": "carrossel", "caminhos": caminhos, "caption": caption})
+        return None
+    _checar_credenciais()
+    return _publicar_carrossel_real(caminhos, caption)
+
+
+def publicar_imagem(caminho: str, caption: str,
+                    dry_run: bool = False) -> dict[str, Any] | None:
+    url = _url_publica(caminho)
+    if dry_run:
+        print("[DRY-RUN] Imagem unica:", url)
+        print("[DRY-RUN] Caption:\n", caption)
+        return None
+    if FASE == "gerar":
+        _enfileirar({"tipo": "imagem", "caminhos": [caminho], "caption": caption})
+        return None
+    _checar_credenciais()
+    return _publicar_imagem_real(caminho, caption)
+
+
+def publicar_story(caminho: str, dry_run: bool = False) -> dict[str, Any] | None:
+    url = _url_publica(caminho)
+    if dry_run:
+        print("[DRY-RUN] Story:", url)
+        return None
+    if FASE == "gerar":
+        _enfileirar({"tipo": "story", "caminhos": [caminho], "caption": ""})
+        return None
+    _checar_credenciais()
+    return _publicar_story_real(caminho)
 
 
 def _cli() -> None:
