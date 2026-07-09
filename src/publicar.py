@@ -24,7 +24,7 @@ from typing import Any
 import requests
 
 API_VERSION = "v22.0"
-GRAPH = f"https://graph.facebook.com/{API_VERSION}"
+GRAPH = f"https://graph.instagram.com/{API_VERSION}"
 TIMEOUT = 60
 
 IG_USER_ID = os.environ.get("IG_USER_ID", "27148485038175")
