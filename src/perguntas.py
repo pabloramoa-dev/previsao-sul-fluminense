@@ -74,7 +74,8 @@ def escolher_pergunta(temp_max_regional: float, weathercode: int) -> str:
     """Escolhe a categoria pela condicao do dia e rotaciona sem repetir."""
     estado = _carregar_estado()
 
-    if temp_max_regional < 22 or weathercode in CODIGOS_CHUVA:
+    # "Calor" so a partir de mais de 27 graus; ate 27 (ou chuva) usa frio_chuva.
+    if temp_max_regional <= 27 or weathercode in CODIGOS_CHUVA:
         categoria, banco = "frio_chuva", PERGUNTAS_FRIO_CHUVA
     else:
         categoria, banco = "calor_sol", PERGUNTAS_CALOR_SOL
