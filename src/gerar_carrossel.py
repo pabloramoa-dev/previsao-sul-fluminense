@@ -118,7 +118,7 @@ def slide_capa(tipo: str, titulo: str, subtitulo: str, destaque: str) -> str:
     y = 320
     y = _texto_centralizado(d, y, titulo, _fonte(72, bold=True), pal["texto"])
     y += 30
-    y = _texto_centralizado(d, y, subtitulo, _fonte(40), pal["texto"])
+    y = _texto_centralizado(d, y, subtitulo, _fonte(46), pal["texto"])
     y += 60
     if destaque:
         _texto_centralizado(d, y, destaque, _fonte(52, bold=True), pal["destaque"])
@@ -186,9 +186,9 @@ def slide_pergunta(tipo: str, pergunta: str, perfil: str = "@previsaosulfluminen
     img = _fundo(tipo)
     d = ImageDraw.Draw(img)
     y = 380
-    y = _texto_centralizado(d, y, pergunta, _fonte(58, bold=True), pal["texto"])
+    y = _texto_centralizado(d, y, pergunta, _fonte(72, bold=True), pal["texto"])
     y += 60
-    y = _texto_centralizado(d, y, "Responde nos comentarios!", _fonte(44), pal["destaque"])
+    y = _texto_centralizado(d, y, "Responde nos comentarios!", _fonte(50), pal["destaque"])
     _texto_centralizado(d, H - 200, perfil, _fonte(40), pal["texto"])
     return _salvar(img, f"{tipo}_pergunta.png")
 
@@ -198,9 +198,9 @@ def slide_texto_livre(tipo: str, titulo: str, corpo: str, nome: str) -> str:
     img = _fundo(tipo)
     d = ImageDraw.Draw(img)
     y = 160
-    y = _texto_centralizado(d, y, titulo, _fonte(58, bold=True), pal["destaque"])
+    y = _texto_centralizado(d, y, titulo, _fonte(68, bold=True), pal["destaque"])
     y += 40
-    _texto_centralizado(d, y, corpo, _fonte(44), pal["texto"])
+    _texto_centralizado(d, y, corpo, _fonte(54), pal["texto"])
     return _salvar(img, f"{tipo}_{nome}.png")
 
 
