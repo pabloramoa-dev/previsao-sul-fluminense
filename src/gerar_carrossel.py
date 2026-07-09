@@ -100,8 +100,12 @@ def _quebrar(draw, texto, fonte, max_w):
 
 
 def _salvar(img: Image.Image, nome: str) -> str:
+    # Instagram Graph API aceita SOMENTE JPEG para imagens.
+    nome = nome.rsplit(".", 1)[0] + ".jpg"
     caminho = OUTPUT / nome
-    img.save(caminho, "PNG")
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    img.save(caminho, "JPEG", quality=90)
     return str(caminho)
 
 
