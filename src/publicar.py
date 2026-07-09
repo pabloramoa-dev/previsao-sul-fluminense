@@ -8,8 +8,9 @@ Modo --dry-run gera tudo e loga o que faria, SEM publicar.
 Fases (via env PUBLICAR_FASE):
 - "completo" (default): gera E publica na mesma execucao (uso local/dry-run).
 - "gerar": NAO publica; enfileira os itens (paths + caption + tipo) em
-  assets/output/_fila_publicacao.json. As imagens ja foram salvas pela etapa
-  de geracao. O workflow deve commitar/pushar assets/output ANTES de publicar.
+  assets/output/_fila_publicacao.json. A fila e ZERADA no inicio do processo.
+  As imagens ja foram salvas pela etapa de geracao. O workflow deve
+  commitar/pushar assets/output ANTES de publicar.
 - "publicar": ignora geracao; le a fila e publica os itens ja pushados,
   garantindo que as URLs raw do GitHub estejam acessiveis.
 
@@ -221,6 +222,11 @@ def publicar_story(caminho: str, dry_run: bool = False) -> dict[str, Any] | None
         return None
     _checar_credenciais()
     return _publicar_story_real(caminho)
+
+
+# Ao iniciar a fase de geracao, zera a fila para nao acumular itens antigos.
+if FASE == "gerar":
+    _reset_fila()
 
 
 def _cli() -> None:
