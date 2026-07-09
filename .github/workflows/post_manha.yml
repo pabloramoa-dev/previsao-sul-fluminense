@@ -2,7 +2,7 @@ name: Post Manha (06h BRT)
 
 on:
   schedule:
-    - cron: "0 9 * * *"   # 06:00 BRT (UTC-3)
+    - cron: "0 9 * * *"  # 06:00 BRT (UTC-3)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -28,10 +28,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Gerar e publicar carrossel da manha
+      - name: Gerar imagens (sem publicar)
         env:
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          PUBLICAR_FASE: gerar
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             python -m src.main manha --dry-run
@@ -39,10 +38,23 @@ jobs:
             python -m src.main manha
           fi
 
-      - name: Commit imagens e estado
+      - name: Commit e push das imagens (antes de publicar)
+        if: ${{ inputs.dry_run != true }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add assets/output src/estado.json src/historico.json || true
-          git commit -m "chore: post manha $(date -u +%Y-%m-%d)" || echo "Nada para commitar"
+          git commit -m "chore: assets post manha $(date -u +%Y-%m-%d)" || echo "Nada para commitar"
           git push || echo "Nada para enviar"
+
+      - name: Aguardar propagacao do raw.githubusercontent
+        if: ${{ inputs.dry_run != true }}
+        run: sleep 45
+
+      - name: Publicar no Instagram
+        if: ${{ inputs.dry_run != true }}
+        env:
+          PUBLICAR_FASE: publicar
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python -c "from src import publicar; publicar.publicar_fila()"
