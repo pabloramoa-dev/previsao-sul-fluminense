@@ -128,7 +128,7 @@ def _criar_item_carrossel(url_imagem: str) -> str:
     return r["id"]
 
 
-def _aguardar_pronto(container_id: str, tentativas: int = 20) -> None:
+def _aguardar_pronto(container_id: str, tentativas: int = 60) -> None:
     """Aguarda o container ficar FINISHED antes de publicar."""
     for _ in range(tentativas):
         r = requests.get(f"{GRAPH}/{container_id}", params={
@@ -175,9 +175,21 @@ def _publicar_story_real(caminho: str) -> dict[str, Any]:
     url = _url_publica(caminho)
     container = _post(f"{IG_USER_ID}/media", {"image_url": url, "media_type": "STORIES"})
     _aguardar_pronto(container["id"])
-    resultado = _post(f"{IG_USER_ID}/media_publish", {"creation_id": container["id"]})
-    print("[OK] Story publicado:", resultado)
-    return resultado
+    # Stories ocasionalmente retornam "Media Not Found" (subcode 2207006) logo
+    # apos o container ficar FINISHED. Tentamos publicar algumas vezes com
+    # pequena espera antes de desistir.
+    ultimo_erro: Exception | None = None
+    for tentativa in range(1, 4):
+        try:
+            resultado = _post(f"{IG_USER_ID}/media_publish", {"creation_id": container["id"]})
+            print("[OK] Story publicado:", resultado)
+            return resultado
+        except PublicacaoError as exc:
+            ultimo_erro = exc
+            if tentativa == 3:
+                break
+            time.sleep(10)
+    raise ultimo_erro if ultimo_erro else PublicacaoError("Falha ao publicar story")
 
 
 # ----------------------- API PUBLICA (usada por main.py) -----------------------
