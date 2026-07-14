@@ -18,6 +18,8 @@ from zoneinfo import ZoneInfo
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
+import time
+
 import requests
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
@@ -83,9 +85,25 @@ class CidadeClima:
 
 
 def _get_json(url: str, params: dict[str, Any]) -> dict[str, Any]:
-    resp = requests.get(url, params=params, timeout=TIMEOUT)
-    resp.raise_for_status()
-    return resp.json()
+    # Retry com backoff para tolerar instabilidades transitorias (5xx/timeout)
+    # da API Open-Meteo, que ocasionalmente responde 503 Service Unavailable.
+    ultimo_erro: Exception | None = None
+    for tentativa in range(1, 4):
+        try:
+            resp = requests.get(url, params=params, timeout=TIMEOUT)
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.RequestException, ValueError) as exc:
+            ultimo_erro = exc
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            # So faz retry em erros transitorios (5xx/timeout/conexao).
+            transitorio = (
+                status is None or status >= 500
+            )
+            if not transitorio or tentativa == 3:
+                break
+            time.sleep(2 * tentativa)
+    raise ultimo_erro if ultimo_erro else RuntimeError("Falha desconhecida em _get_json")
 
 
 def _hora_local(iso_str: str) -> str:
