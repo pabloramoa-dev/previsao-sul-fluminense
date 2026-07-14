@@ -28,10 +28,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Gerar e publicar carrossel de fim de semana
+      - name: Gerar imagens (sem publicar)
         env:
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          PUBLICAR_FASE: gerar
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             python -m src.main fim_semana --dry-run
@@ -39,10 +38,23 @@ jobs:
             python -m src.main fim_semana
           fi
 
-      - name: Commit imagens e estado
+      - name: Commit e push das imagens (antes de publicar)
+        if: ${{ inputs.dry_run != true }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/output src/estado.json || true
-          git commit -m "chore: fim de semana $(date -u +%Y-%m-%d)" || echo "Nada para commitar"
+          git add assets/output src/estado.json src/historico.json || true
+          git commit -m "chore: assets fim de semana $(date -u +%Y-%m-%d)" || echo "Nada para commitar"
           git push || echo "Nada para enviar"
+
+      - name: Aguardar propagacao do raw.githubusercontent
+        if: ${{ inputs.dry_run != true }}
+        run: sleep 45
+
+      - name: Publicar no Instagram
+        if: ${{ inputs.dry_run != true }}
+        env:
+          PUBLICAR_FASE: publicar
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python -c "from src import publicar; publicar.publicar_fila()"
