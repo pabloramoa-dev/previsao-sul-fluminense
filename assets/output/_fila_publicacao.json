@@ -2,10 +2,14 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_resposta.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_cidade_1.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_cidade_2.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_cidade_3.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_cidade_4.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_cidade_5.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/fim_de_semana_pergunta.jpg"
     ],
-    "caption": "MITO OU VERDADE? Da pra saber a distancia de uma tempestade contando os segundos entre o raio e o trovao.\n\nVERDADE: A cada 3 segundos entre o clarao e o som, o raio esta a cerca de 1 km. O som viaja ~340 m/s. Util nas tardes de verao em Resende e na serra.\n\n#sulfluminense #previsaodotempo #curiosidades"
+    "caption": "🌧️ PREVISAO DO TEMPO -- SUL FLUMINENSE\nTerca-feira, 14 de julho de 2026\n\nHoje o dia sera de chuvisco fraco, com minima de 9C e maxima de 20C na regiao.\n\n🌧️ Volta Redonda: 10C / 19C\n🌧️ Barra Mansa: 10C / 19C\n☁️ Resende: 9C / 19C\n☁️ Porto Real: 10C / 19C\n☁️ Angra dos Reis: 11C / 20C - 50%\n\nArrasta pro lado e ve a previsao completa da sua cidade!\n\nFim de semana: praia em Angra ou cachoeira em Resende?\nResponde aqui nos comentarios!\n\nCompartilha com quem precisa saber e ativa as notificacoes.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
   }
 ]
