@@ -2,22 +2,21 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_indices.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_1.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_2.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_3.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_4.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_5.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_sol_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_1.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_2.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_3.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_4.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_5.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_lua_amanha.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_pergunta.jpg"
     ],
-    "caption": "☀️ PREVISAO DO TEMPO -- SUL FLUMINENSE\nQuinta-feira, 16 de julho de 2026\n\nHoje o dia sera de ceu limpo, com minima de 8C e maxima de 25C na regiao.\n\n☀️ Volta Redonda: 12C / 24C\n☀️ Barra Mansa: 11C / 24C\n☀️ Resende: 8C / 20C\n☀️ Porto Real: 8C / 23C\n☀️ Angra dos Reis: 13C / 25C\n\nArrasta pro lado e ve a previsao completa da sua cidade!\n\nDia nublado: acha aconchegante ou fica desanimado?\nResponde aqui nos comentarios!\n\nCompartilha com quem precisa saber e ativa as notificacoes.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
+    "caption": "COMO SERA A NOITE NO SUL FLUMINENSE\nQuinta-feira, 16 de julho de 2026\n\nVolta Redonda: 17C as 21h, minima de 13C na madrugada\nBarra Mansa: 17C as 21h, minima de 14C na madrugada\nResende: 14C as 21h, minima de 9C na madrugada\nPorto Real: 15C as 21h, minima de 10C na madrugada\nAngra dos Reis: 17C as 21h, minima de 16C na madrugada\n\nMadrugada gelada de 9C -- separa o cobertor!\n\nArrasta pro lado pra ver os detalhes da sua cidade!\n\nChuva de fim de tarde: charme ou transtorno no transito?\nResponde aqui nos comentarios!\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
   },
   {
     "tipo": "story",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_noite.jpg"
     ],
     "caption": ""
   }
