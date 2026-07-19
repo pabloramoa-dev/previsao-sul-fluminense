@@ -2,23 +2,10 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_indices.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_1.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_2.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_3.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_4.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_5.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_sol_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_resposta.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_pergunta.jpg"
     ],
-    "caption": "☀️ PREVISAO DO TEMPO -- SUL FLUMINENSE\nDomingo, 19 de julho de 2026\n\nHoje o dia sera de ceu limpo, com minima de 9C e maxima de 27C na regiao.\n\n☀️ Volta Redonda: 16C / 27C\n☀️ Barra Mansa: 15C / 27C\n☀️ Resende: 9C / 24C\n☀️ Porto Real: 10C / 26C\n☀️ Angra dos Reis: 16C / 27C\n\nArrasta pro lado e ve a previsao completa da sua cidade!\n\nDia quente: bebida gelada ou agua de coco?\nResponde aqui nos comentarios!\n\nCompartilha com quem precisa saber e ativa as notificacoes.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
-  },
-  {
-    "tipo": "story",
-    "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
-    ],
-    "caption": ""
+    "caption": "MITO OU VERDADE? Neblina e sinal de que vai fazer calor no dia.\n\nVERDADE: Neblina de radiacao se forma em madrugadas de ceu limpo, que costumam anteceder dias ensolarados. Comum no Vale do Paraiba e na serra de Resende.\n\n#sulfluminense #previsaodotempo #curiosidades"
   }
 ]
