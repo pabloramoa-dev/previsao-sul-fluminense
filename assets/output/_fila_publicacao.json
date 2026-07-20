@@ -2,10 +2,22 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_resposta.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_1.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_2.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_3.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_4.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_cidade_5.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_lua_amanha.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/noite_pergunta.jpg"
     ],
-    "caption": "MITO OU VERDADE? Neblina e sinal de que vai fazer calor no dia.\n\nVERDADE: Neblina de radiacao se forma em madrugadas de ceu limpo, que costumam anteceder dias ensolarados. Comum no Vale do Paraiba e na serra de Resende.\n\n#sulfluminense #previsaodotempo #curiosidades"
+    "caption": "COMO SERA A NOITE NO SUL FLUMINENSE\nDomingo, 19 de julho de 2026\n\nVolta Redonda: 20C as 21h, minima de 16C na madrugada\nBarra Mansa: 21C as 21h, minima de 16C na madrugada\nResende: 15C as 21h, minima de 12C na madrugada\nPorto Real: 18C as 21h, minima de 12C na madrugada\nAngra dos Reis: 18C as 21h, minima de 17C na madrugada\n\nMadrugada gelada de 12C -- separa o cobertor!\n\nArrasta pro lado pra ver os detalhes da sua cidade!\n\nCalorao: ventilador resolve ou so ar-condicionado?\nResponde aqui nos comentarios!\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
+  },
+  {
+    "tipo": "story",
+    "caminhos": [
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_noite.jpg"
+    ],
+    "caption": ""
   }
 ]
