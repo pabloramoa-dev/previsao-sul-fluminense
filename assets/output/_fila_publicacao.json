@@ -2,23 +2,10 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_indices.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_1.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_2.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_3.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_4.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_cidade_5.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_sol_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/manha_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_resposta.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/curiosidade_pergunta.jpg"
     ],
-    "caption": "🌧️ PREVISAO DO TEMPO -- SUL FLUMINENSE\nDomingo, 26 de julho de 2026\n\nHoje o dia sera de chuvisco fraco, com minima de 15C e maxima de 24C na regiao.\n\n🌧️ Volta Redonda: 16C / 24C\n🌧️ Barra Mansa: 16C / 23C - 75%\n🌧️ Resende: 15C / 23C - 53%\n🌧️ Porto Real: 16C / 24C - 75%\n🌧️ Angra dos Reis: 16C / 23C - 83%\n\nAtencao: chance de chuva de ate 83% na regiao. Vale levar o guarda-chuva!\n\nArrasta pro lado e ve a previsao completa da sua cidade!\n\nPrefere frio seco ou chuva fininha o dia todo?\nResponde aqui nos comentarios!\n\nCompartilha com quem precisa saber e ativa as notificacoes.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
-  },
-  {
-    "tipo": "story",
-    "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
-    ],
-    "caption": ""
+    "caption": "MITO OU VERDADE? Voce pode se molhar mais correndo do que andando na chuva.\n\nMITO: Estudos mostram que correr geralmente molha menos, pois voce fica menos tempo exposto a chuva.\n\n#sulfluminense #previsaodotempo #curiosidades"
   }
 ]
