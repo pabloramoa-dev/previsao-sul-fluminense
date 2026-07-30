@@ -22,44 +22,40 @@ body {
 .folha { position: relative; height: 100%; padding: 60px 66px 52px; display: flex; flex-direction: column; overflow: hidden; }
 
 .topo { display: flex; align-items: center; justify-content: space-between; }
-.marca { display: flex; align-items: center; gap: 14px; font-weight: 600; font-size: 26px; letter-spacing: .2px; }
-.selo { width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
-.selo svg { width: 26px; height: 26px; color: {{DESTAQUE}}; }
-.data { font-size: 21px; font-weight: 500; opacity: .85; text-transform: uppercase; letter-spacing: 1.6px; }
+.marca { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: 30px; letter-spacing: .2px; }
+.selo { width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
+.selo svg { width: 31px; height: 31px; color: {{DESTAQUE}}; }
+.data { font-size: 24px; font-weight: 500; opacity: .85; text-transform: uppercase; letter-spacing: 1.6px; }
 
-.cidade { margin-top: 62px; font-size: 82px; font-weight: 800; line-height: 1.02; letter-spacing: -1.5px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
-.chip { margin-top: 24px; display: inline-flex; align-self: flex-start; align-items: center; gap: 14px; padding: 12px 26px 12px 20px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(10px); font-size: 29px; font-weight: 600; }
-.chip svg { width: 40px; height: 40px; color: {{DESTAQUE}}; }
+.cidade { margin-top: 82px; font-size: 100px; font-weight: 800; line-height: 1.02; letter-spacing: -1.5px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
+.chip { margin-top: 30px; display: inline-flex; align-self: flex-start; align-items: center; gap: 14px; padding: 15px 32px 15px 24px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(10px); font-size: 34px; font-weight: 600; }
+.chip svg { width: 48px; height: 48px; color: {{DESTAQUE}}; }
 
-.temperaturas { margin-top: 44px; display: flex; align-items: flex-end; gap: 34px; }
-.tmax { font-size: 178px; font-weight: 800; line-height: .86; letter-spacing: -7px; text-shadow: 0 10px 40px rgba(0,0,0,.28); }
-.tmax span { font-size: 68px; letter-spacing: 0; vertical-align: top; opacity: .9; }
-.tmin-caixa { padding-bottom: 16px; }
-.rotulo { font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.4px; opacity: .72; }
-.tmin { font-size: 56px; font-weight: 600; line-height: 1.1; }
+.temperaturas { margin-top: 64px; display: flex; align-items: flex-end; gap: 40px; }
+.tmax { font-size: 232px; font-weight: 800; line-height: .86; letter-spacing: -9px; text-shadow: 0 10px 40px rgba(0,0,0,.28); }
+.tmax span { font-size: 88px; letter-spacing: 0; vertical-align: top; opacity: .9; }
+.tmin-caixa { padding-bottom: 22px; }
+.rotulo { font-size: 23px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.4px; opacity: .72; }
+.tmin { font-size: 76px; font-weight: 600; line-height: 1.1; }
 
-.painel { margin-top: 34px; padding: 32px 34px 30px; border-radius: 28px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
-.metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 34px; }
-.metrica { display: flex; align-items: center; gap: 16px; }
-.metrica svg { width: 34px; height: 34px; color: {{DESTAQUE}}; flex: none; }
-.metrica .valor { font-size: 32px; font-weight: 700; line-height: 1; }
-.metrica .nome { font-size: 16px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.6px; opacity: .7; margin-top: 4px; }
+.painel { margin-top: 56px; padding: 46px 44px 44px; border-radius: 32px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+.metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 48px 40px; }
+.metrica { display: flex; align-items: center; gap: 20px; }
+.metrica svg { width: 46px; height: 46px; color: {{DESTAQUE}}; flex: none; }
+.metrica .valor { font-size: 48px; font-weight: 700; line-height: 1; }
+.metrica .nome { font-size: 21px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.8px; opacity: .72; margin-top: 6px; }
 
-.grafico { margin-top: 28px; }
-.grafico .titulo { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-.grafico .titulo b { font-size: 19px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.2px; opacity: .8; }
-.grafico .titulo i { font-style: normal; font-size: 18px; opacity: .65; }
-svg.curva { display: block; width: 880px; height: 240px; }
-
-.barras { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-.barra .nome { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.4px; opacity: .72; }
-.barra .trilha { margin-top: 8px; height: 12px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; }
+.bloco-chuva { margin-top: 48px; }
+.titulo-bloco { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.2px; opacity: .78; }
+.barras { margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
+.barra .nome { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.4px; opacity: .78; }
+.barra .trilha { margin-top: 12px; height: 20px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; }
 .barra .preenche { height: 100%; border-radius: 999px; background: {{DESTAQUE}}; }
-.barra .pct { margin-top: 6px; font-size: 21px; font-weight: 700; }
+.barra .pct { margin-top: 10px; font-size: 32px; font-weight: 700; }
 
-.rodape { margin-top: auto; padding-top: 26px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.22); font-size: 19px; font-weight: 500; }
-.rodape .sol { display: flex; gap: 26px; opacity: .85; }
-.rodape .fonte { opacity: .6; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+.rodape { margin-top: auto; padding-top: 36px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.22); font-size: 24px; font-weight: 500; }
+.rodape .sol { display: flex; gap: 34px; opacity: .85; }
+.rodape .fonte { opacity: .62; font-size: 19px; letter-spacing: 1px; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -92,22 +88,10 @@ svg.curva { display: block; width: 880px; height: 240px; }
       <div class="metrica">{{ICONE_UMIDADE}}<div><div class="valor">{{UMIDADE}}%</div><div class="nome">Umidade</div></div></div>
     </div>
 
-    <div class="grafico">
-      <div class="titulo"><b>Temperatura hora a hora</b><i>{{FAIXA_HORARIA}}</i></div>
-      <svg class="curva" viewBox="0 0 880 240">
-        <defs>
-          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="{{DESTAQUE}}" stop-opacity=".45"/>
-            <stop offset="100%" stop-color="{{DESTAQUE}}" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <path d="{{CURVA_AREA}}" fill="url(#areaGrad)"/>
-        <polyline points="{{CURVA_LINHA}}" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        {{CURVA_MARCAS}}
-      </svg>
+    <div class="bloco-chuva">
+      <div class="titulo-bloco">Chance de chuva por per&iacute;odo</div>
+      <div class="barras">{{BARRAS}}</div>
     </div>
-
-    <div class="barras">{{BARRAS}}</div>
   </div>
 
   <div class="rodape">
