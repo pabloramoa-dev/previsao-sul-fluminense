@@ -27,9 +27,9 @@ on:
   # PARA LIGAR, depois de conferir o video e fazer uma publicacao manual
   # bem-sucedida: apague o "# " do inicio das duas linhas de cron abaixo.
   # ---------------------------------------------------------------------------
-  # schedule:
-  #   - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
-  #   - cron: "20 10 * * *"     # dispara cedo; o job espera ate 14:20 UTC (11:20 BRT) — Dona Maria
+  schedule:
+    - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
+    - cron: "20 10 * * *"     # dispara cedo; o job espera ate 14:20 UTC (11:20 BRT) — Dona Maria
   workflow_dispatch:
     inputs:
       personagem:
