@@ -29,7 +29,9 @@ import sys, os, json
 AQUI = os.path.dirname(os.path.abspath(__file__))
 TRAB = os.environ.get("RANZINZA_TRAB", AQUI)
 sys.path.insert(0, AQUI)
-sys.path.insert(0, "/mnt/skills/user/dvh-studio-manim/scripts")
+# dvh_lib.py e dvh_lip.py agora moram nesta mesma pasta (AQUI ja cobre os dois).
+# Antes havia aqui um caminho absoluto para /mnt/skills/..., que não existe fora
+# da máquina de desenvolvimento.
 
 import previsao_lib as P
 import dvh_lib as L
@@ -156,17 +158,14 @@ def painel(tipo, d):
         nota = d["nota"]
         cor = "#8fbf72" if nota >= 7 else ("#e8b04b" if nota >= 4 else P.VERM)
         return P.numero_gigante(f"{nota}/10", "VARAL HOJE", cor=cor, fs=150)
-    if tipo == "recolher":
-        return _faixa("TIRE A ROUPA DO VARAL", f"chuva a partir das {d['hora']}h",
-                      cor=P.VERM, cor_txt=WHITE)
     if tipo == "uv":
         u = d["uv"]
         cor = "#8fbf72" if u <= 5 else ("#e8b04b" if u <= 7 else P.VERM)
         return _faixa(f"UV {u}", d.get("aviso", ""), cor=cor,
                       cor_txt=BLACK if u <= 7 else WHITE)
     if tipo == "sensacao":
-        return _duplo(P.card_cidade("Termômetro", d["real"], d["real"]),
-                      P.card_cidade("Você sente", d["sente"], d["sente"]))
+        return _duplo(_card_valor("Termômetro", d["real"]),
+                      _card_valor("Você sente", d["sente"]))
     if tipo == "neste_dia":
         return _faixa(f"{d['valor']}", f"neste dia em {d['ano']}",
                       cor="#7aa9c4", cor_txt=BLACK)

@@ -273,8 +273,7 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
     print("[2/5] narração (Kokoro, local)")
     bruta = os.path.join(trab, "voz_bruta.wav")
     segs = os.path.join(trab, "segs.json")
-    rodar([sys.executable,
-           "/mnt/skills/user/dvh-studio-manim/scripts/gerar_voz_kokoro.py",
+    rodar([sys.executable, os.path.join(AQUI, "gerar_voz_kokoro.py"),
            rot, "--voz", voz, "--speed", "0.95", "--gap", "0.30",
            "--out", bruta, "--seg-json", segs])
 

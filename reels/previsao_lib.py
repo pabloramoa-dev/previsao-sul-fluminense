@@ -14,7 +14,9 @@ from manim import *
 import numpy as np
 import sys, os
 
-sys.path.insert(0, "/mnt/skills/user/dvh-studio-manim/scripts")
+# dvh_lib.py mora na mesma pasta que este arquivo. Antes havia aqui um caminho
+# absoluto para /mnt/skills/... que só existia na máquina de desenvolvimento.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dvh_lib as L
 
 PT = L.PT
