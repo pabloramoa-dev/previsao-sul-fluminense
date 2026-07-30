@@ -35,10 +35,6 @@ SAIDA = AQUI / "saida"
 LARGURA, ALTURA = 1080, 1350
 PERFIL = "@previsaosulfluminense"
 
-# Area do grafico dentro do SVG do template (viewBox 880x170)
-GRAF_L, GRAF_A = 880, 240
-GRAF_PAD_X, GRAF_TOPO, GRAF_BASE = 16, 38, 38
-
 PERIODOS = (
     ("Madrugada", 0, 6),
     ("Manha", 6, 12),
@@ -139,65 +135,6 @@ def _serie(horarias: dict, chave: str, indices: list) -> list:
     ]
 
 
-def _curva(temps: list):
-    """Devolve (pontos, area, marcas, faixa) prontos para o SVG do template."""
-    if len(temps) < 2:
-        return "", "", "", ""
-    tmin, tmax = min(temps), max(temps)
-    span = max(tmax - tmin, 1.0)
-    n = len(temps)
-    util_l = GRAF_L - 2 * GRAF_PAD_X
-    util_a = GRAF_A - GRAF_TOPO - GRAF_BASE
-    pontos = []
-    for i, t in enumerate(temps):
-        x = GRAF_PAD_X + util_l * i / (n - 1)
-        y = GRAF_TOPO + util_a * (1 - (t - tmin) / span)
-        pontos.append((x, y))
-
-    linha = " ".join(f"{x:.1f},{y:.1f}" for x, y in pontos)
-    area = (
-        f"M {pontos[0][0]:.1f},{GRAF_A} "
-        + " ".join(f"L {x:.1f},{y:.1f}" for x, y in pontos)
-        + f" L {pontos[-1][0]:.1f},{GRAF_A} Z"
-    )
-
-    def marca(i: int, acima: bool):
-        x, y = pontos[i]
-        # se o rotulo cairia fora da area do grafico, joga ele para cima
-        if not acima and y + 30 > GRAF_A - 34:
-            acima = True
-        dy = -18 if acima else 30
-        anc, tx = "middle", x
-        if x < 50:
-            anc, tx = "start", x - 8
-        elif x > GRAF_L - 50:
-            anc, tx = "end", x + 8
-        desenho = (
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6" fill="#ffffff"/>'
-            f'<text x="{tx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" fill="#ffffff"'
-            f' font-size="23" font-weight="700">{temps[i]:.0f}&#176;</text>'
-        )
-        return desenho, x, y + dy
-
-    svg_max, x_max, y_max = marca(temps.index(tmax), True)
-    svg_min, x_min, y_min = marca(temps.index(tmin), False)
-    marcas = svg_max + svg_min
-    ocupados = ((x_max, y_max), (x_min, y_min))
-    for hora in (0, 6, 12, 18, n - 1):
-        if not 0 <= hora < n:
-            continue
-        x = pontos[hora][0]
-        # pula a marcacao de hora quando ela colide com o rotulo de max/min
-        if any(abs(x - ox) < 50 and oy > GRAF_A - 70 for ox, oy in ocupados):
-            continue
-        marcas += (
-            f'<text x="{x:.1f}" y="{GRAF_A - 4}" text-anchor="middle" fill="#ffffff"'
-            f' fill-opacity=".6" font-size="17" font-weight="500">{hora:02d}h</text>'
-        )
-    faixa = f"{tmin:.0f}&#176; a {tmax:.0f}&#176; ao longo do dia"
-    return linha, area, marcas, faixa
-
-
 def _barras(probs: list) -> str:
     partes = []
     for nome, ini, fim in PERIODOS:
@@ -216,9 +153,7 @@ def _barras(probs: list) -> str:
 def montar_html(c) -> str:
     rotulo, icone, cor1, cor2, destaque = _condicao(c.weathercode)
     indices = _indices_de_hoje(c.horarias.get("time", []))
-    temps = _serie(c.horarias, "temperature_2m", indices)
     probs = _serie(c.horarias, "precipitation_probability", indices)
-    linha, area, marcas, faixa = _curva(temps)
 
     valores = {
         "{{PERFIL}}": PERFIL,
@@ -243,10 +178,6 @@ def montar_html(c) -> str:
         "{{COR1}}": cor1,
         "{{COR2}}": cor2,
         "{{DESTAQUE}}": destaque,
-        "{{CURVA_LINHA}}": linha,
-        "{{CURVA_AREA}}": area,
-        "{{CURVA_MARCAS}}": marcas,
-        "{{FAIXA_HORARIA}}": faixa,
         "{{BARRAS}}": _barras(probs),
     }
 
