@@ -1,5 +1,8 @@
 name: Reels diários — Ranzinza (manhã) e Dona Maria (meio-dia)
 
+permissions:
+  contents: write
+
 # HORÁRIOS
 #   Ranzinza    -> alvo 09:10 UTC (06:10 BRT)
 #   Dona Maria  -> alvo 14:20 UTC (11:20 BRT)
