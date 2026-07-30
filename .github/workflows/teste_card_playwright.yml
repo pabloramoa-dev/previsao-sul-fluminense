@@ -1,0 +1,73 @@
+name: TESTE Card HTML com Playwright (nao publica)
+
+# ---------------------------------------------------------------------------
+# Workflow de LABORATORIO. Existe so para comparar o card novo (HTML/CSS
+# renderizado no Chromium) com os cards atuais feitos em Pillow.
+#
+# - Nao tem schedule: roda apenas pelo botao "Run workflow".
+# - Nao usa nenhum secret e nao chama a API do Instagram.
+# - Nao commita nada no repositorio: o resultado sai como artifact.
+# - Nao toca em src/, assets/ nem nos workflows de producao.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+    inputs:
+      cidade:
+        description: "Cidade do card (use 'todas' para gerar as 5)"
+        required: false
+        default: "Volta Redonda"
+
+permissions:
+  contents: read
+
+jobs:
+  card:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias do projeto
+        run: pip install -r requirements.txt
+
+      - name: Instalar o Playwright
+        run: pip install "playwright>=1.44,<2"
+
+      - name: Cache do Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-v1
+
+      - name: Baixar o Chromium e as libs de sistema
+        run: python -m playwright install --with-deps chromium
+
+      - name: Gerar o card
+        env:
+          CIDADE: ${{ inputs.cidade }}
+        run: |
+          if [ "$CIDADE" = "todas" ]; then
+            python lab/card_html/gerar_card.py --todas
+          else
+            python lab/card_html/gerar_card.py --cidade "$CIDADE"
+          fi
+
+      - name: Listar o que foi gerado
+        run: ls -lh lab/card_html/saida/
+
+      - name: Guardar os cards como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-playwright
+          path: lab/card_html/saida/
+          retention-days: 7
+          if-no-files-found: error
