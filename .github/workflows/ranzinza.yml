@@ -1,0 +1,289 @@
+name: Reels diários — Ranzinza (manhã) e Dona Maria (meio-dia)
+
+# HORÁRIOS
+#   Ranzinza    -> alvo 09:10 UTC (06:10 BRT)
+#   Dona Maria  -> alvo 14:20 UTC (11:20 BRT)
+#
+# O cron dispara ~4h ANTES do alvo e o job espera até a hora certa. Isso existe
+# porque agendamento por `schedule` no GitHub entra numa fila compartilhada e
+# atrasa de 1h a 6h — medido neste mesmo perfil. Disparando cedo e travando o
+# horário dentro do job, o Reel sai na hora marcada na grande maioria dos dias.
+#
+# ATENÇÃO: a espera só é gratuita em repositório PÚBLICO (minutos ilimitados).
+# Se este workflow for pra um repo privado, remova o passo "Aguardar o horário
+# alvo" — 4h de espera x 2 jobs x 30 dias estouraria qualquer cota.
+
+on:
+  # ---------------------------------------------------------------------------
+  # AGENDAMENTO DESLIGADO DE PROPOSITO.
+  #
+  # Este sistema nunca rodou em ambiente real. Enquanto estas duas linhas
+  # estiverem comentadas, o workflow SO roda pelo botao "Run workflow" — nada
+  # e publicado sem voce mandar.
+  #
+  # PARA LIGAR, depois de conferir o video e fazer uma publicacao manual
+  # bem-sucedida: apague o "# " do inicio das duas linhas de cron abaixo.
+  # ---------------------------------------------------------------------------
+  # schedule:
+  #   - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
+  #   - cron: "20 10 * * *"     # dispara cedo; o job espera ate 14:20 UTC (11:20 BRT) — Dona Maria
+  workflow_dispatch:
+    inputs:
+      personagem:
+        description: "Qual Reel gerar"
+        type: choice
+        options: [ranzinza, maria]
+        default: ranzinza
+      publicar:
+        description: "Publicar no Instagram? (desmarcado = só gera o vídeo como artifact)"
+        type: boolean
+        default: false
+
+jobs:
+  # ------------------------------------------------------------------
+  # Seu Ranzinza — manhã
+  # ------------------------------------------------------------------
+  reel:
+    # No cron: roda só se o disparo foi o das 05:10.
+    # No manual: roda só se você escolheu "ranzinza".
+    # (A versão anterior testava DESIGUALDADE, e no disparo manual
+    #  github.event.schedule vem vazio — vazio é diferente dos dois valores,
+    #  então as duas condições passavam e os dois Reels eram publicados.)
+    if: >-
+      (github.event_name == 'schedule' && github.event.schedule == '10 5 * * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.personagem == 'ranzinza')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    # os arquivos do Manim vivem em reels/ para não colidir com o
+    # requirements.txt e o README.md do bot de imagens, na raiz
+    defaults:
+      run:
+        working-directory: reels
+
+    steps:
+      - name: Aguardar o horário alvo (06:10 BRT)
+        if: github.event_name == 'schedule'
+        working-directory: .
+        run: |
+          ALVO=$(date -u -d "today 09:10" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min até 09:10 UTC."
+            sleep $((ALVO - AGORA))
+          else
+            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APÓS o alvo. Seguindo imediatamente."
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # --- cache pesado: sem isto o job gasta ~8 min só instalando ---
+      - name: Cache do modelo Kokoro (~350MB)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
+
+      - name: Cache do pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('reels/requirements.txt') }}
+
+      - name: Dependências de sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng \
+            libpango1.0-dev libcairo2-dev pkg-config
+          # fonte Poppins (o pacote apt não existe; vem do repo do Google Fonts)
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+
+      - name: Dependências Python
+        run: pip install -r requirements.txt
+
+      - name: Baixar previsão do Open-Meteo
+        run: python coletar_tempo.py --saida dia.json
+
+      # a tabela de recordes é construída uma vez e fica no cache: o passado
+      # não muda, e baixar 65 anos de série todo dia seria desperdício
+      - name: Cache da tabela histórica
+        uses: actions/cache@v4
+        with:
+          path: reels/historico.json
+          key: historico-v1
+
+      - name: Construir a tabela histórica (só na 1ª vez)
+        run: test -f historico.json || python historico.py --construir
+
+      - name: Gerar o Reel da manhã (Seu Ranzinza)
+        run: python gerar_dia.py --dados dia.json --saida REEL.mp4 --quality m
+
+      - name: Guardar o vídeo como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-ranzinza
+          path: reels/REEL.mp4
+          retention-days: 7
+
+      # O Instagram exige que o MP4 esteja numa URL pública. Um Release do
+      # próprio repo resolve — e ainda deixa o histórico dos vídeos guardado.
+      # Só é criado quando vai publicar de verdade: em teste, nada de lixo.
+      - name: Publicar o MP4 num Release
+        id: upload
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="reel-$(date +%Y-%m-%d)"
+          gh release create "$TAG" REEL.mp4 --title "$TAG" --notes "Reel automático" || \
+            gh release upload "$TAG" REEL.mp4 --clobber
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/REEL.mp4" >> $GITHUB_OUTPUT
+
+      - name: Postar como Reels
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          VIDEO_URL: ${{ steps.upload.outputs.url }}
+        run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: Reel do Ranzinza"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O Reel da manha (Seu Ranzinza) falhou e NAO foi publicado.
+
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  # ------------------------------------------------------------------
+  # Dona Maria — meio-dia. Job separado porque roda em outro horário e
+  # pode falhar sozinho sem derrubar o da manhã.
+  # ------------------------------------------------------------------
+  tarde:
+    if: >-
+      (github.event_name == 'schedule' && github.event.schedule == '20 10 * * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.personagem == 'maria')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    # os arquivos do Manim vivem em reels/ para não colidir com o
+    # requirements.txt e o README.md do bot de imagens, na raiz
+    defaults:
+      run:
+        working-directory: reels
+
+    steps:
+      - name: Aguardar o horário alvo (11:20 BRT)
+        if: github.event_name == 'schedule'
+        working-directory: .
+        run: |
+          ALVO=$(date -u -d "today 14:20" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min até 14:20 UTC."
+            sleep $((ALVO - AGORA))
+          else
+            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APÓS o alvo. Seguindo imediatamente."
+          fi
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('reels/requirements.txt') }}
+      - uses: actions/cache@v4
+        with:
+          path: reels/historico.json
+          key: historico-v1
+
+      - name: Dependências de sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng \
+            libpango1.0-dev libcairo2-dev pkg-config
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+
+      - name: Dependências Python
+        run: pip install -r requirements.txt
+
+      - name: Previsão + tabela histórica
+        run: |
+          python coletar_tempo.py --saida dia.json
+          test -f historico.json || python historico.py --construir
+
+      - name: Gerar o Reel da tarde (Dona Maria)
+        run: python gerar_tarde.py --dados dia.json --saida TARDE.mp4 --quality m
+
+      - name: Guardar o vídeo como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-maria
+          path: reels/TARDE.mp4
+          retention-days: 7
+
+      - name: Publicar o MP4 num Release
+        id: upload
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="tarde-$(date +%Y-%m-%d)"
+          gh release create "$TAG" TARDE.mp4 --title "$TAG" --notes "Reel da tarde" || \
+            gh release upload "$TAG" TARDE.mp4 --clobber
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/TARDE.mp4" >> $GITHUB_OUTPUT
+
+      - name: Postar como Reels
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          VIDEO_URL: ${{ steps.upload.outputs.url }}
+        run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: Reel da Dona Maria"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O Reel do meio-dia (Dona Maria) falhou e NAO foi publicado.
+
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

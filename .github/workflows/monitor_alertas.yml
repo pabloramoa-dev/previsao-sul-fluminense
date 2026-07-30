@@ -46,3 +46,24 @@ jobs:
           git add assets/output src/estado.json || true
           git commit -m "chore: monitor alertas $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
           git push || echo "Nada para enviar"
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: ${{ github.workflow }}"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O workflow "${{ github.workflow }}" falhou e NAO publicou.
+
+            Repositorio: ${{ github.repository }}
+            Disparo....: ${{ github.event_name }}
+            Log completo: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Se a falha foi no passo "Publicar no Instagram", a causa mais
+            provavel e o token (IG_ACCESS_TOKEN) vencido ou invalidado.

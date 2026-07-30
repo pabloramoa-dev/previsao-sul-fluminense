@@ -2,7 +2,7 @@ name: Carrossel Fim de Semana (quinta 18h30 BRT)
 
 on:
   schedule:
-    - cron: "30 21 * * 4"   # quinta-feira 18:30 BRT (UTC-3)
+    - cron: "40 17 * * 4"  # dispara cedo; o job espera ate 21:30 UTC (18:30 BRT quinta)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -16,7 +16,20 @@ permissions:
 jobs:
   publicar:
     runs-on: ubuntu-latest
+    timeout-minutes: 330
     steps:
+      - name: Aguardar o horario alvo (18:30 BRT quinta)
+        if: github.event_name == 'schedule'
+        run: |
+          ALVO=$(date -u -d "today 21:30" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            ESPERA=$((ALVO - AGORA))
+            echo "Runner iniciou cedo. Aguardando $((ESPERA/60)) min ate 21:30 UTC (18:30 BRT quinta)."
+            sleep "$ESPERA"
+          else
+            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Publicando imediatamente."
+          fi
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -58,3 +71,24 @@ jobs:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
         run: python -c "from src import publicar; publicar.publicar_fila()"
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: ${{ github.workflow }}"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O workflow "${{ github.workflow }}" falhou e NAO publicou.
+
+            Repositorio: ${{ github.repository }}
+            Disparo....: ${{ github.event_name }}
+            Log completo: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Se a falha foi no passo "Publicar no Instagram", a causa mais
+            provavel e o token (IG_ACCESS_TOKEN) vencido ou invalidado.

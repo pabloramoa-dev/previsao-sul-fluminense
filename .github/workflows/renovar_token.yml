@@ -1,4 +1,19 @@
-name: Lembrete de Renovacao do Token (mensal)
+name: Renovar Token do Instagram (mensal)
+
+# Renova de verdade o token de longa duracao do Instagram.
+#
+# Como funciona:
+#   A Instagram Graph API permite trocar um token de longa duracao ainda VALIDO
+#   por um novo, com mais 60 dias, via /refresh_access_token. O token precisa
+#   ter no minimo 24h de vida e NAO pode estar vencido.
+#   Por isso rodamos todo dia 1o: a janela de 60 dias nunca chega perto do fim.
+#
+# Secrets necessarios:
+#   IG_ACCESS_TOKEN - token atual (este workflow o sobrescreve)
+#   PAT_SECRETS     - Personal Access Token (fine-grained) com permissao
+#                     "Secrets: Read and write" NESTE repositorio
+#   MAIL_USERNAME   - seu Gmail
+#   MAIL_PASSWORD   - senha de app do Google (16 caracteres)
 
 on:
   schedule:
@@ -6,30 +21,118 @@ on:
   workflow_dispatch:
 
 permissions:
-  issues: write
+  contents: read
 
 jobs:
-  lembrete:
+  renovar:
     runs-on: ubuntu-latest
     steps:
-      - name: Abrir issue de lembrete
-        uses: actions/github-script@v7
+      - name: Conferir se o token atual ainda esta valido
+        env:
+          TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TOKEN}" ]; then
+            echo "::error::IG_ACCESS_TOKEN esta vazio. Configure o secret."
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/me.json -w '%{http_code}' \
+            "https://graph.instagram.com/v22.0/me?fields=id,username&access_token=${TOKEN}")
+          echo "HTTP ${code}"
+          cat /tmp/me.json
+          if [ "${code}" != "200" ]; then
+            echo "::error::Token atual invalido ou expirado (HTTP ${code}). Gere um novo manualmente no painel da Meta e atualize o secret IG_ACCESS_TOKEN."
+            exit 1
+          fi
+
+      - name: Trocar por um token novo (mais 60 dias)
+        id: refresh
+        env:
+          TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/novo.json -w '%{http_code}' \
+            "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${TOKEN}")
+          if [ "${code}" != "200" ]; then
+            echo "::error::Falha ao renovar (HTTP ${code})."
+            cat /tmp/novo.json
+            exit 1
+          fi
+          NOVO=$(python3 -c "import json;print(json.load(open('/tmp/novo.json'))['access_token'])")
+          DIAS=$(python3 -c "import json;print(json.load(open('/tmp/novo.json')).get('expires_in',0)//86400)")
+          if [ -z "${NOVO}" ]; then
+            echo "::error::Resposta sem access_token."
+            exit 1
+          fi
+          echo "::add-mask::${NOVO}"
+          echo "novo_token=${NOVO}" >> "$GITHUB_OUTPUT"
+          echo "dias=${DIAS}" >> "$GITHUB_OUTPUT"
+          echo "Token renovado. Validade: ${DIAS} dias."
+
+      - name: Validar o token novo antes de salvar
+        env:
+          NOVO: ${{ steps.refresh.outputs.novo_token }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/check.json -w '%{http_code}' \
+            "https://graph.instagram.com/v22.0/me?fields=id,username&access_token=${NOVO}")
+          if [ "${code}" != "200" ]; then
+            echo "::error::O token novo nao passou na validacao (HTTP ${code}). Secret NAO foi alterado."
+            cat /tmp/check.json
+            exit 1
+          fi
+          echo "Token novo validado com sucesso:"
+          cat /tmp/check.json
+
+      - name: Gravar o token novo no secret
+        env:
+          GH_TOKEN: ${{ secrets.PAT_SECRETS }}
+          NOVO: ${{ steps.refresh.outputs.novo_token }}
+        run: |
+          set -euo pipefail
+          gh secret set IG_ACCESS_TOKEN --body "${NOVO}" --repo "${{ github.repository }}"
+          echo "Secret IG_ACCESS_TOKEN atualizado."
+
+      - name: Avisar sucesso por e-mail
+        if: success()
+        uses: dawidd6/action-send-mail@v3
         with:
-          script: |
-            const hoje = new Date().toISOString().slice(0, 10);
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Renovar IG_ACCESS_TOKEN - ${hoje}`,
-              body: [
-                "O token de longa duracao do Instagram expira em ~60 dias.",
-                "",
-                "Passos:",
-                "1. Gere um novo token de longa duracao no Facebook Developers.",
-                "2. Atualize o GitHub Secret IG_ACCESS_TOKEN.",
-                "3. Rode qualquer workflow em modo dry-run para validar.",
-                "",
-                "Este lembrete e automatico (renovar_token.yml)."
-              ].join("\n"),
-              labels: ["manutencao", "token"]
-            });
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] Token renovado (+${{ steps.refresh.outputs.dias }} dias)"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O token do Instagram foi renovado automaticamente.
+
+            Nova validade: ${{ steps.refresh.outputs.dias }} dias.
+            Proxima renovacao: dia 1o do mes que vem.
+
+            Nenhuma acao necessaria da sua parte.
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] ACAO NECESSARIA: renovacao do token falhou"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            A renovacao automatica do token do Instagram FALHOU.
+
+            O bot vai parar de publicar quando o token atual vencer.
+
+            Veja o log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Causa mais provavel: o token venceu antes da renovacao, ou a senha
+            do Instagram foi alterada (isso invalida todos os tokens).
+            Nesse caso gere um token novo no painel da Meta e atualize o
+            secret IG_ACCESS_TOKEN manualmente.
