@@ -27,31 +27,31 @@ body {
 .selo svg { width: 26px; height: 26px; color: {{DESTAQUE}}; }
 .data { font-size: 21px; font-weight: 500; opacity: .85; text-transform: uppercase; letter-spacing: 1.6px; }
 
-.cidade { margin-top: 48px; font-size: 82px; font-weight: 800; line-height: 1.02; letter-spacing: -1.5px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
-.chip { margin-top: 20px; display: inline-flex; align-self: flex-start; align-items: center; gap: 14px; padding: 12px 26px 12px 20px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(10px); font-size: 29px; font-weight: 600; }
+.cidade { margin-top: 62px; font-size: 82px; font-weight: 800; line-height: 1.02; letter-spacing: -1.5px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
+.chip { margin-top: 24px; display: inline-flex; align-self: flex-start; align-items: center; gap: 14px; padding: 12px 26px 12px 20px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(10px); font-size: 29px; font-weight: 600; }
 .chip svg { width: 40px; height: 40px; color: {{DESTAQUE}}; }
 
-.temperaturas { margin-top: 34px; display: flex; align-items: flex-end; gap: 34px; }
-.tmax { font-size: 168px; font-weight: 800; line-height: .86; letter-spacing: -7px; text-shadow: 0 10px 40px rgba(0,0,0,.28); }
+.temperaturas { margin-top: 44px; display: flex; align-items: flex-end; gap: 34px; }
+.tmax { font-size: 178px; font-weight: 800; line-height: .86; letter-spacing: -7px; text-shadow: 0 10px 40px rgba(0,0,0,.28); }
 .tmax span { font-size: 68px; letter-spacing: 0; vertical-align: top; opacity: .9; }
 .tmin-caixa { padding-bottom: 16px; }
 .rotulo { font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.4px; opacity: .72; }
 .tmin { font-size: 56px; font-weight: 600; line-height: 1.1; }
 
-.painel { margin-top: 30px; padding: 28px 34px 26px; border-radius: 28px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
-.metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 34px; }
+.painel { margin-top: 34px; padding: 32px 34px 30px; border-radius: 28px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+.metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 34px; }
 .metrica { display: flex; align-items: center; gap: 16px; }
 .metrica svg { width: 34px; height: 34px; color: {{DESTAQUE}}; flex: none; }
 .metrica .valor { font-size: 32px; font-weight: 700; line-height: 1; }
 .metrica .nome { font-size: 16px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.6px; opacity: .7; margin-top: 4px; }
 
-.grafico { margin-top: 24px; }
+.grafico { margin-top: 28px; }
 .grafico .titulo { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
 .grafico .titulo b { font-size: 19px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.2px; opacity: .8; }
 .grafico .titulo i { font-style: normal; font-size: 18px; opacity: .65; }
-svg.curva { display: block; width: 880px; height: 170px; }
+svg.curva { display: block; width: 880px; height: 240px; }
 
-.barras { margin-top: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.barras { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .barra .nome { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.4px; opacity: .72; }
 .barra .trilha { margin-top: 8px; height: 12px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; }
 .barra .preenche { height: 100%; border-radius: 999px; background: {{DESTAQUE}}; }
@@ -94,7 +94,7 @@ svg.curva { display: block; width: 880px; height: 170px; }
 
     <div class="grafico">
       <div class="titulo"><b>Temperatura hora a hora</b><i>{{FAIXA_HORARIA}}</i></div>
-      <svg class="curva" viewBox="0 0 880 170">
+      <svg class="curva" viewBox="0 0 880 240">
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="{{DESTAQUE}}" stop-opacity=".45"/>
