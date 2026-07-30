@@ -144,6 +144,7 @@ def main():
     ap.add_argument("--dados", required=True, help="dia.json")
     ap.add_argument("--dry-run", action="store_true", help="mostra a legenda e sai")
     ap.add_argument("--sem-feed", action="store_true", help="não espelhar o Reel no feed")
+    ap.add_argument("--sem-stories", action="store_true", help="nao publicar tambem no Stories")
     a = ap.parse_args()
 
     dia = json.load(open(a.dados))
@@ -177,6 +178,22 @@ def main():
     print("[3/3] publicando")
     pub = publicar_com_retentativa(ig_user, cid, token)
     print(f"publicado: media id {pub.get('id')}")
+    if not a.sem_stories:
+        try:
+            print("[4/5] criando o container do Story")
+            rs = _post(f"{ig_user}/media", {
+                "media_type": "STORIES",
+                "video_url": a.video,
+                "access_token": token,
+            })
+            sid = rs["id"]
+            print(f"  container {sid}")
+            print("[5/5] aguardando o processamento e publicando o Story")
+            esperar_container(sid, token)
+            pubs = publicar_com_retentativa(ig_user, sid, token)
+            print(f"story publicado: media id {pubs.get('id')}")
+        except SystemExit as e:
+            print(f"AVISO: o Reel foi publicado, mas o Story falhou: {e}")
 
 
 if __name__ == "__main__":
