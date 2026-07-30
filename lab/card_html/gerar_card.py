@@ -36,8 +36,8 @@ LARGURA, ALTURA = 1080, 1350
 PERFIL = "@previsaosulfluminense"
 
 # Area do grafico dentro do SVG do template (viewBox 880x170)
-GRAF_L, GRAF_A = 880, 170
-GRAF_PAD_X, GRAF_TOPO, GRAF_BASE = 16, 34, 30
+GRAF_L, GRAF_A = 880, 240
+GRAF_PAD_X, GRAF_TOPO, GRAF_BASE = 16, 38, 38
 
 PERIODOS = (
     ("Madrugada", 0, 6),
@@ -51,9 +51,9 @@ CONDICOES = {
     0: ("Ceu limpo", "sol", "#0b5cb5", "#5fb4ff", "#ffd60a"),
     1: ("Sol com poucas nuvens", "sol", "#0b5cb5", "#5fb4ff", "#ffd60a"),
     2: ("Sol entre nuvens", "sol_nuvem", "#17568f", "#7db0d8", "#ffd60a"),
-    3: ("Ceu nublado", "nuvem", "#38434f", "#8b9dad", "#ffe082"),
-    45: ("Neblina", "neblina", "#47515c", "#95a2ad", "#ffe082"),
-    48: ("Neblina com geada", "neblina", "#47515c", "#95a2ad", "#ffe082"),
+    3: ("Ceu nublado", "nuvem", "#2c5673", "#93b4c9", "#eaf6ff"),
+    45: ("Neblina", "neblina", "#3b5a6d", "#9db8c6", "#eaf6ff"),
+    48: ("Neblina com geada", "neblina", "#3b5a6d", "#9db8c6", "#eaf6ff"),
     51: ("Garoa fraca", "garoa", "#164a72", "#4d89b2", "#8be9ff"),
     53: ("Garoa", "garoa", "#164a72", "#4d89b2", "#8be9ff"),
     55: ("Garoa forte", "garoa", "#164a72", "#4d89b2", "#8be9ff"),
@@ -161,28 +161,39 @@ def _curva(temps: list):
         + f" L {pontos[-1][0]:.1f},{GRAF_A} Z"
     )
 
-    def marca(i: int, acima: bool) -> str:
+    def marca(i: int, acima: bool):
         x, y = pontos[i]
+        # se o rotulo cairia fora da area do grafico, joga ele para cima
+        if not acima and y + 30 > GRAF_A - 34:
+            acima = True
         dy = -18 if acima else 30
         anc, tx = "middle", x
         if x < 50:
             anc, tx = "start", x - 8
         elif x > GRAF_L - 50:
             anc, tx = "end", x + 8
-        return (
+        desenho = (
             f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6" fill="#ffffff"/>'
             f'<text x="{tx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" fill="#ffffff"'
             f' font-size="23" font-weight="700">{temps[i]:.0f}&#176;</text>'
         )
+        return desenho, x, y + dy
 
-    marcas = marca(temps.index(tmax), True) + marca(temps.index(tmin), False)
+    svg_max, x_max, y_max = marca(temps.index(tmax), True)
+    svg_min, x_min, y_min = marca(temps.index(tmin), False)
+    marcas = svg_max + svg_min
+    ocupados = ((x_max, y_max), (x_min, y_min))
     for hora in (0, 6, 12, 18, n - 1):
-        if 0 <= hora < n:
-            x = pontos[hora][0]
-            marcas += (
-                f'<text x="{x:.1f}" y="{GRAF_A - 4}" text-anchor="middle" fill="#ffffff"'
-                f' fill-opacity=".6" font-size="17" font-weight="500">{hora:02d}h</text>'
-            )
+        if not 0 <= hora < n:
+            continue
+        x = pontos[hora][0]
+        # pula a marcacao de hora quando ela colide com o rotulo de max/min
+        if any(abs(x - ox) < 50 and oy > GRAF_A - 70 for ox, oy in ocupados):
+            continue
+        marcas += (
+            f'<text x="{x:.1f}" y="{GRAF_A - 4}" text-anchor="middle" fill="#ffffff"'
+            f' fill-opacity=".6" font-size="17" font-weight="500">{hora:02d}h</text>'
+        )
     faixa = f"{tmin:.0f}&#176; a {tmax:.0f}&#176; ao longo do dia"
     return linha, area, marcas, faixa
 
