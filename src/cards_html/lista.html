@@ -1,1 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1350px; }
+body {
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+  background: linear-gradient(155deg, {{COR1}} 0%, {{COR2}} 100%);
+  position: relative;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.brilho { position: absolute; border-radius: 50%; filter: blur(70px); }
+.brilho-a { width: 540px; height: 540px; right: -150px; top: -170px; background: {{DESTAQUE}}; opacity: .25; }
+.brilho-b { width: 640px; height: 640px; left: -240px; bottom: -280px; background: #fff; opacity: .13; }
+.veu { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,.28) 100%); }
+.folha { position: relative; height: 100%; padding: 60px 66px 52px; display: flex; flex-direction: column; overflow: hidden; }
 
+.topo { display: flex; align-items: center; justify-content: space-between; }
+.marca { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: 30px; letter-spacing: .2px; }
+.selo { width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
+.selo svg { width: 31px; height: 31px; color: {{DESTAQUE}}; }
+.data { font-size: 24px; font-weight: 500; opacity: .85; text-transform: uppercase; letter-spacing: 1.6px; }
+
+.titulo { margin-top: 62px; font-size: 78px; font-weight: 800; line-height: 1.04; letter-spacing: -1.8px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
+.legenda { margin-top: 16px; font-size: 29px; font-weight: 500; opacity: .78; }
+
+.itens { margin-top: 52px; display: flex; flex-direction: column; gap: 22px; }
+.item { display: flex; align-items: center; gap: 28px; padding: 28px 32px; border-radius: 28px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 14px 40px rgba(0,0,0,.14); }
+.item svg { width: 54px; height: 54px; color: {{DESTAQUE}}; flex: none; }
+.item .texto { font-size: 37px; font-weight: 600; line-height: 1.18; }
+.item.apagado { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); box-shadow: none; }
+.item.apagado svg { color: #ffffff; opacity: .5; }
+.item.apagado .texto { opacity: .66; font-weight: 500; }
+
+.rodape { margin-top: auto; padding-top: 36px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.22); font-size: 24px; font-weight: 500; }
+.rodape .fonte { opacity: .62; font-size: 19px; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="brilho brilho-a"></div>
+<div class="brilho brilho-b"></div>
+<div class="veu"></div>
+
+<div class="folha">
+  <div class="topo">
+    <div class="marca"><span class="selo">{{ICONE_MARCA}}</span>{{PERFIL}}</div>
+    <div class="data">{{DATA}}</div>
+  </div>
+
+  <div class="titulo">{{TITULO}}</div>
+  <div class="legenda">{{LEGENDA}}</div>
+  <div class="itens">{{ITENS}}</div>
+
+  <div class="rodape">
+    <div>{{RODAPE_ESQ}}</div>
+    <div class="fonte">Dados Open-Meteo</div>
+  </div>
+</div>
+</body>
+</html>
