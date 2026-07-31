@@ -1,3 +1,4 @@
 requests>=2.31,<3
 Pillow>=10.2,<11
 astral>=3.2,<4
+playwright>=1.44,<2
