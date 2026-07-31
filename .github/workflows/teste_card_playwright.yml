@@ -13,6 +13,15 @@ name: TESTE Card HTML com Playwright (nao publica)
 on:
   workflow_dispatch:
     inputs:
+      modo:
+        description: "O que gerar"
+        required: false
+        default: "carrossel_manha"
+        type: choice
+        options:
+          - carrossel_manha
+          - carrossel_noite
+          - cidade
       cidade:
         description: "Cidade do card (use 'todas' para gerar as 5)"
         required: false
@@ -53,9 +62,14 @@ jobs:
 
       - name: Gerar o card
         env:
+          MODO: ${{ inputs.modo }}
           CIDADE: ${{ inputs.cidade }}
         run: |
-          if [ "$CIDADE" = "todas" ]; then
+          if [ "$MODO" = "carrossel_manha" ]; then
+            python lab/card_html/gerar_card.py --carrossel manha
+          elif [ "$MODO" = "carrossel_noite" ]; then
+            python lab/card_html/gerar_card.py --carrossel noite
+          elif [ "$CIDADE" = "todas" ]; then
             python lab/card_html/gerar_card.py --todas
           else
             python lab/card_html/gerar_card.py --cidade "$CIDADE"
