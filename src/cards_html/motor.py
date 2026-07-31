@@ -385,12 +385,18 @@ def renderizar(paginas: list) -> list:
 
 # ----------------------- API USADA PELA PRODUCAO -----------------------
 
+def _prefixar(paginas: list, tipo: str) -> list:
+    """Evita que o post da noite sobrescreva os JPEGs do post da manha."""
+    return [(f"{tipo} {nome}", html) for nome, html in paginas]
+
+
 def carrossel_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
                     recorde=None) -> list[str]:
-    return renderizar(
+    return renderizar(_prefixar(
         paginas_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
-                      recorde))
+                      recorde), "manha"))
 
 
 def carrossel_noite(cidades, resumo, pergunta, fase_lua) -> list[str]:
-    return renderizar(paginas_noite(cidades, resumo, pergunta, fase_lua))
+    return renderizar(_prefixar(
+        paginas_noite(cidades, resumo, pergunta, fase_lua), "noite"))
