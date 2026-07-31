@@ -23,6 +23,10 @@ on:
           - carrossel_noite
           - producao_manha
           - producao_noite
+          - producao_fim_semana
+          - producao_curiosidade
+          - producao_alertas
+          - producao_tudo
           - cidade
       cidade:
         description: "Cidade do card (use 'todas' para gerar as 5)"
@@ -68,12 +72,29 @@ jobs:
           CIDADE: ${{ inputs.cidade }}
         run: |
           mkdir -p lab/card_html/saida
+          copiar() { cp assets/output/*.jpg lab/card_html/saida/ 2>/dev/null || true; }
           if [ "$MODO" = "producao_manha" ]; then
             python -m src.main manha --dry-run
-            cp assets/output/*.jpg lab/card_html/saida/ 2>/dev/null || true
+            copiar
           elif [ "$MODO" = "producao_noite" ]; then
             python -m src.main noite --dry-run
-            cp assets/output/*.jpg lab/card_html/saida/ 2>/dev/null || true
+            copiar
+          elif [ "$MODO" = "producao_fim_semana" ]; then
+            python -m src.main fim_semana --dry-run
+            copiar
+          elif [ "$MODO" = "producao_curiosidade" ]; then
+            python -m src.main curiosidade --dry-run
+            copiar
+          elif [ "$MODO" = "producao_alertas" ]; then
+            python -m src.main alertas --dry-run
+            copiar
+          elif [ "$MODO" = "producao_tudo" ]; then
+            python -m src.main manha --dry-run
+            python -m src.main noite --dry-run
+            python -m src.main fim_semana --dry-run
+            python -m src.main curiosidade --dry-run
+            python -m src.main alertas --dry-run || echo "Sem alerta hoje; seguindo."
+            copiar
           elif [ "$MODO" = "carrossel_manha" ]; then
             python lab/card_html/gerar_card.py --carrossel manha
           elif [ "$MODO" = "carrossel_noite" ]; then
