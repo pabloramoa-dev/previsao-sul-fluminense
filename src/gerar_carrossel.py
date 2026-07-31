@@ -206,8 +206,8 @@ def slide_texto_livre(tipo: str, titulo: str, corpo: str, nome: str) -> str:
 
 # ----------------------- CARROSSEIS -----------------------
 
-def gerar_carrossel_manha(cidades, resumo, indices_itens, pergunta,
-                          fase_lua, recorde=None) -> list[str]:
+def _manha_pillow(cidades, resumo, indices_itens, pergunta,
+                  fase_lua, recorde=None) -> list[str]:
     slides = []
     destaque = recorde.upper() if recorde else f"{resumo['tmin']:.0f}C a {resumo['tmax']:.0f}C"
     slides.append(slide_capa("manha", "PREVISAO DO TEMPO",
@@ -221,7 +221,7 @@ def gerar_carrossel_manha(cidades, resumo, indices_itens, pergunta,
     return slides
 
 
-def gerar_carrossel_noite(cidades, resumo, pergunta, fase_lua) -> list[str]:
+def _noite_pillow(cidades, resumo, pergunta, fase_lua) -> list[str]:
     slides = []
     slides.append(slide_capa("noite", "COMO SERA A NOITE",
                              resumo["data_extenso"], "SUL FLUMINENSE"))
@@ -261,3 +261,31 @@ if __name__ == "__main__":
     print(slide_cidade("manha", _C(), 1))
     print(gerar_alerta("chuva_forte", "ALERTA: CHUVA FORTE",
                        "Ate 30mm nas proximas 3h", ["Volta Redonda", "Resende"]))
+
+# ----------------------- MOTOR HTML (Chromium) -----------------------
+# O desenho com Pillow acima continua como rede de seguranca: se o Chromium
+# nao subir no runner, o post sai com o visual antigo em vez de nao sair.
+
+def gerar_carrossel_manha(cidades, resumo, indices_itens, pergunta,
+                          fase_lua, recorde=None) -> list[str]:
+    try:
+        from .cards_html import motor
+        return motor.carrossel_manha(cidades, resumo, indices_itens,
+                                     pergunta, fase_lua, recorde)
+    except Exception:
+        import traceback
+        print("[cards] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return _manha_pillow(cidades, resumo, indices_itens, pergunta,
+                             fase_lua, recorde)
+
+
+def gerar_carrossel_noite(cidades, resumo, pergunta, fase_lua) -> list[str]:
+    try:
+        from .cards_html import motor
+        return motor.carrossel_noite(cidades, resumo, pergunta, fase_lua)
+    except Exception:
+        import traceback
+        print("[cards] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return _noite_pillow(cidades, resumo, pergunta, fase_lua)
