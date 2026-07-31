@@ -21,6 +21,8 @@ on:
         options:
           - carrossel_manha
           - carrossel_noite
+          - producao_manha
+          - producao_noite
           - cidade
       cidade:
         description: "Cidade do card (use 'todas' para gerar as 5)"
@@ -65,7 +67,14 @@ jobs:
           MODO: ${{ inputs.modo }}
           CIDADE: ${{ inputs.cidade }}
         run: |
-          if [ "$MODO" = "carrossel_manha" ]; then
+          mkdir -p lab/card_html/saida
+          if [ "$MODO" = "producao_manha" ]; then
+            python -m src.main manha --dry-run
+            cp assets/output/*.jpg lab/card_html/saida/ 2>/dev/null || true
+          elif [ "$MODO" = "producao_noite" ]; then
+            python -m src.main noite --dry-run
+            cp assets/output/*.jpg lab/card_html/saida/ 2>/dev/null || true
+          elif [ "$MODO" = "carrossel_manha" ]; then
             python lab/card_html/gerar_card.py --carrossel manha
           elif [ "$MODO" = "carrossel_noite" ]; then
             python lab/card_html/gerar_card.py --carrossel noite
