@@ -57,7 +57,7 @@ def rodar_manha(dry_run: bool) -> None:
     publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
 
     a, b = gerar_story.dividir_opcoes(pergunta)
-    story = gerar_story.gerar_story(pergunta, a, b, "manha")
+    story = gerar_story.gerar_story_card(pergunta, a, b, "manha")
     publicar.publicar_story(story, dry_run=dry_run)
 
     historico.registrar_dia(cidades)
@@ -72,7 +72,7 @@ def rodar_noite(dry_run: bool) -> None:
         resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
     publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
     a, b = gerar_story.dividir_opcoes(pergunta)
-    story = gerar_story.gerar_story(pergunta, a, b, "noite")
+    story = gerar_story.gerar_story_card(pergunta, a, b, "noite")
     publicar.publicar_story(story, dry_run=dry_run)
 
 
@@ -81,14 +81,15 @@ def rodar_alertas(dry_run: bool) -> None:
     cidades, _ = _coletar()
 
     for a in alertas.detectar_alertas(cidades):
-        img = gc.gerar_alerta(a["tipo"], a["titulo"], a["detalhe"], a["cidades"])
+        img = gc.gerar_card_alerta(
+            a["tipo"], a["titulo"], a["detalhe"], a["cidades"])
         cap = captions.caption_alerta(a["tipo"], a["detalhe"], a["cidades"])
         publicar.publicar_imagem(img, cap, dry_run=dry_run)
 
     chuva = alertas.checar_chuva_acumulada(cidades)
     if chuva:
         linhas = " | ".join(f"{r['nome']}: {r['mm']:.0f}mm" for r in chuva["ranking"])
-        img = gc.gerar_alerta("chuva_forte", "CHOVEU QUANTO?", linhas,
+        img = gc.gerar_card_alerta("chuva_acumulada", "CHOVEU QUANTO?", linhas,
                               [r["nome"] for r in chuva["ranking"][:3]])
         cap = captions.caption_alerta("chuva_forte", "Acumulados das ultimas 24h: " + linhas,
                                       [r["nome"] for r in chuva["ranking"]])
@@ -98,11 +99,7 @@ def rodar_alertas(dry_run: bool) -> None:
 def rodar_fim_semana(dry_run: bool) -> None:
     cidades, resumo = _coletar()
     pergunta = "Fim de semana: praia em Angra ou cachoeira em Resende?"
-    slides = [gc.slide_capa("fim_de_semana", "COMO VAI SER O FIM DE SEMANA?",
-                            resumo["data_extenso"], "SUL FLUMINENSE")]
-    for i, c in enumerate(cidades, start=1):
-        slides.append(gc.slide_cidade("fim_de_semana", c, i))
-    slides.append(gc.slide_pergunta("fim_de_semana", pergunta))
+    slides = gc.gerar_carrossel_fim_de_semana(cidades, resumo, pergunta)
     cap = captions.caption_manha(
         resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
     publicar.publicar_carrossel(slides, cap, dry_run=dry_run)
@@ -114,11 +111,8 @@ def rodar_curiosidade(dry_run: bool) -> None:
     corpo = item.get("explicacao", "")
     if item.get("regional"):
         corpo = corpo + " " + item["regional"]
-    slides = [
-        gc.slide_texto_livre("curiosidade", "MITO OU VERDADE?", item.get("titulo", ""), "capa"),
-        gc.slide_texto_livre("curiosidade", item.get("veredito", ""), corpo, "resposta"),
-        gc.slide_pergunta("curiosidade", "Voce ja sabia dessa? Conta pra gente!"),
-    ]
+    slides = gc.gerar_carrossel_curiosidade(
+        item, "Você já sabia dessa? Conta pra gente!")
     cap = (f"MITO OU VERDADE? {item.get('titulo','')}\n\n"
            f"{item.get('veredito','')}: {corpo}\n\n"
            "#sulfluminense #previsaodotempo #curiosidades")
