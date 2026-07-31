@@ -25,7 +25,7 @@ def indice_guarda_chuva(prob_chuva: float) -> tuple[bool, str]:
         return True, f"Leve guarda-chuva (chuva {prob_chuva:.0f}%)"
     if prob_chuva >= 30:
         return True, f"Talvez chova ({prob_chuva:.0f}%)"
-    return False, "Sem previsao de chuva"
+    return False, "Sem previsão de chuva"
 
 
 def indice_protetor_solar(uv_max: float) -> tuple[bool, str]:
@@ -43,8 +43,8 @@ def indice_lavar_roupa(prob_chuva: float, umidade: float) -> tuple[bool, str]:
     if prob_chuva < 30 and umidade < 70:
         return True, "Bom dia pra lavar e secar roupa"
     if prob_chuva < 30:
-        return True, "Da pra lavar, mas seca devagar (umidade alta)"
-    return False, "Nao e um bom dia pra estender roupa"
+        return True, "Dá pra lavar, mas seca devagar (umidade alta)"
+    return False, "Não é um bom dia pra estender roupa"
 
 
 def indice_qualidade_ar(aqi: int) -> tuple[str, str]:
@@ -52,14 +52,14 @@ def indice_qualidade_ar(aqi: int) -> tuple[str, str]:
     if aqi <= 20:
         return "boa", "Qualidade do ar: boa"
     if aqi <= 40:
-        return "razoavel", "Qualidade do ar: razoavel"
+        return "razoavel", "Qualidade do ar: razoável"
     if aqi <= 60:
         return "moderada", "Qualidade do ar: moderada"
     if aqi <= 80:
         return "ruim", "Qualidade do ar: ruim"
     if aqi <= 100:
         return "muito_ruim", "Qualidade do ar: muito ruim"
-    return "pessima", "Qualidade do ar: pessima - evite esforco ao ar livre"
+    return "pessima", "Qualidade do ar: péssima - evite esforço ao ar livre"
 
 
 def resumo_indices(resumo_regional: dict[str, Any], umidade_media: float,
