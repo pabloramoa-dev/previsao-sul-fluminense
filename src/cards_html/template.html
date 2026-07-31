@@ -1,1 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1350px; }
+body {
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+  background: linear-gradient(155deg, {{COR1}} 0%, {{COR2}} 100%);
+  position: relative;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.brilho { position: absolute; border-radius: 50%; filter: blur(70px); }
+.brilho-a { width: 540px; height: 540px; right: -150px; top: -170px; background: {{DESTAQUE}}; opacity: .25; }
+.brilho-b { width: 640px; height: 640px; left: -240px; bottom: -280px; background: #fff; opacity: .13; }
+.veu { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,.28) 100%); }
+.folha { position: relative; height: 100%; padding: 60px 66px 52px; display: flex; flex-direction: column; overflow: hidden; }
 
+.topo { display: flex; align-items: center; justify-content: space-between; }
+.marca { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: 30px; letter-spacing: .2px; }
+.selo { width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
+.selo svg { width: 31px; height: 31px; color: {{DESTAQUE}}; }
+.data { font-size: 24px; font-weight: 500; opacity: .85; text-transform: uppercase; letter-spacing: 1.6px; }
+
+.cidade { margin-top: 62px; font-size: 100px; font-weight: 800; line-height: 1.02; letter-spacing: -1.5px; text-shadow: 0 6px 30px rgba(0,0,0,.25); }
+.chip { margin-top: 30px; display: inline-flex; align-self: flex-start; align-items: center; gap: 14px; padding: 15px 32px 15px 24px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(10px); font-size: 34px; font-weight: 600; }
+.chip svg { width: 48px; height: 48px; color: {{DESTAQUE}}; }
+
+.temperaturas { margin-top: 52px; display: flex; align-items: flex-end; gap: 40px; }
+.tmax { font-size: 210px; font-weight: 800; line-height: .86; letter-spacing: -9px; text-shadow: 0 10px 40px rgba(0,0,0,.28); }
+.tmax span { font-size: 80px; letter-spacing: 0; vertical-align: top; opacity: .9; }
+.tmin-caixa { padding-bottom: 22px; }
+.rotulo { font-size: 23px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.4px; opacity: .72; }
+.tmin { font-size: 70px; font-weight: 600; line-height: 1.1; }
+
+.painel { margin-top: 44px; padding: 46px 44px 44px; border-radius: 32px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+.metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px 40px; }
+.metrica { display: flex; align-items: center; gap: 20px; }
+.metrica svg { width: 46px; height: 46px; color: {{DESTAQUE}}; flex: none; }
+.metrica .valor { font-size: 48px; font-weight: 700; line-height: 1; }
+.metrica .nome { font-size: 21px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.8px; opacity: .72; margin-top: 6px; }
+
+.bloco-chuva { margin-top: 38px; }
+.titulo-bloco { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.2px; opacity: .78; }
+.barras { margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
+.barra .nome { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.4px; opacity: .78; }
+.barra .trilha { margin-top: 12px; height: 20px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; }
+.barra .preenche { height: 100%; border-radius: 999px; background: {{DESTAQUE}}; }
+.barra .pct { margin-top: 10px; font-size: 32px; font-weight: 700; }
+
+.rodape { margin-top: auto; padding-top: 36px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.22); font-size: 24px; font-weight: 500; }
+.rodape .sol { display: flex; gap: 34px; opacity: .85; }
+.rodape .fonte { opacity: .62; font-size: 19px; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="brilho brilho-a"></div>
+<div class="brilho brilho-b"></div>
+<div class="veu"></div>
+
+<div class="folha">
+  <div class="topo">
+    <div class="marca"><span class="selo">{{ICONE_MARCA}}</span>{{PERFIL}}</div>
+    <div class="data">{{DATA}}</div>
+  </div>
+
+  <div class="cidade">{{CIDADE}}</div>
+  <div class="chip">{{ICONE}} {{ROTULO}}</div>
+
+  <div class="temperaturas">
+    <div class="tmax">{{TMAX}}<span>&deg;C</span></div>
+    <div class="tmin-caixa">
+      <div class="rotulo">M&iacute;nima</div>
+      <div class="tmin">{{TMIN}}&deg;C</div>
+    </div>
+  </div>
+
+  <div class="painel">
+    <div class="metricas">
+      <div class="metrica">{{ICONE_CHUVA}}<div><div class="valor">{{CHUVA}}%</div><div class="nome">Chance de chuva</div></div></div>
+      <div class="metrica">{{ICONE_VOLUME}}<div><div class="valor">{{VOLUME}} mm</div><div class="nome">Volume previsto</div></div></div>
+      <div class="metrica">{{ICONE_VENTO}}<div><div class="valor">{{VENTO}} km/h</div><div class="nome">Vento at&eacute;</div></div></div>
+      <div class="metrica">{{ICONE_UMIDADE}}<div><div class="valor">{{UMIDADE}}%</div><div class="nome">Umidade</div></div></div>
+    </div>
+
+    <div class="bloco-chuva">
+      <div class="titulo-bloco">Chance de chuva por per&iacute;odo</div>
+      <div class="barras">{{BARRAS}}</div>
+    </div>
+  </div>
+
+  <div class="rodape">
+    <div class="sol"><span>Nascer {{NASCER}}</span><span>P&ocirc;r {{POR}}</span><span>UV {{UV}}</span></div>
+    <div class="fonte">Dados Open-Meteo</div>
+  </div>
+</div>
+</body>
+</html>
