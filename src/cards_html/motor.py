@@ -24,19 +24,34 @@ TEMPLATE = AQUI / "template.html"
 CAPA = AQUI / "capa.html"
 LISTA = AQUI / "lista.html"
 PERGUNTA = AQUI / "pergunta.html"
+TEXTO = AQUI / "texto.html"
+STORY = AQUI / "story.html"
 SAIDA = RAIZ / "assets" / "output"
 
 LARGURA, ALTURA = 1080, 1350
+LARGURA_STORY, ALTURA_STORY = 1080, 1920
 PERFIL = "@previsaosulfluminense"
 
 # paleta fixa dos slides que nao dependem do weathercode
 PALETAS_TIPO = {
     "manha": ("#0b5cb5", "#5fb4ff", "#ffd60a"),
     "noite": ("#101a33", "#31456f", "#8fb8ff"),
+    "fim_de_semana": ("#00695f", "#2fbfa8", "#ffe14d"),
+    "curiosidade": ("#3f2c78", "#7b5fc4", "#ffd54f"),
+    "alerta": ("#8e1b12", "#e0642a", "#ffe680"),
 }
 
 # indices.resumo_indices devolve sempre a mesma ordem de itens
 ICONES_INDICE = ("casaco", "guarda_chuva", "protetor", "roupa", "vento")
+
+# icone do selo da marca, por tipo de post
+ICONE_MARCA_TIPO = {
+    "manha": "sol",
+    "noite": "lua",
+    "fim_de_semana": "sol_nuvem",
+    "curiosidade": "balao",
+    "alerta": "alerta",
+}
 
 PERIODOS = (
     ("Madrugada", 0, 6),
@@ -47,10 +62,10 @@ PERIODOS = (
 
 # weathercode -> (rotulo, icone, cor_topo, cor_base, destaque)
 CONDICOES = {
-    0: ("Ceu limpo", "sol", "#0b5cb5", "#5fb4ff", "#ffd60a"),
+    0: ("Céu limpo", "sol", "#0b5cb5", "#5fb4ff", "#ffd60a"),
     1: ("Sol com poucas nuvens", "sol", "#0b5cb5", "#5fb4ff", "#ffd60a"),
     2: ("Sol entre nuvens", "sol_nuvem", "#17568f", "#7db0d8", "#ffd60a"),
-    3: ("Ceu nublado", "nuvem", "#2c5673", "#93b4c9", "#eaf6ff"),
+    3: ("Céu nublado", "nuvem", "#2c5673", "#93b4c9", "#eaf6ff"),
     45: ("Neblina", "neblina", "#3b5a6d", "#9db8c6", "#eaf6ff"),
     48: ("Neblina com geada", "neblina", "#3b5a6d", "#9db8c6", "#eaf6ff"),
     51: ("Garoa fraca", "garoa", "#164a72", "#4d89b2", "#8be9ff"),
@@ -66,7 +81,7 @@ CONDICOES = {
     96: ("Tempestade com granizo", "tempestade", "#241a45", "#5a3f8c", "#ffd166"),
     99: ("Tempestade com granizo", "tempestade", "#241a45", "#5a3f8c", "#ffd166"),
 }
-PADRAO = ("Tempo variavel", "nuvem", "#17568f", "#7db0d8", "#ffd60a")
+PADRAO = ("Tempo variável", "nuvem", "#17568f", "#7db0d8", "#ffd60a")
 
 
 def _svg(corpo: str) -> str:
@@ -145,6 +160,10 @@ ICONES = {
         'a5 5 0 0 1-5-5V17a5 5 0 0 1 5-5z"/>'
     ),
     "seta": _svg('<path d="M12 32h36M34 18l14 14-14 14"/>'),
+    "alerta": _svg(
+        '<path d="M32 8L4 56h56L32 8z"/><path d="M32 26v14"/>'
+        '<circle cx="32" cy="48" r="2" fill="currentColor" stroke="none"/>'
+    ),
 }
 
 
@@ -238,7 +257,7 @@ def _base(tipo: str) -> dict:
     return {
         "{{PERFIL}}": PERFIL,
         "{{DATA}}": clima.data_por_extenso(),
-        "{{ICONE_MARCA}}": ICONES["sol"] if tipo == "manha" else ICONES["lua"],
+        "{{ICONE_MARCA}}": ICONES[ICONE_MARCA_TIPO.get(tipo, "sol")],
         "{{COR1}}": cor1,
         "{{COR2}}": cor2,
         "{{DESTAQUE}}": destaque,
@@ -302,7 +321,7 @@ def paginas_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
 
     paginas = []
     paginas.append(("01 capa", montar_capa(
-        "manha", "Sul Fluminense", "Previsao do tempo",
+        "manha", "Sul Fluminense", "Previsão do tempo",
         resumo["data_extenso"], destaque, [c.nome for c in cidades])))
     paginas.append(("02 resumo do dia", montar_lista(
         "manha", "Resumo do dia", "O que levar em conta antes de sair",
@@ -313,11 +332,11 @@ def paginas_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
 
     n = len(cidades) + 3
     paginas.append((f"{n:02d} sol e lua", montar_lista(
-        "manha", "Sol e lua", "Como fica o ceu de hoje",
-        [("nascer", f"Sol nasce as {cidades[0].nascer_sol}", True),
-         ("por", f"Sol se poe as {cidades[0].por_sol}", True),
+        "manha", "Sol e lua", "Como fica o céu de hoje",
+        [("nascer", f"Sol nasce às {cidades[0].nascer_sol}", True),
+         ("por", f"Sol se põe às {cidades[0].por_sol}", True),
          ("lua", f"Fase da lua: {fase_lua}", True),
-         ("protetor", f"Indice UV maximo: {resumo['uv_max']:.0f}", True)])))
+         ("protetor", f"Índice UV máximo: {resumo['uv_max']:.0f}", True)])))
     paginas.append((f"{n + 1:02d} pergunta", montar_pergunta("manha", pergunta)))
     return paginas
 
@@ -328,19 +347,19 @@ def paginas_noite(cidades, resumo, pergunta, fase_lua) -> list:
 
     paginas = []
     paginas.append(("01 capa", montar_capa(
-        "noite", "Sul Fluminense", "Como sera a noite",
+        "noite", "Sul Fluminense", "Como será a noite",
         resumo["data_extenso"],
-        f"Minima de {madrugada:.0f}\u00b0C na madrugada",
+        f"Mínima de {madrugada:.0f}\u00b0C na madrugada",
         [c.nome for c in cidades])))
     for i, c in enumerate(cidades, start=2):
         paginas.append((f"{i:02d} {c.nome}", montar_html(c)))
 
     n = len(cidades) + 2
     paginas.append((f"{n:02d} lua e amanha", montar_lista(
-        "noite", "Lua e amanha", "Antes de dormir",
+        "noite", "Lua e amanhã", "Antes de dormir",
         [("lua", f"Fase da lua: {fase_lua}", True),
-         ("nascer", f"Amanha o sol nasce as {cidades[0].nascer_sol}", True),
-         ("termometro", f"Minima da madrugada: {madrugada:.0f}\u00b0C", True)])))
+         ("nascer", f"Amanhã o sol nasce às {cidades[0].nascer_sol}", True),
+         ("termometro", f"Mínima da madrugada: {madrugada:.0f}\u00b0C", True)])))
     paginas.append((f"{n + 1:02d} pergunta", montar_pergunta("noite", pergunta)))
     return paginas
 
@@ -361,7 +380,9 @@ def montar_carrossel(tipo: str) -> list:
     return paginas_noite(cidades, resumo, pergunta, fase)
 
 
-def renderizar(paginas: list) -> list:
+def _render(itens: list, largura: int = LARGURA,
+            altura: int = ALTURA) -> list[str]:
+    """Renderiza uma lista de (nome_do_arquivo_sem_extensao, html) em JPEG."""
     from playwright.sync_api import sync_playwright
 
     SAIDA.mkdir(parents=True, exist_ok=True)
@@ -369,13 +390,13 @@ def renderizar(paginas: list) -> list:
     with sync_playwright() as p:
         nav = p.chromium.launch(args=["--force-color-profile=srgb", "--hide-scrollbars"])
         pag = nav.new_page(
-            viewport={"width": LARGURA, "height": ALTURA}, device_scale_factor=1
+            viewport={"width": largura, "height": altura}, device_scale_factor=1
         )
-        for nome, html in paginas:
+        for nome, html in itens:
             pag.set_content(html, wait_until="networkidle")
             pag.evaluate("async () => { await document.fonts.ready; return true; }")
             pag.wait_for_timeout(250)
-            destino = SAIDA / f"card_{_slug(nome)}.jpg"
+            destino = SAIDA / f"{nome}.jpg"
             pag.screenshot(path=str(destino), type="jpeg", quality=92)
             print(f"[card] gerado: {destino.relative_to(RAIZ)}")
             gerados.append(str(destino))
@@ -383,10 +404,97 @@ def renderizar(paginas: list) -> list:
     return gerados
 
 
+def renderizar(paginas: list) -> list:
+    """Compatibilidade: recebe (nome_do_slide, html) e grava card_<slug>.jpg."""
+    return _render([(f"card_{_slug(nome)}", html) for nome, html in paginas])
+
+
+# ----------------------- SLIDES DE TEXTO, ALERTA E STORY -----------------------
+
+def montar_texto(tipo: str, chapeu: str, titulo: str, corpo: str,
+                 rodape: str = PERFIL, icone: str = "balao") -> str:
+    """Slide de texto livre: chapeu curto, titulo grande e um bloco de corpo."""
+    valores = _base(tipo)
+    valores["{{CHAPEU}}"] = chapeu
+    valores["{{TITULO}}"] = titulo
+    valores["{{CORPO}}"] = corpo
+    valores["{{ICONE_DESTAQUE}}"] = ICONES.get(icone, ICONES["balao"])
+    valores["{{RODAPE_ESQ}}"] = rodape
+    return _preencher(TEXTO, valores)
+
+
+def montar_story(pergunta: str, opcao_a: str, opcao_b: str,
+                 tipo: str = "manha") -> str:
+    """Story 1080x1920 com a enquete simulada do dia."""
+    valores = _base(tipo if tipo in PALETAS_TIPO else "manha")
+    valores["{{PERGUNTA}}"] = pergunta
+    valores["{{OPCAO_A}}"] = opcao_a
+    valores["{{OPCAO_B}}"] = opcao_b
+    valores["{{ICONE_BALAO}}"] = ICONES["balao"]
+    valores["{{ICONE_CONVITE}}"] = ICONES["seta"]
+    valores["{{RODAPE_ESQ}}"] = PERFIL
+    return _preencher(STORY, valores)
+
+
+# ----------------------- PAGINAS DOS OUTROS CARROSSEIS -----------------------
+
+def paginas_fim_de_semana(cidades, resumo, pergunta) -> list:
+    """Carrossel de quinta: capa + as cinco cidades + pergunta."""
+    tipo = "fim_de_semana"
+    paginas = [("01 capa", montar_capa(
+        tipo, "Sul Fluminense", "Como vai ser o fim de semana",
+        resumo["data_extenso"],
+        f"{resumo['tmin']:.0f}°C a {resumo['tmax']:.0f}°C na região",
+        [c.nome for c in cidades]))]
+    for i, c in enumerate(cidades, start=2):
+        paginas.append((f"{i:02d} {c.nome}", montar_html(c)))
+    n = len(cidades) + 2
+    paginas.append((f"{n:02d} pergunta", montar_pergunta(tipo, pergunta)))
+    return paginas
+
+
+def paginas_curiosidade(item: dict, pergunta: str) -> list:
+    """Carrossel de domingo: afirmacao, veredito, recorte regional e pergunta."""
+    tipo = "curiosidade"
+    titulo = item.get("titulo", "")
+    veredito = (item.get("veredito", "") or "A resposta").capitalize()
+    explicacao = item.get("explicacao", "")
+    regional = item.get("regional", "")
+
+    blocos = [
+        ("capa", montar_texto(
+            tipo, "Mito ou verdade?", titulo,
+            "Arraste para o lado e veja a resposta.",
+            rodape="Arraste para o lado", icone="balao")),
+        ("resposta", montar_texto(
+            tipo, "A resposta é", veredito, explicacao,
+            rodape="Sul Fluminense", icone="proveta")),
+    ]
+    if regional:
+        blocos.append(("aqui na regiao", montar_texto(
+            tipo, "Aqui na região", "Por que isso importa", regional,
+            rodape="Sul Fluminense", icone="sol_nuvem")))
+    blocos.append(("pergunta", montar_pergunta(tipo, pergunta)))
+
+    return [(f"{i:02d} {nome}", html)
+            for i, (nome, html) in enumerate(blocos, start=1)]
+
+
+def pagina_alerta(titulo: str, detalhe: str, cidades_afetadas) -> str:
+    """Card unico de alerta. Aceita o titulo em CAIXA ALTA do alertas.py."""
+    limpo = titulo.replace("ALERTA:", "").strip()
+    if limpo.isupper():
+        limpo = limpo.capitalize()
+    lista = ", ".join(cidades_afetadas)
+    corpo = f"{detalhe}.<br><br><b>Cidades:</b> {lista}"
+    return montar_texto("alerta", "Alerta do tempo", limpo, corpo,
+                        rodape=PERFIL, icone="alerta")
+
+
 # ----------------------- API USADA PELA PRODUCAO -----------------------
 
 def _prefixar(paginas: list, tipo: str) -> list:
-    """Evita que o post da noite sobrescreva os JPEGs do post da manha."""
+    """Evita que um post sobrescreva os JPEGs de outro."""
     return [(f"{tipo} {nome}", html) for nome, html in paginas]
 
 
@@ -400,3 +508,26 @@ def carrossel_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
 def carrossel_noite(cidades, resumo, pergunta, fase_lua) -> list[str]:
     return renderizar(_prefixar(
         paginas_noite(cidades, resumo, pergunta, fase_lua), "noite"))
+
+
+def carrossel_fim_de_semana(cidades, resumo, pergunta) -> list[str]:
+    return renderizar(_prefixar(
+        paginas_fim_de_semana(cidades, resumo, pergunta), "fim de semana"))
+
+
+def carrossel_curiosidade(item: dict, pergunta: str) -> list[str]:
+    return renderizar(_prefixar(
+        paginas_curiosidade(item, pergunta), "curiosidade"))
+
+
+def card_alerta(tipo_alerta: str, titulo: str, detalhe: str,
+                cidades_afetadas) -> str:
+    html = pagina_alerta(titulo, detalhe, cidades_afetadas)
+    return _render([(f"card_alerta_{_slug(tipo_alerta)}", html)])[0]
+
+
+def story(pergunta: str, opcao_a: str, opcao_b: str,
+          tipo: str = "manha") -> str:
+    html = montar_story(pergunta, opcao_a, opcao_b, tipo)
+    return _render([(f"story_{_slug(tipo)}", html)],
+                   largura=LARGURA_STORY, altura=ALTURA_STORY)[0]
