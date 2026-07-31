@@ -131,15 +131,15 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
             afetadas.setdefault("tempestade", []).append(c.nome)
 
     detalhes = {
-        "queda_temperatura": "Queda brusca de temperatura nas proximas horas",
-        "subida_temperatura": "Elevacao brusca de temperatura nas proximas horas",
-        "chuva_forte": "Chuva forte prevista para as proximas 3h",
+        "queda_temperatura": "Queda brusca de temperatura nas próximas horas",
+        "subida_temperatura": "Elevação brusca de temperatura nas próximas horas",
+        "chuva_forte": "Chuva forte prevista para as próximas 3h",
         "vento": "Rajadas de vento acima de 50 km/h previstas",
-        "tempestade": "Risco de tempestade nas proximas horas",
+        "tempestade": "Risco de tempestade nas próximas horas",
     }
     titulos = {
         "queda_temperatura": "ALERTA: QUEDA BRUSCA DE TEMPERATURA",
-        "subida_temperatura": "ALERTA: CALOR CHEGANDO COM FORCA",
+        "subida_temperatura": "ALERTA: CALOR CHEGANDO COM FORÇA",
         "chuva_forte": "ALERTA: CHUVA FORTE A CAMINHO",
         "vento": "ALERTA: RAJADAS DE VENTO",
         "tempestade": "ALERTA: RISCO DE TEMPESTADE",
