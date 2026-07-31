@@ -89,12 +89,12 @@ jobs:
             python -m src.main alertas --dry-run
             copiar
           elif [ "$MODO" = "producao_tudo" ]; then
-            python -m src.main manha --dry-run
-            python -m src.main noite --dry-run
-            python -m src.main fim_semana --dry-run
-            python -m src.main curiosidade --dry-run
-            python -m src.main alertas --dry-run || echo "Sem alerta hoje; seguindo."
-            copiar
+            for m in manha noite fim_semana curiosidade alertas; do
+              echo "::group::$m"
+              python -m src.main "$m" --dry-run || echo "AVISO: o modo $m falhou; seguindo com os outros."
+              copiar
+              echo "::endgroup::"
+            done
           elif [ "$MODO" = "carrossel_manha" ]; then
             python lab/card_html/gerar_card.py --carrossel manha
           elif [ "$MODO" = "carrossel_noite" ]; then
