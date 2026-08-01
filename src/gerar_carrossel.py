@@ -130,14 +130,14 @@ def slide_cidade(tipo: str, cidade, indice: int, extra: str = "") -> str:
     img = _fundo(tipo)
     d = ImageDraw.Draw(img)
     d.text((60, 120), cidade.nome, font=_fonte(64, bold=True), fill=pal["texto"])
-    cond = ICONES_TEMPO.get(cidade.weathercode, "TEMPO VARIAVEL")
+    cond = ICONES_TEMPO.get(cidade.weathercode, "TEMPO VARIÁVEL")
     d.text((60, 220), cond, font=_fonte(40), fill=pal["destaque"])
     d.text((60, 380), f"{cidade.tmin:.0f}C / {cidade.tmax:.0f}C",
            font=_fonte(110, bold=True), fill=pal["texto"])
     linhas = [
         f"Chance de chuva: {cidade.prob_chuva:.0f}%",
         f"Volume esperado: {cidade.precipitacao_mm:.1f} mm",
-        f"Vento ate: {cidade.vento_max:.0f} km/h",
+        f"Vento até: {cidade.vento_max:.0f} km/h",
         f"Umidade: {cidade.umidade:.0f}%",
     ]
     y = 560
@@ -170,9 +170,9 @@ def slide_sol_lua(tipo: str, resumo: dict[str, Any], nascer: str, por: str,
     d.text((60, 120), "SOL E LUA", font=_fonte(60, bold=True), fill=pal["texto"])
     linhas = [
         f"Nascer do sol: {nascer}",
-        f"Por do sol: {por}",
+        f"Pôr do sol: {por}",
         f"Fase da lua: {fase_lua}",
-        f"Indice UV maximo: {resumo.get('uv_max', 0):.0f}",
+        f"Índice UV máximo: {resumo.get('uv_max', 0):.0f}",
     ]
     y = 300
     for l in linhas:
@@ -188,7 +188,7 @@ def slide_pergunta(tipo: str, pergunta: str, perfil: str = "@previsaosulfluminen
     y = 380
     y = _texto_centralizado(d, y, pergunta, _fonte(72, bold=True), pal["texto"])
     y += 60
-    y = _texto_centralizado(d, y, "Responde nos comentarios!", _fonte(50), pal["destaque"])
+    y = _texto_centralizado(d, y, "Responde nos comentários!", _fonte(50), pal["destaque"])
     _texto_centralizado(d, H - 200, perfil, _fonte(40), pal["texto"])
     return _salvar(img, f"{tipo}_pergunta.png")
 
@@ -210,7 +210,7 @@ def _manha_pillow(cidades, resumo, indices_itens, pergunta,
                   fase_lua, recorde=None) -> list[str]:
     slides = []
     destaque = recorde.upper() if recorde else f"{resumo['tmin']:.0f}C a {resumo['tmax']:.0f}C"
-    slides.append(slide_capa("manha", "PREVISAO DO TEMPO",
+    slides.append(slide_capa("manha", "PREVISÃO DO TEMPO",
                              resumo["data_extenso"], destaque))
     slides.append(slide_indices(indices_itens))
     for i, c in enumerate(cidades, start=1):
@@ -223,13 +223,13 @@ def _manha_pillow(cidades, resumo, indices_itens, pergunta,
 
 def _noite_pillow(cidades, resumo, pergunta, fase_lua) -> list[str]:
     slides = []
-    slides.append(slide_capa("noite", "COMO SERA A NOITE",
+    slides.append(slide_capa("noite", "COMO SERÁ A NOITE",
                              resumo["data_extenso"], "SUL FLUMINENSE"))
     for i, c in enumerate(cidades, start=1):
         extra = f"Madrugada: min {c.tmin_madrugada:.0f}C"
         slides.append(slide_cidade("noite", c, i, extra=extra))
-    slides.append(slide_texto_livre("noite", "LUA E AMANHA",
-                                    f"Fase: {fase_lua}. Amanha o sol nasce as "
+    slides.append(slide_texto_livre("noite", "LUA E AMANHÃ",
+                                    f"Fase: {fase_lua}. Amanhã o sol nasce às "
                                     f"{cidades[0].nascer_sol}.", "lua_amanha"))
     slides.append(slide_pergunta("noite", pergunta))
     return slides
@@ -289,3 +289,60 @@ def gerar_carrossel_noite(cidades, resumo, pergunta, fase_lua) -> list[str]:
         print("[cards] motor HTML falhou, caindo para o Pillow:")
         traceback.print_exc()
         return _noite_pillow(cidades, resumo, pergunta, fase_lua)
+
+
+def _fim_de_semana_pillow(cidades, resumo, pergunta) -> list[str]:
+    slides = [slide_capa("fim_de_semana", "COMO VAI SER O FIM DE SEMANA?",
+                         resumo["data_extenso"], "SUL FLUMINENSE")]
+    for i, c in enumerate(cidades, start=1):
+        slides.append(slide_cidade("fim_de_semana", c, i))
+    slides.append(slide_pergunta("fim_de_semana", pergunta))
+    return slides
+
+
+def _curiosidade_pillow(item, pergunta) -> list[str]:
+    corpo = item.get("explicacao", "")
+    if item.get("regional"):
+        corpo = corpo + " " + item["regional"]
+    return [
+        slide_texto_livre("curiosidade", "MITO OU VERDADE?",
+                          item.get("titulo", ""), "capa"),
+        slide_texto_livre("curiosidade", item.get("veredito", ""), corpo,
+                          "resposta"),
+        slide_pergunta("curiosidade", pergunta),
+    ]
+
+
+def gerar_carrossel_fim_de_semana(cidades, resumo, pergunta) -> list[str]:
+    try:
+        from .cards_html import motor
+        return motor.carrossel_fim_de_semana(cidades, resumo, pergunta)
+    except Exception:
+        import traceback
+        print("[cards] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return _fim_de_semana_pillow(cidades, resumo, pergunta)
+
+
+def gerar_carrossel_curiosidade(item, pergunta) -> list[str]:
+    try:
+        from .cards_html import motor
+        return motor.carrossel_curiosidade(item, pergunta)
+    except Exception:
+        import traceback
+        print("[cards] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return _curiosidade_pillow(item, pergunta)
+
+
+def gerar_card_alerta(tipo_alerta: str, titulo: str, detalhe: str,
+                      cidades_afetadas) -> str:
+    """Card de alerta em HTML; se o Chromium falhar, usa o desenho antigo."""
+    try:
+        from .cards_html import motor
+        return motor.card_alerta(tipo_alerta, titulo, detalhe, cidades_afetadas)
+    except Exception:
+        import traceback
+        print("[cards] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return gerar_alerta(tipo_alerta, titulo, detalhe, cidades_afetadas)

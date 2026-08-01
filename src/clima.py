@@ -39,11 +39,11 @@ CIDADES = [
 
 # Dias e meses em portugues (runner do Actions nao tem locale pt_BR)
 DIAS_SEMANA = [
-    "Segunda-feira", "Terca-feira", "Quarta-feira", "Quinta-feira",
-    "Sexta-feira", "Sabado", "Domingo",
+    "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira",
+    "Sexta-feira", "Sábado", "Domingo",
 ]
 MESES = [
-    "", "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+    "", "janeiro", "fevereiro", "março", "abril", "maio", "junho",
     "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
 ]
 

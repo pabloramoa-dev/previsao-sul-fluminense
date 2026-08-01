@@ -111,7 +111,24 @@ def dividir_opcoes(pergunta: str) -> tuple[str, str]:
             b = partes[1].strip().strip(",.").capitalize()
             # remove emojis simples do fim
             return a, b
-    return "Sim", "Nao"
+    return "Sim", "Não"
+
+
+# ----------------------- MOTOR HTML (Chromium) -----------------------
+# O desenho com Pillow acima continua como rede de seguranca: se o Chromium
+# nao subir no runner, o Story sai com o visual antigo em vez de nao sair.
+
+def gerar_story_card(pergunta: str, opcao_a: str, opcao_b: str,
+                     tipo: str = "manha") -> str:
+    """Story em HTML/CSS renderizado pelo Chromium, com fallback no Pillow."""
+    try:
+        from .cards_html import motor
+        return motor.story(pergunta, opcao_a, opcao_b, tipo)
+    except Exception:
+        import traceback
+        print("[story] motor HTML falhou, caindo para o Pillow:")
+        traceback.print_exc()
+        return gerar_story(pergunta, opcao_a, opcao_b, tipo)
 
 
 if __name__ == "__main__":

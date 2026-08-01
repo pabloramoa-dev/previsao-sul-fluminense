@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; }
+  body {
+    font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+    color: #fff;
+    background: linear-gradient(160deg, {{COR1}} 0%, {{COR2}} 100%);
+    position: relative;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  .brilho { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .brilho-a { width: 620px; height: 620px; right: -180px; top: -160px; background: {{DESTAQUE}}; opacity: .26; }
+  .brilho-b { width: 760px; height: 760px; left: -300px; bottom: -320px; background: #fff; opacity: .12; }
+  .veu { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.14) 0%, rgba(0,0,0,0) 32%, rgba(0,0,0,.30) 100%); }
+
+  /* padding generoso no topo e no rodape por causa da interface do Instagram */
+  .folha { position: relative; height: 100%; padding: 260px 84px 240px; display: flex; flex-direction: column; overflow: hidden; }
+
+  .marca { display: flex; align-items: center; gap: 18px; font-weight: 600; font-size: 34px; }
+  .selo { width: 62px; height: 62px; border-radius: 18px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
+  .selo svg { width: 36px; height: 36px; color: {{DESTAQUE}}; }
+
+  .centro { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .balao { width: 104px; height: 104px; color: {{DESTAQUE}}; }
+  .chapeu { margin-top: 34px; font-size: 30px; font-weight: 600; text-transform: uppercase; letter-spacing: 6px; opacity: .82; }
+  .pergunta { margin-top: 28px; font-size: 88px; font-weight: 800; line-height: 1.1; letter-spacing: -2.4px; text-shadow: 0 10px 40px rgba(0,0,0,.3); }
+
+  .opcoes { margin-top: 74px; display: flex; flex-direction: column; gap: 30px; }
+  .opcao { padding: 40px 44px; border-radius: 36px; font-size: 54px; font-weight: 800; text-align: center; letter-spacing: -.5px; }
+  .opcao.a { background: #ffffff; color: #12233d; box-shadow: 0 18px 50px rgba(0,0,0,.22); }
+  .opcao.b { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.42); backdrop-filter: blur(12px); }
+
+  .convite { margin-top: 66px; display: inline-flex; align-self: flex-start; align-items: center; gap: 18px; padding: 24px 42px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); backdrop-filter: blur(10px); font-size: 36px; font-weight: 600; }
+  .convite svg { width: 44px; height: 44px; color: {{DESTAQUE}}; flex: none; }
+
+  .rodape { margin-top: auto; padding-top: 42px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.22); font-size: 28px; font-weight: 500; }
+  .rodape .fonte { opacity: .62; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="brilho brilho-a"></div>
+<div class="brilho brilho-b"></div>
+<div class="veu"></div>
+
+<div class="folha">
+  <div class="marca"><span class="selo">{{ICONE_MARCA}}</span>{{PERFIL}}</div>
+
+  <div class="centro">
+    <span class="balao">{{ICONE_BALAO}}</span>
+    <div class="chapeu">Enquete do dia</div>
+    <div class="pergunta">{{PERGUNTA}}</div>
+
+    <div class="opcoes">
+      <div class="opcao a">{{OPCAO_A}}</div>
+      <div class="opcao b">{{OPCAO_B}}</div>
+    </div>
+
+    <div class="convite">{{ICONE_CONVITE}}Responde no post do feed</div>
+  </div>
+
+  <div class="rodape">
+    <div>{{RODAPE_ESQ}}</div>
+    <div class="fonte">Dados Open-Meteo</div>
+  </div>
+</div>
+</body>
+</html>
