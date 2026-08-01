@@ -28,18 +28,13 @@ on:
           - producao_alertas
           - producao_tudo
           - cidade
-      salvar_preview:
-        description: "Commitar os cards novos em lab/card_html/preview para conferencia"
-        required: false
-        default: false
-        type: boolean
       cidade:
         description: "Cidade do card (use 'todas' para gerar as 5)"
         required: false
         default: "Volta Redonda"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   card:
@@ -112,20 +107,6 @@ jobs:
 
       - name: Listar o que foi gerado
         run: ls -lh lab/card_html/saida/
-
-      - name: Salvar preview no repositorio (so para conferencia visual)
-        if: ${{ inputs.salvar_preview }}
-        run: |
-          mkdir -p lab/card_html/preview
-          cp lab/card_html/saida/card_fim_de_semana_*.jpg lab/card_html/preview/ 2>/dev/null || true
-          cp lab/card_html/saida/card_curiosidade_*.jpg lab/card_html/preview/ 2>/dev/null || true
-          cp lab/card_html/saida/card_alerta_*.jpg lab/card_html/preview/ 2>/dev/null || true
-          cp lab/card_html/saida/story_*.jpg lab/card_html/preview/ 2>/dev/null || true
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lab/card_html/preview
-          git commit -m "chore(preview): cards novos para conferencia visual" || echo "Nada para commitar"
-          git push origin HEAD:${{ github.ref_name }}
 
       - name: Guardar os cards como artifact
         uses: actions/upload-artifact@v4
