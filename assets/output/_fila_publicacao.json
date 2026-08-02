@@ -2,11 +2,22 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_01_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_02_resposta.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_03_aqui_na_regiao.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_04_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_01_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_02_volta_redonda.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_03_barra_mansa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_04_resende.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_05_porto_real.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_06_angra_dos_reis.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_07_lua_e_amanha.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_08_pergunta.jpg"
     ],
-    "caption": "MITO OU VERDADE? Fazer frio significa que não vai chover.\n\nMITO: Frentes frias trazem justamente frio E chuva ao mesmo tempo. Uma coisa não exclui a outra. Frentes frias que sobem pelo litoral chegam direto em Angra.\n\n#sulfluminense #previsaodotempo #curiosidades"
+    "caption": "COMO SERÁ A NOITE NO SUL FLUMINENSE\nDomingo, 2 de agosto de 2026\n\nVolta Redonda: 21C às 21h, mínima de 14C na madrugada\nBarra Mansa: 21C às 21h, mínima de 15C na madrugada\nResende: 18C às 21h, mínima de 15C na madrugada\nPorto Real: 19C às 21h, mínima de 15C na madrugada\nAngra dos Reis: 21C às 21h, mínima de 17C na madrugada\n\nArrasta pro lado pra ver os detalhes da sua cidade!\n\nFim de tarde quente: sorvete ou milk-shake?\nResponde aqui nos comentários!\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
+  },
+  {
+    "tipo": "story",
+    "caminhos": [
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_noite.jpg"
+    ],
+    "caption": ""
   }
 ]
