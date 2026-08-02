@@ -2,23 +2,11 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_01_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_02_resumo_do_dia.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_03_volta_redonda.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_04_barra_mansa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_05_resende.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_06_porto_real.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_07_angra_dos_reis.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_08_sol_e_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_09_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_01_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_02_resposta.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_03_aqui_na_regiao.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_04_pergunta.jpg"
     ],
-    "caption": "☁️ PREVISÃO DO TEMPO -- SUL FLUMINENSE\nDomingo, 2 de agosto de 2026\n\nHoje o dia será de céu nublado, com mínima de 12C e máxima de 29C na região.\n\n🌤️ Volta Redonda: 14C / 29C\n🌤️ Barra Mansa: 14C / 28C\n🌤️ Resende: 12C / 25C\n☀️ Porto Real: 12C / 27C\n☁️ Angra dos Reis: 18C / 27C\n\nArrasta pro lado e vê a previsão completa da sua cidade!\n\nPrefere calor seco ou calor úmido?\nResponde aqui nos comentários!\n\nCompartilha com quem precisa saber e ativa as notificações.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
-  },
-  {
-    "tipo": "story",
-    "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
-    ],
-    "caption": ""
+    "caption": "MITO OU VERDADE? Fazer frio significa que não vai chover.\n\nMITO: Frentes frias trazem justamente frio E chuva ao mesmo tempo. Uma coisa não exclui a outra. Frentes frias que sobem pelo litoral chegam direto em Angra.\n\n#sulfluminense #previsaodotempo #curiosidades"
   }
 ]
