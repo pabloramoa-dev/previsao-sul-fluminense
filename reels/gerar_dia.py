@@ -68,8 +68,13 @@ RESMUNGO = {
     ],
     "chuva": [
         "Chuva o dia todo. Levem guarda-chuva, criaturas.",
-        "Vai chover. Vai molhar. Vai reclamar. Eu avisei.",
-        "Chuva de novo. Meu joelho já tinha avisado ontem.",
+        "Vai chover sem parar. Vai molhar. Vai reclamar. Eu avisei.",
+        "Chuva o dia inteiro de novo. Meu joelho já tinha avisado ontem.",
+    ],
+    "chuva_pontual": [
+        "Uma pancada e passa. Não é o dilúvio, mas leva o guarda-chuva.",
+        "Chuva rápida em algum momento. Depois volta a enrolar.",
+        "Vai pingar uma hora ou outra. Nada de dia inteiro, calma.",
     ],
     "tempestade": [
         "Temporal à vista. Tirem o carro debaixo da árvore.",
@@ -199,7 +204,13 @@ def montar_roteiro(dados):
     add(rnd.choice(ABERTURAS))
 
     cond = principal.get("cond", "sol")
-    add(rnd.choice(RESMUNGO.get(cond, RESMUNGO["sol"])))
+    # "chuva" pelo código WMO diário só diz que chove, não por quanto tempo.
+    # Se são poucas horas de chuva de fato, é pancada pontual — não "dia todo".
+    if cond == "chuva" and principal.get("horas_chuva", 0) <= 3:
+        cond_fala = "chuva_pontual"
+    else:
+        cond_fala = cond
+    add(rnd.choice(RESMUNGO.get(cond_fala, RESMUNGO["sol"])))
 
     add(f"{principal['nome']}: mínima de {num_extenso(principal['min'])} graus, "
         f"máxima de {num_extenso(principal['max'])}.",
