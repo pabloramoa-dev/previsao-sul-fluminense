@@ -97,6 +97,19 @@ def primeira_chuva_da_tarde(precip_horaria, indice_dia, limiar=0.2,
     return None
 
 
+def horas_de_chuva(precip_horaria, indice_dia, limiar=0.2):
+    """Quantas horas do dia têm chuva prevista (precipitação >= limiar mm).
+
+    É o dado que separa "chove o dia todo" de "uma pancada e passou". O código
+    WMO diário só diz SE chove, não POR QUANTO tempo — então sem contar as horas
+    o velho reclamava de "chuva o dia inteiro" mesmo numa garoa de 15 minutos.
+    """
+    if not precip_horaria:
+        return 0
+    fatia = precip_horaria[indice_dia * 24:(indice_dia + 1) * 24]
+    return sum(1 for v in fatia if v is not None and v >= limiar)
+
+
 def montar(cidades, respostas, indice_dia):
     """indice_dia: 0 = hoje, 1 = amanhã."""
     saida, umidades = [], []
@@ -106,12 +119,14 @@ def montar(cidades, respostas, indice_dia):
         tmin = d["temperature_2m_min"][indice_dia]
         chuva = d["precipitation_sum"][indice_dia] or 0.0
         code = d["weather_code"][indice_dia]
+        precip_h = r.get("hourly", {}).get("precipitation")
         saida.append({
             "nome": nome,
             "min": round(tmin),
             "max": round(tmax),
             "cond": condicao(code, tmin),
             "chuva_mm": round(float(chuva), 1),
+            "horas_chuva": horas_de_chuva(precip_h, indice_dia),
             "wmo": code,
         })
         # umidade mínima do dia: 24 horas a partir do dia escolhido
