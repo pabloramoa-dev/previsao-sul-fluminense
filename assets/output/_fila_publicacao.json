@@ -2,23 +2,10 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_01_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_02_resumo_do_dia.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_03_volta_redonda.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_04_barra_mansa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_05_resende.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_06_porto_real.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_07_angra_dos_reis.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_08_sol_e_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_09_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_01_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_02_resposta.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_03_pergunta.jpg"
     ],
-    "caption": "🌧️ PREVISÃO DO TEMPO -- SUL FLUMINENSE\nDomingo, 9 de agosto de 2026\n\nHoje o dia será de chuvisco intenso, com mínima de 16C e máxima de 30C na região.\n\n☁️ Volta Redonda: 19C / 29C\n☁️ Barra Mansa: 19C / 29C\n🌧️ Resende: 16C / 29C - 45%\n🌧️ Porto Real: 16C / 30C\n🌧️ Angra dos Reis: 20C / 26C - 85%\n\nAtenção: chance de chuva de até 85% na região. Vale levar o guarda-chuva!\n\nArrasta pro lado e vê a previsão completa da sua cidade!\n\nPrefere acordar com chuva no telhado ou com sol na janela?\nResponde aqui nos comentários!\n\nCompartilha com quem precisa saber e ativa as notificações.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
-  },
-  {
-    "tipo": "story",
-    "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
-    ],
-    "caption": ""
+    "caption": "MITO OU VERDADE? O céu vermelho ao entardecer indica bom tempo no dia seguinte.\n\nVERDADE: Em geral sim: céu avermelhado ao pôr do sol costuma indicar ar seco e estável chegando pelo oeste.\n\n#sulfluminense #previsaodotempo #curiosidades"
   }
 ]
