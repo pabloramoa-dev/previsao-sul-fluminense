@@ -22,69 +22,6 @@ import traceback
 from . import clima, historico, indices, perguntas, captions
 from . import gerar_carrossel as gc
 from . import gerar_story, publicar
-
-def _fase_lua() -> str:
-    try:
-        from . import astronomia
-        return astronomia.fase_da_lua().get("nome", "indisponivel")
-    except Exception:
-        return "indisponivel"
-
-
-def _coletar():
-    cidades = clima.coletar_todas()
-    resumo = clima.resumo_regional(cidades)
-    return cidades, resumo
-
-
-def rodar_manha(dry_run: bool) -> None:
-    cidades, resumo = _coletar()
-
-    recorde = historico.checar_recorde(
-        cidades[0].nome, cidades[0].tmin, cidades[0].tmax)
-
-    umidade_media = sum(c.umidade for c in cidades) / len(cidades)
-    aqi_regional = max(c.aqi for c in cidades)
-    itens = indices.resumo_indices(resumo, umidade_media, aqi_regional)
-
-    pergunta = perguntas.escolher_pergunta(resumo["tmax"], resumo["weathercode_pred"])
-    fase = _fase_lua()
-
-    caption = captions.caption_manha(
-        resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
-
-    # Fase 6.1/6.6 -- gancho unico do slot (sem repetir os ultimos 10)
-    gancho = ganchos.escolher_gancho("manha", resumo, cidades[0].nome)
-    # Fase 6.7 -- conjunto de hashtags do slot (manha != noite no mesmo dia)
-    condicao = ganchos.condicao_do_dado(resumo)
-    tags = hashtags.escolher_conjunto("manha", condicao)
-    caption = f"{gancho}\n\n{caption}\n\n{tags}"
-
-    # Fase 6.2 -- legenda minima valida
-    travas.validar_caption(caption)
-"""
-main.py - Orquestrador chamado pelos workflows do GitHub Actions.
-
-Uso:
-    python -m src.main manha       [--dry-run]
-    python -m src.main noite       [--dry-run]
-    python -m src.main alertas     [--dry-run]
-    python -m src.main fim_semana  [--dry-run]
-    python -m src.main curiosidade [--dry-run]
-
-Cada modo: coleta dados -> gera imagens -> monta caption -> publica.
-Em qualquer falha, loga claramente e sai com codigo != 0 (nunca post pela metade).
-"""
-
-from __future__ import annotations
-
-import argparse
-import sys
-import traceback
-
-from . import clima, historico, indices, perguntas, captions
-from . import gerar_carrossel as gc
-from . import gerar_story, publicar
 # Fase 6 -- conversao e slot noturno
 from . import ganchos, hashtags, varal, travas, slots_config
 
@@ -261,5 +198,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
