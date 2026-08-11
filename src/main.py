@@ -22,6 +22,8 @@ import traceback
 from . import clima, historico, indices, perguntas, captions
 from . import gerar_carrossel as gc
 from . import gerar_story, publicar
+# Fase 6 -- conversao e slot noturno
+from . import ganchos, hashtags, varal, travas, slots_config
 
 def _fase_lua() -> str:
     try:
@@ -50,15 +52,36 @@ def rodar_manha(dry_run: bool) -> None:
     pergunta = perguntas.escolher_pergunta(resumo["tmax"], resumo["weathercode_pred"])
     fase = _fase_lua()
 
-    slides = gc.gerar_carrossel_manha(cidades, resumo, itens, pergunta, fase, recorde)
     caption = captions.caption_manha(
         resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
 
-    publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
+    # Fase 6.1/6.6 -- gancho unico do slot (sem repetir os ultimos 10)
+    gancho = ganchos.escolher_gancho("manha", resumo, cidades[0].nome)
+    # Fase 6.7 -- conjunto de hashtags do slot (manha != noite no mesmo dia)
+    condicao = ganchos.condicao_do_dado(resumo)
+    tags = hashtags.escolher_conjunto("manha", condicao)
+    caption = f"{gancho}\n\n{caption}\n\n{tags}"
+
+    # Fase 6.2 -- legenda minima valida
+    travas.validar_caption(caption)
+
+    # Fase 6.3 -- nao repetir o mesmo conteudo no mesmo dia/slot
+    if travas.ja_publicado(resumo["data_extenso"], "manha", caption):
+        print("[travas] conteudo ja publicado hoje no slot manha; abortando.")
+        return
+
+    # Fase 6.4 -- carrossel no feed desativado; manha vira story
+    if slots_config.deve_gerar_carrossel_feed("manha"):
+        slides = gc.gerar_carrossel_manha(
+            cidades, resumo, itens, pergunta, fase, recorde)
+        publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
 
     a, b = gerar_story.dividir_opcoes(pergunta)
     story = gerar_story.gerar_story_card(pergunta, a, b, "manha")
     publicar.publicar_story(story, dry_run=dry_run)
+
+    if not dry_run:
+        travas.registrar_publicacao(resumo["data_extenso"], "manha", caption)
 
     historico.registrar_dia(cidades)
 
@@ -67,13 +90,39 @@ def rodar_noite(dry_run: bool) -> None:
     cidades, resumo = _coletar()
     pergunta = perguntas.escolher_pergunta(resumo["tmax"], resumo["weathercode_pred"])
     fase = _fase_lua()
-    slides = gc.gerar_carrossel_noite(cidades, resumo, pergunta, fase)
     caption = captions.caption_noite(
         resumo["data_extenso"], [c.como_dict() for c in cidades], pergunta)
-    publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
+
+    # Fase 6.1/6.6 -- gancho do slot da noite (banco separado da manha)
+    gancho = ganchos.escolher_gancho("noite", resumo, cidades[0].nome)
+    condicao = ganchos.condicao_do_dado(resumo)
+    tags = hashtags.escolher_conjunto("noite", condicao)
+
+    # Fase 6.5 -- alerta condicional do varal (chuva 18h-06h acima do limiar)
+    aviso = varal.alerta_varal([c.como_dict() for c in cidades])
+    partes = [gancho, caption]
+    if aviso:
+        partes.append(aviso)
+    partes.append(tags)
+    caption = "\n\n".join(partes)
+
+    travas.validar_caption(caption)
+
+    if travas.ja_publicado(resumo["data_extenso"], "noite", caption):
+        print("[travas] conteudo ja publicado hoje no slot noite; abortando.")
+        return
+
+    # Fase 6.4 -- sem carrossel no feed; a noite e slot de Reel/story
+    if slots_config.deve_gerar_carrossel_feed("noite"):
+        slides = gc.gerar_carrossel_noite(cidades, resumo, pergunta, fase)
+        publicar.publicar_carrossel(slides, caption, dry_run=dry_run)
+
     a, b = gerar_story.dividir_opcoes(pergunta)
     story = gerar_story.gerar_story_card(pergunta, a, b, "noite")
     publicar.publicar_story(story, dry_run=dry_run)
+
+    if not dry_run:
+        travas.registrar_publicacao(resumo["data_extenso"], "noite", caption)
 
 
 def rodar_alertas(dry_run: bool) -> None:
@@ -135,7 +184,9 @@ def main() -> int:
     args = p.parse_args()
     print(f"=== {args.modo.upper()} | {'DRY-RUN' if args.dry_run else 'REAL'} ===")
     try:
-        MODOS[args.modo](args.dry_run)
+        # Fase 6.3 -- lock de execucao: impede dois jobs publicando o mesmo slot
+        with travas.lock_execucao(args.modo):
+            MODOS[args.modo](args.dry_run)
         print("=== Concluido com sucesso ===")
         return 0
     except Exception as e:
@@ -147,3 +198,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

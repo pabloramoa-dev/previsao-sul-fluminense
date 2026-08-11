@@ -2,7 +2,7 @@ name: Post Manha (06h BRT)
 
 on:
   schedule:
-    - cron: "5 5 * * *"  # dispara cedo; o job espera ate 09:00 UTC (06:00 BRT)
+    - cron: "5 5 * * *"  # dispara cedo; o job espera ate 09:13 UTC (06:13 BRT)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -18,14 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
-      - name: Aguardar o horario alvo (06:00 BRT)
+      - name: Aguardar o horario alvo (06:13 BRT)
         if: github.event_name == 'schedule'
         run: |
-          ALVO=$(date -u -d "today 09:00" +%s)
+          ALVO=$(date -u -d "today 09:13" +%s)
           AGORA=$(date -u +%s)
           if [ "$AGORA" -lt "$ALVO" ]; then
             ESPERA=$((ALVO - AGORA))
-            echo "Runner iniciou cedo. Aguardando $((ESPERA/60)) min ate 09:00 UTC (06:00 BRT)."
+            echo "Runner iniciou cedo. Aguardando $((ESPERA/60)) min ate 09:13 UTC (06:13 BRT)."
             sleep "$ESPERA"
           else
             echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Publicando imediatamente."
