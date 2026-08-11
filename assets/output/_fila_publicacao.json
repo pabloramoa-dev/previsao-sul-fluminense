@@ -1,23 +1,8 @@
 [
   {
-    "tipo": "carrossel",
-    "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_01_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_02_resumo_do_dia.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_03_volta_redonda.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_04_barra_mansa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_05_resende.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_06_porto_real.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_07_angra_dos_reis.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_08_sol_e_lua.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_09_pergunta.jpg"
-    ],
-    "caption": "🌧️💧 PREVISÃO DO TEMPO -- SUL FLUMINENSE\nTerça-feira, 11 de agosto de 2026\n\nHoje o dia será de pancadas isoladas, com mínima de 16C e máxima de 20C na região.\n\n☁️ Volta Redonda: 16C / 20C - 34%\n🌧️ Barra Mansa: 16C / 20C\n🌧️ Resende: 16C / 20C\n🌧️ Porto Real: 16C / 20C\n🌧️💧 Angra dos Reis: 18C / 18C - 100%\n\nAtenção: chance de chuva de até 100% na região. Vale levar o guarda-chuva!\n\nArrasta pro lado e vê a previsão completa da sua cidade!\n\nQuer que o frio acabe ou está bom assim?\nResponde aqui nos comentários!\n\nCompartilha com quem precisa saber e ativa as notificações.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
-  },
-  {
     "tipo": "story",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_noite.jpg"
     ],
     "caption": ""
   }
