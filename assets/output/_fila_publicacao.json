@@ -2,21 +2,22 @@
   {
     "tipo": "carrossel",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_01_capa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_02_volta_redonda.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_03_barra_mansa.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_04_resende.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_05_porto_real.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_06_angra_dos_reis.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_07_lua_e_amanha.jpg",
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_noite_08_pergunta.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_01_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_02_resumo_do_dia.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_03_volta_redonda.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_04_barra_mansa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_05_resende.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_06_porto_real.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_07_angra_dos_reis.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_08_sol_e_lua.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_manha_09_pergunta.jpg"
     ],
-    "caption": "COMO SERÁ A NOITE NO SUL FLUMINENSE\nSegunda-feira, 10 de agosto de 2026\n\nVolta Redonda: 18C às 21h, mínima de 16C na madrugada\nBarra Mansa: 18C às 21h, mínima de 16C na madrugada\nResende: 18C às 21h, mínima de 16C na madrugada\nPorto Real: 18C às 21h, mínima de 17C na madrugada\nAngra dos Reis: 19C às 21h, mínima de 18C na madrugada\n\nPode chover durante a noite (até 100% de chance). Recolhe a roupa do varal!\n\nArrasta pro lado pra ver os detalhes da sua cidade!\n\nVocê está gostando do frio ou prefere o calor?\nResponde aqui nos comentários!\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
+    "caption": "🌧️💧 PREVISÃO DO TEMPO -- SUL FLUMINENSE\nTerça-feira, 11 de agosto de 2026\n\nHoje o dia será de pancadas isoladas, com mínima de 16C e máxima de 20C na região.\n\n☁️ Volta Redonda: 16C / 20C - 34%\n🌧️ Barra Mansa: 16C / 20C\n🌧️ Resende: 16C / 20C\n🌧️ Porto Real: 16C / 20C\n🌧️💧 Angra dos Reis: 18C / 18C - 100%\n\nAtenção: chance de chuva de até 100% na região. Vale levar o guarda-chuva!\n\nArrasta pro lado e vê a previsão completa da sua cidade!\n\nQuer que o frio acabe ou está bom assim?\nResponde aqui nos comentários!\n\nCompartilha com quem precisa saber e ativa as notificações.\n\n#voltaredonda #resende #barramansa #portoreal #angradosreis #sulfluminense #previsaodotempo #climarj #tempoagora"
   },
   {
     "tipo": "story",
     "caminhos": [
-      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_noite.jpg"
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/story_manha.jpg"
     ],
     "caption": ""
   }
