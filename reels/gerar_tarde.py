@@ -21,7 +21,7 @@ import argparse, json, os, random, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
-from gerar_dia import produzir, num_extenso
+from gerar_dia import produzir, num_extenso, LIMIAR_CHUVA_MM, cenario_do_dia
 from historico import carregar as carregar_historico, recorde_do_dia
 
 
@@ -42,9 +42,10 @@ def indice_varal(umidade, chuva_mm, vento_kmh, sol_h, tmax, chuva_hora=None):
     virada limita a nota a 6 e vira aviso explícito, que é onde ela é útil.
     """
     if chuva_hora is None:
-        if chuva_mm >= 5:
+        # mesmos limiares do Ranzinza (LIMIAR_CHUVA_MM, em gerar_dia.py)
+        if chuva_mm >= 5 * LIMIAR_CHUVA_MM:
             return 0, "Hoje não. Vai chover de verdade."
-        if chuva_mm >= 1:
+        if chuva_mm >= LIMIAR_CHUVA_MM:
             return 2, "Eu não arriscaria. Pinga alguma coisa."
 
     n_umid = max(0.0, min(1.0, (85 - umidade) / 50))   # 35% ótimo, 85% péssimo
@@ -134,6 +135,11 @@ def montar_roteiro(d):
 
     # --- 1. GANCHO: a nota do varal, que é o que ela tem de mais útil ---
     chuva_hora = d.get("chuva_hora")     # 1ª hora da tarde com chuva prevista
+    # Coerência com o Ranzinza: chuva_hora marca garoa a partir de 0,2 mm/h. Se
+    # o dia inteiro não junta LIMIAR_CHUVA_MM, ele nega chuva às 6h e ela não
+    # pode mandar recolher o varal às 11h20 do mesmo dia.
+    if (cid.get("chuva_mm", 0) or 0) < LIMIAR_CHUVA_MM:
+        chuva_hora = None
     nota, frase = indice_varal(d["umidade_min"], cid.get("chuva_mm", 0),
                                d.get("vento_kmh", 12), d.get("sol_h", 7),
                                cid["max"], chuva_hora)
@@ -175,7 +181,8 @@ def montar_roteiro(d):
             f"{h['valor']} em {h['ano']}",
             tipo="neste_dia", valor=h["valor"], ano=h["ano"])
 
-    chovendo = chuva_hora is not None or cid.get("chuva_mm", 0) >= 1
+    chovendo = (chuva_hora is not None
+                or (cid.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM)
     add(rnd.choice(FECHOS_CHUVA if chovendo else FECHOS), tipo="fecho")
     add(rnd.choice(CTA), tipo="cta", chamada="TOCA NO SEGUIR")
     return batidas, nota
@@ -235,7 +242,7 @@ def main():
     vento_visual = 0.4 + 1.2 * (nota / 10)
 
     produzir(batidas, a.saida,
-             cenario=d["cidades"][0].get("cond", "sol"),
+             cenario=cenario_do_dia(d["cidades"][0]),
              personagem="maria", cenario_tipo="quintal",
              quality=a.quality, voz="pf_dora", pitch=0.94,
              extra={"data": d["data"], "vento_visual": round(vento_visual, 2)})
