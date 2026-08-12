@@ -115,6 +115,28 @@ GANCHO_CHUVA = ["{v} milímetros de chuva hoje.", "Vem chuva. {v} milímetros."]
 GANCHO_SECO = ["Umidade em {u} por cento. Isso é deserto."]
 
 
+# Um dia só é "de chuva" acima deste acumulado. O código WMO marca "chuva" até
+# numa garoa de 0,2 mm — e era daí que vinha a contradição do roteiro: a batida
+# do resmungo olhava só o código (prometia chuva) e a batida final olhava só o
+# acumulado (negava a chuva). Agora as duas leem o MESMO limiar.
+LIMIAR_CHUVA_MM = 1.0
+
+
+def chove_de_verdade(cidade):
+    """O dia é de chuva nesta cidade? Código WMO e acumulado precisam concordar."""
+    return (cidade.get("cond") in ("chuva", "tempestade")
+            and (cidade.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM)
+
+
+def cenario_do_dia(cidade):
+    """Cenário visual pela MESMA regra da fala: nada de chuva animada na tela
+    enquanto a narração diz que não chove."""
+    cond = cidade.get("cond", "sol")
+    if cond in ("chuva", "tempestade") and not chove_de_verdade(cidade):
+        return "nublado"
+    return cond
+
+
 def escolher_gancho(cid, umidade, rnd):
     """Devolve (fala, numero_grande, subtitulo, cor) do gancho do dia.
 
@@ -206,7 +228,11 @@ def montar_roteiro(dados):
     cond = principal.get("cond", "sol")
     # "chuva" pelo código WMO diário só diz que chove, não por quanto tempo.
     # Se são poucas horas de chuva de fato, é pancada pontual — não "dia todo".
-    if cond == "chuva" and principal.get("horas_chuva", 0) <= 3:
+    if cond in ("chuva", "tempestade") and not chove_de_verdade(principal):
+        # garoa que nem junta LIMIAR_CHUVA_MM: não promete chuva nenhuma,
+        # senão a batida sem_chuva desmente o velho no mesmo vídeo.
+        cond_fala = "nublado"
+    elif cond == "chuva" and principal.get("horas_chuva", 0) <= 3:
         cond_fala = "chuva_pontual"
     else:
         cond_fala = cond
@@ -241,7 +267,9 @@ def montar_roteiro(dados):
             "Umidade despencando. Bebe água, criatura.",
             tipo="umidade", umidade=u, acao="beber")
 
-    if all(c.get("chuva_mm", 0) < 1 for c in cid):
+    # mesma regra do resmungo (ver chove_de_verdade): ou o vídeo inteiro
+    # promete chuva, ou o vídeo inteiro nega. Nunca os dois.
+    if not any(chove_de_verdade(c) for c in cid):
         add(rnd.choice(SEM_CHUVA), tipo="sem_chuva")
     else:
         pico = max(cid, key=lambda c: c.get("chuva_mm", 0))
@@ -326,7 +354,7 @@ def gerar(dados, saida, quality="m"):
     for b in batidas:
         print(f'     [{b["tipo"]:13s}] {b["fala"]}')
     return produzir(batidas, saida,
-                    cenario=dados["cidades"][0].get("cond", "sol"),
+                    cenario=cenario_do_dia(dados["cidades"][0]),
                     calor=max(c["max"] for c in dados["cidades"]) >= 31,
                     personagem="ranzinza", cenario_tipo="varanda",
                     quality=quality, voz="pm_alex", pitch=0.88,
