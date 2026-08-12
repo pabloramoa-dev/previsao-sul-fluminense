@@ -667,9 +667,9 @@ def montar_roteiro(dados):
             "Umidade despencando. Bebe água, criatura.",
             tipo="umidade", umidade=u, acao="beber")
 
-    # mesmo limiar do resmungo (ver LIMIAR_CHUVA_MM): ou o vídeo inteiro
+    # mesma regra do resmungo (ver chove_de_verdade): ou o vídeo inteiro
     # promete chuva, ou o vídeo inteiro nega. Nunca os dois.
-    if not any((c.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM for c in cid):
+    if not any(chove_de_verdade(c) for c in cid):
         add(rnd.choice(SEM_CHUVA), tipo="sem_chuva")
     else:
         pico = max(cid, key=lambda c: c.get("chuva_mm", 0))
