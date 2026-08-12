@@ -497,11 +497,37 @@ SEM_CHUVA = [
 
 # refina a condição bruta usando os números do dia. Limiares COMPARTILHADOS
 # com gerar_tarde.py: se mudar aqui, mude lá, senão os personagens divergem.
+# Um dia só é "de chuva" acima deste acumulado. O código WMO marca "chuva" até
+# numa garoa de 0,2 mm — e era daí que vinha a contradição do roteiro: a batida
+# do resmungo olhava só o código (prometia chuva) e a batida final olhava só o
+# acumulado (negava a chuva). Agora as duas leem o MESMO limiar.
+LIMIAR_CHUVA_MM = 1.0
+
+
+def chove_de_verdade(cidade):
+    """O dia é de chuva nesta cidade? Código WMO e acumulado precisam concordar."""
+    return (cidade.get("cond") in ("chuva", "tempestade")
+            and (cidade.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM)
+
+
+def cenario_do_dia(cidade):
+    """Cenário visual pela MESMA regra da fala: nada de chuva animada na tela
+    enquanto a narração diz que não chove."""
+    cond = cidade.get("cond", "sol")
+    if cond in ("chuva", "tempestade") and not chove_de_verdade(cidade):
+        return "nublado"
+    return cond
+
+
 def refinar_cond(cidade, umidade_min):
     """Deriva calor/abafado/ameno a partir da condição bruta + temperatura +
     umidade. Mantém sol/nublado/chuva/tempestade/frio quando fazem sentido."""
     cond = cidade.get("cond", "sol")
     mx = cidade.get("max", 0)
+    # garoa de meio milímetro não é dia de chuva: vira nublado e o velho
+    # reclama de céu fechado em vez de prometer temporal.
+    if cond in ("chuva", "tempestade") and not chove_de_verdade(cidade):
+        cond = "nublado"
     if cond in ("chuva", "tempestade", "frio"):
         return cond
     if mx >= 32:
@@ -641,7 +667,9 @@ def montar_roteiro(dados):
             "Umidade despencando. Bebe água, criatura.",
             tipo="umidade", umidade=u, acao="beber")
 
-    if all(c.get("chuva_mm", 0) < 1 for c in cid):
+    # mesmo limiar do resmungo (ver LIMIAR_CHUVA_MM): ou o vídeo inteiro
+    # promete chuva, ou o vídeo inteiro nega. Nunca os dois.
+    if not any((c.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM for c in cid):
         add(rnd.choice(SEM_CHUVA), tipo="sem_chuva")
     else:
         pico = max(cid, key=lambda c: c.get("chuva_mm", 0))
@@ -726,7 +754,7 @@ def gerar(dados, saida, quality="m"):
     for b in batidas:
         print(f'     [{b["tipo"]:13s}] {b["fala"]}')
     return produzir(batidas, saida,
-                    cenario=dados["cidades"][0].get("cond", "sol"),
+                    cenario=cenario_do_dia(dados["cidades"][0]),
                     calor=max(c["max"] for c in dados["cidades"]) >= 31,
                     personagem="ranzinza", cenario_tipo="varanda",
                     quality=quality, voz="pm_alex", pitch=0.88,
