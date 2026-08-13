@@ -1,11 +1,15 @@
-name: Reels diários — Ranzinza (manhã) e Dona Maria (meio-dia)
+name: Reels diários — Ranzinza (manhã) e Dona Maria (18h)
 
 permissions:
   contents: write
 
 # HORÁRIOS
-#   Ranzinza    -> alvo 09:10 UTC (06:10 BRT)
-#   Dona Maria  -> alvo 14:20 UTC (11:20 BRT)
+#   Ranzinza    -> alvo 09:10 UTC (06:10 BRT) — o tempo de HOJE
+#   Dona Maria  -> alvo 21:00 UTC (18:00 BRT) — o tempo de AMANHÃ
+#
+# A divisão é por DIA, não só por horário: ele fala do dia que começou, ela do
+# dia que vem. É o que impede os dois Reels de darem números diferentes pro
+# mesmo dia no mesmo perfil.
 #
 # O cron dispara ~4h ANTES do alvo e o job espera até a hora certa. Isso existe
 # porque agendamento por `schedule` no GitHub entra numa fila compartilhada e
@@ -18,18 +22,16 @@ permissions:
 
 on:
   # ---------------------------------------------------------------------------
-  # AGENDAMENTO DESLIGADO DE PROPOSITO.
+  # AGENDAMENTO LIGADO. Os dois Reels saem sozinhos e publicam no Instagram.
   #
-  # Este sistema nunca rodou em ambiente real. Enquanto estas duas linhas
-  # estiverem comentadas, o workflow SO roda pelo botao "Run workflow" — nada
-  # e publicado sem voce mandar.
-  #
-  # PARA LIGAR, depois de conferir o video e fazer uma publicacao manual
-  # bem-sucedida: apague o "# " do inicio das duas linhas de cron abaixo.
+  # PARA DESLIGAR sem mexer em mais nada: comente as duas linhas de cron abaixo
+  # (coloque "# " na frente). Com elas comentadas o workflow so roda pelo botao
+  # "Run workflow", e la o "publicar" vem desmarcado por padrao — o video sai
+  # como artifact e nada vai pro perfil.
   # ---------------------------------------------------------------------------
   schedule:
     - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
-    - cron: "20 10 * * *"     # dispara cedo; o job espera ate 14:20 UTC (11:20 BRT) — Dona Maria
+    - cron: "0 17 * * *"      # dispara cedo; o job espera ate 21:00 UTC (18:00 BRT) — Dona Maria
   workflow_dispatch:
     inputs:
       personagem:
@@ -115,17 +117,6 @@ jobs:
       - name: Baixar previsão do Open-Meteo
         run: python coletar_tempo.py --saida dia.json
 
-      # a tabela de recordes é construída uma vez e fica no cache: o passado
-      # não muda, e baixar 65 anos de série todo dia seria desperdício
-      - name: Cache da tabela histórica
-        uses: actions/cache@v4
-        with:
-          path: reels/historico.json
-          key: historico-v1
-
-      - name: Construir a tabela histórica (só na 1ª vez)
-        run: test -f historico.json || python historico.py --construir
-
       - name: Gerar o Reel da manhã (Seu Ranzinza)
         run: python gerar_dia.py --dados dia.json --saida REEL.mp4 --quality m
 
@@ -177,12 +168,12 @@ jobs:
             Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   # ------------------------------------------------------------------
-  # Dona Maria — meio-dia. Job separado porque roda em outro horário e
-  # pode falhar sozinho sem derrubar o da manhã.
+  # Dona Maria — 18h, com a previsão de AMANHÃ. Job separado porque roda em
+  # outro horário e pode falhar sozinho sem derrubar o da manhã.
   # ------------------------------------------------------------------
   tarde:
     if: >-
-      (github.event_name == 'schedule' && github.event.schedule == '20 10 * * *') ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 17 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.personagem == 'maria')
     runs-on: ubuntu-latest
     timeout-minutes: 330
@@ -193,14 +184,14 @@ jobs:
         working-directory: reels
 
     steps:
-      - name: Aguardar o horário alvo (11:20 BRT)
+      - name: Aguardar o horário alvo (18:00 BRT)
         if: github.event_name == 'schedule'
         working-directory: .
         run: |
-          ALVO=$(date -u -d "today 14:20" +%s)
+          ALVO=$(date -u -d "today 21:00" +%s)
           AGORA=$(date -u +%s)
           if [ "$AGORA" -lt "$ALVO" ]; then
-            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min até 14:20 UTC."
+            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min até 21:00 UTC."
             sleep $((ALVO - AGORA))
           else
             echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APÓS o alvo. Seguindo imediatamente."
@@ -219,10 +210,6 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('reels/requirements.txt') }}
-      - uses: actions/cache@v4
-        with:
-          path: reels/historico.json
-          key: historico-v1
 
       - name: Dependências de sistema
         run: |
@@ -239,13 +226,14 @@ jobs:
       - name: Dependências Python
         run: pip install -r requirements.txt
 
-      - name: Previsão + tabela histórica
-        run: |
-          python coletar_tempo.py --saida dia.json
-          test -f historico.json || python historico.py --construir
+      # --quando amanha: o Reel das 18h é sobre o DIA SEGUINTE. Arquivo com
+      # outro nome de propósito, pra nunca ser confundido com o dia.json do
+      # Ranzinza (que é sempre o dia de hoje).
+      - name: Baixar a previsão de AMANHÃ
+        run: python coletar_tempo.py --quando amanha --saida amanha.json
 
-      - name: Gerar o Reel da tarde (Dona Maria)
-        run: python gerar_tarde.py --dados dia.json --saida TARDE.mp4 --quality m
+      - name: Gerar o Reel das 18h (Dona Maria)
+        run: python gerar_tarde.py --dados amanha.json --saida TARDE.mp4 --quality m
 
       - name: Guardar o vídeo como artifact
         if: always()
@@ -272,7 +260,9 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           VIDEO_URL: ${{ steps.upload.outputs.url }}
-        run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json
+        run: |
+          python postar_reel.py --video "$VIDEO_URL" --dados amanha.json \
+            --voz maria --quando amanha
 
       - name: Avisar falha por e-mail
         if: failure()
@@ -287,6 +277,6 @@ jobs:
           to: pablo.ramoa@gmail.com
           from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
           body: |
-            O Reel do meio-dia (Dona Maria) falhou e NAO foi publicado.
+            O Reel das 18h (Dona Maria, previsao de amanha) falhou e NAO foi publicado.
 
             Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
