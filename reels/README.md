@@ -1,11 +1,12 @@
 # Seu Ranzinza & Dona Maria — Reels diários do @previsaosulfluminense
 
-Dois personagens animados, dois horários:
+Dois personagens animados, dois horários — e, principalmente, **dois dias**:
 
-- **Seu Ranzinza (manhã)** — a previsão do tempo, reclamando de tudo. Varanda.
-- **Dona Maria (meio-dia)** — o bloco prático: índice de varal, sensação
-  térmica, UV e "neste dia". Quintal com varal. Ela cita o velho de propósito —
-  quem viu um vídeo quer ver o outro, e é a retenção mais barata do projeto.
+- **Seu Ranzinza (06:10)** — a previsão de **hoje**, reclamando de tudo. Varanda.
+- **Dona Maria (18:00)** — a previsão de **amanhã**, pra dar tempo de se
+  preparar: mínima e máxima, o que separar hoje à noite, sensação térmica e UV.
+  Quintal com varal, ao entardecer. Ela cita o velho de propósito — quem viu um
+  vídeo quer ver o outro, e é a retenção mais barata do projeto.
 
 Tudo desenhado por código (Manim) e narrado por voz neural local (Kokoro):
 **custo zero de API**, personagem sempre idêntico, sem IA de imagem.
@@ -13,12 +14,18 @@ Tudo desenhado por código (Manim) e narrado por voz neural local (Kokoro):
 ## Como roda
 
 ```
-coletar_tempo.py     Open-Meteo  ->  dia.json
-gerar_dia.py         dia.json    ->  roteiro -> voz -> lip sync -> MP4 9:16
-postar_reel.py       MP4 público ->  Reels no Instagram
+06:10  coletar_tempo.py                  ->  dia.json      (hoje)
+       gerar_dia.py    dia.json          ->  roteiro -> voz -> lip sync -> MP4 9:16
+       postar_reel.py  MP4 público       ->  Reels no Instagram
+
+18:00  coletar_tempo.py --quando amanha  ->  amanha.json   (amanhã)
+       gerar_tarde.py  amanha.json       ->  ... -> MP4 9:16
+       postar_reel.py  --voz maria --quando amanha
 ```
 
-O `.github/workflows/ranzinza.yml` encadeia os três todo dia às 06:10 (Brasília).
+O `.github/workflows/ranzinza.yml` encadeia os três às 06:10 (Ranzinza, com
+`dia.json`) e de novo às 18:00 (Dona Maria, com `amanha.json`, de
+`coletar_tempo.py --quando amanha`). Horários de Brasília.
 
 ## Arquivos
 
@@ -27,11 +34,11 @@ O `.github/workflows/ranzinza.yml` encadeia os três todo dia às 06:10 (Brasíl
 | `previsao_lib.py` | O personagem, os cenários por condição de tempo, chuva animada, cartões e a trilha temporal |
 | `piloto.py` | A cena Manim. **Orientada a dados** — lê `segs.json` + `conteudo.json`, não tem nada do dia escrito dentro |
 | `gerar_dia.py` | Máquina de resmungo + `produzir()`, o pipeline compartilhado pelos dois vídeos |
-| `gerar_tarde.py` | Bloco da Dona Maria: índice de varal, sensação térmica, UV, "neste dia" |
+| `gerar_tarde.py` | Bloco da Dona Maria: previsão de amanhã, o que separar, sensação térmica, UV |
 | `lipsync_amplitude.py` | Lip sync pela energia do áudio, no mesmo formato JSON do Rhubarb |
 | `coletar_tempo.py` | Busca a previsão das 10 cidades numa chamada só, incluindo UV, vento, horas de sol, sensação térmica e a hora da virada da chuva |
-| `historico.py` | Constrói (1x) a tabela de recordes "neste dia" e consulta offline depois |
-| `postar_reel.py` | Publica na Graph API (container → espera processar → publica) |
+| `postar_reel.py` | Publica na Graph API (container → espera processar → publica). `--voz` e `--quando` mudam a legenda |
+| `historico.py` | Tabela de recordes "neste dia". **Fora do pipeline** desde que o bloco saiu do roteiro dela; fica como ferramenta avulsa |
 
 ## Configuração
 
@@ -45,8 +52,10 @@ Dois secrets no repositório (Settings → Secrets → Actions):
 ```bash
 python gerar_dia.py --demo --saida manha.mp4          # Ranzinza, dados de exemplo
 python gerar_tarde.py --demo --saida tarde.mp4        # Dona Maria, dados de exemplo
-python coletar_tempo.py --saida dia.json              # previsão de verdade
-python postar_reel.py --video URL --dados dia.json --dry-run   # só mostra a legenda
+python gerar_tarde.py --demo-chuva --so-roteiro       # só as falas, sem renderizar
+python coletar_tempo.py --saida dia.json                    # hoje  (Ranzinza)
+python coletar_tempo.py --quando amanha --saida amanha.json # amanhã (Dona Maria)
+python postar_reel.py --video URL --dados amanha.json --voz maria --quando amanha --dry-run
 ```
 
 ## Duas escolhas técnicas que valem lembrar
@@ -82,25 +91,63 @@ cerca de 150 min/mês. Repositório público tem Actions ilimitado.
 4. **Câmera** — push-in nos primeiros 2s, deriva lenta depois, volta ao
    enquadramento inicial pro loop fechar.
 
-## Índice de varal
+## Horários — e a divisão de dias
 
-Não existe índice oficial. É uma composição própria de umidade (35%), vento
-(25%), horas de sol (28%) e temperatura (12%), com a chuva anulando tudo. O
-balanço das roupas no varal ao fundo escala com a nota — o cenário mostra o que
-ela está dizendo.
+| | horário | quem | fala do dia | dados | job |
+|---|---|---|---|---|---|
+| manhã | 06:10 | Seu Ranzinza | **hoje** | `dia.json` | `reel` |
+| fim de tarde | 18:00 | Dona Maria | **amanhã** | `amanha.json` | `tarde` |
+
+Os dois jobs são independentes: se o das 18h falhar, o da manhã do dia seguinte
+roda normalmente.
+
+As 18h existem por um motivo: é a hora em que dá pra fazer alguma coisa com a
+informação — separar o casaco, deixar o guarda-chuva na porta, encher a garrafa.
+Uma previsão do dia seguinte às 11h da manhã não muda o comportamento de
+ninguém.
+
+## Como os dois não se contradizem
+
+Os dois vídeos vão pro mesmo perfil com poucas horas de diferença, então a
+coerência entre eles é requisito, não detalhe. Quatro regras sustentam isso:
+
+1. **Cada um tem o seu dia.** O velho só fala de hoje, ela só fala de amanhã.
+   Por isso a linha dele "Chuva? Nenhuma, nem hoje nem amanhã" foi trocada: era
+   a única fala em que ele opinava sobre o dia dela — com dados 12h mais velhos.
+2. **Mesmos limiares.** Ela importa `LIMIAR_CHUVA_MM` e `chove_de_verdade()` do
+   `gerar_dia.py`. "Chove" quer dizer a mesma coisa nos dois roteiros.
+3. **Ela não afirma, ela adianta.** O fecho dela sempre hedgeia e passa o bastão
+   ("é o que está previsto até agora; amanhã cedo o velho confere"). Previsão de
+   D+1 muda mesmo — e quando muda, o par continua fazendo sentido: ele é a
+   confirmação, não a contradição.
+4. **O cenário dela não é o tempo de amanhã.** O quintal é sempre de
+   entardecer, porque é a hora em que ela está falando. O tempo de amanhã vive
+   nos cards. Sem isso, um dia de chuva colocaria chuva caindo em cima dela às
+   18h de um dia seco — e é por isso também que ela não usa mais guarda-chuva.
+
+## O bloco útil dela: o que separar
+
+Substituiu o índice de varal, que respondia "dá pra estender AGORA?" — pergunta
+do dia de hoje, que não cabe mais num vídeo sobre amanhã. A pergunta das 18h é
+"o que eu deixo pronto?", e a resposta é um cartaz só, escolhido por prioridade
+do que dói mais esquecer: **guarda-chuva** (chove amanhã em alguma cidade) >
+**casaco** (mínima ≤ 13° na cidade mais fria) > **protetor** (UV ≥ 8) >
+**garrafa de água** (umidade ≤ 30%) > dia tranquilo.
+
+A varredura é em TODAS as cidades, não só na principal: quem mora em Resende
+passa frio numa manhã em que Volta Redonda está amena, e errar pra mais aqui
+custa muito menos que deixar alguém no ponto de ônibus sem agasalho.
+
+O bloco de UV não entra em dia de chuva — "leve guarda-chuva" seguido de "passe
+protetor e chapéu" no mesmo vídeo é a contradição mais fácil de cometer aqui.
 
 
-## Dona Maria em dia de chuva
+## Guarda-chuva — só o Seu Ranzinza
 
-O caso traiçoeiro do varal não é o dia de temporal — é a manhã seca com chuva
-chegando às 15h. O índice sozinho diria "pode estender" e a roupa tomaria chuva.
-Por isso `chuva_hora` (primeira hora da tarde com chuva prevista) limita a nota
-a 6 e dispara a batida `recolher`, com cartaz vermelho e o horário.
-
-
-## Guarda-chuva
-
-Três coisas que precisaram de ajuste e valem lembrar se mexer nele:
+A Dona Maria não usa mais: o cenário dela é o entardecer de hoje, e a chuva de
+que ela fala é a de amanhã, então não há água caindo pra ela se proteger
+(`vestir(..., com_guarda_chuva=False)`). No velho ele continua, e três coisas
+valem lembrar se mexer nele:
 
 - **Raio 2.05** — precisa ultrapassar a silhueta dos dois lados (corpo ~2.7 a
   3.0 de largura), senão lê como chapéu e a chuva passa rente ao rosto.
@@ -110,42 +157,8 @@ Três coisas que precisaram de ajuste e valem lembrar se mexer nele:
   da cúpula, inclusive pelo centro: caíam no rosto do personagem e pareciam
   suor. Água de guarda-chuva escorre pela borda.
 
-O personagem é abaixado automaticamente em dia de chuva, só o necessário pro
-domo não passar de `TETO_CENA` — o Ranzinza desce 0.76, a Dona Maria não precisa
-descer (ela já fica mais baixa no quadro).
-
-
-## "Neste dia" — a tabela histórica
-
-A API de arquivo do Open-Meteo tem série desde 1940. Baixar isso todo dia seria
-desperdício — o passado não muda. Por isso:
-
-```bash
-python historico.py --construir        # 1x, gera historico.json (~60 KB)
-python historico.py --consultar 07-29  # confere
-```
-
-O workflow guarda o arquivo em cache e só reconstrói se sumir. O
-`gerar_tarde.py` consulta offline; se o arquivo não existir, a batida
-simplesmente não entra e o vídeo sai um pouco mais curto.
-
-**Qual recorde contar:** comparar "distância até cada recorde" não funciona. Num
-dia de 12°/27° o número diz que estamos mais perto do recorde de calor (35°) que
-do de frio (2°) — mas quem mora aqui viveu uma manhã fria. Mínima e máxima não
-são grandezas comparáveis assim. A regra é a que uma pessoa usaria: mínima ≤ 14
-conta o frio, máxima ≥ 31 conta o calor, e dia morno segue a estação (maio a
-setembro é a seca fria daqui).
-
-## Horários
-
-| | horário | quem | job |
-|---|---|---|---|
-| manhã | 06:10 | Seu Ranzinza | `reel` |
-| meio-dia | 11:20 | Dona Maria | `tarde` |
-
-Os dois jobs são independentes: se o da tarde falhar, o da manhã do dia seguinte
-roda normalmente.
-
+O personagem é abaixado automaticamente o necessário pro domo não passar de
+`TETO_CENA` — o Ranzinza desce 0.76.
 
 ## CTA de seguir
 
