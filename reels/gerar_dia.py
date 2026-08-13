@@ -21,6 +21,12 @@ Formato do dia.json (o que o Open-Meteo devolve, já resumido):
 O gerador de falas é uma MÁQUINA DE RESMUNGO: cada condição tem várias frases e
 ele sorteia usando a data como semente. Assim o texto varia todo dia, mas é
 reproduzível (rodar de novo no mesmo dia dá o mesmo vídeo).
+
+DIVISÃO DE DIAS ENTRE OS DOIS PERSONAGENS (regra do perfil):
+    Seu Ranzinza, 06:10 -> o dia de HOJE
+    Dona Maria,   18:00 -> o dia de AMANHÃ  (gerar_tarde.py)
+Nenhuma fala do velho pode afirmar coisa nenhuma sobre amanhã: a previsão do dia
+seguinte é dela, feita 12 horas depois e com dados mais novos.
 """
 import argparse, json, os, random, subprocess, sys, datetime
 
@@ -100,8 +106,12 @@ UMIDADE = [
     "{u} por cento de umidade. Bebam água, não me façam repetir.",
 ]
 
+# ATENÇÃO: o velho só fala do dia de HOJE. A previsão de amanhã é da Dona Maria,
+# no Reel das 18h — e ela usa dados baixados 12h depois destes. A primeira frase
+# daqui era "Nem hoje, nem amanhã", que é exatamente o palpite que ela desmentia
+# à noite quando a previsão virava. Nenhuma fala dele promete nada sobre amanhã.
 SEM_CHUVA = [
-    "Chuva? Nenhuma. Nem hoje, nem amanhã.",
+    "Chuva? Nenhuma. Hoje não cai uma gota.",
     "De chuva, nada. Continua tudo seco.",
     "Chuva nem pensar. Poeira até o teto.",
 ]
@@ -168,6 +178,25 @@ def escolher_gancho(cid, umidade, rnd):
             f"{c['max']}°", c["nome"].upper(), "normal")
 
 
+def maiusculizar(t):
+    """Primeira letra da frase E depois de cada ponto.
+
+    Os templates repetem o número ('{t} graus. {t}!') e a 2ª ocorrência vinha
+    minúscula. Vive aqui, no nível do módulo, porque o roteiro da Dona Maria
+    (gerar_tarde.py) tem o mesmo problema e precisa da mesma regra.
+    """
+    if not t:
+        return t
+    saida, novo = [], True
+    for ch in t:
+        saida.append(ch.upper() if novo and ch.isalpha() else ch)
+        if ch.isalpha():
+            novo = False
+        elif ch in ".!?":
+            novo = True
+    return "".join(saida)
+
+
 def num_extenso(n):
     """Kokoro lê melhor número por extenso em PT-BR."""
     u = ["zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito",
@@ -199,20 +228,6 @@ def montar_roteiro(dados):
     cid = dados["cidades"]
     principal = cid[0]
     batidas = []
-
-    def maiusculizar(t):
-        """Primeira letra da frase E depois de cada ponto — os templates
-        repetem o número ('{t} graus. {t}!') e a 2ª ocorrência vinha minúscula."""
-        if not t:
-            return t
-        saida, novo = [], True
-        for ch in t:
-            saida.append(ch.upper() if novo and ch.isalpha() else ch)
-            if ch.isalpha():
-                novo = False
-            elif ch in ".!?":
-                novo = True
-        return "".join(saida)
 
     def add(fala, legenda=None, tipo="nenhum", **dd):
         fala = maiusculizar(fala)
