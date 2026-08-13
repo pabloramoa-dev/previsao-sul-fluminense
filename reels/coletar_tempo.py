@@ -7,8 +7,8 @@ Open-Meteo é grátis e não pede chave. Uma única chamada traz todas as cidade
 (a API aceita listas de latitude/longitude e devolve um array na mesma ordem).
 
 Uso:
-    python coletar_tempo.py --saida dia.json
-    python coletar_tempo.py --saida dia.json --quando hoje
+    python coletar_tempo.py --saida dia.json                     # hoje  (Ranzinza)
+    python coletar_tempo.py --quando amanha --saida amanha.json  # amanhã (Dona Maria)
     python coletar_tempo.py --saida dia.json --cidades "Volta Redonda,Resende"
 
 A ORDEM das cidades importa pro roteiro: a primeira é a "cidade principal"
@@ -61,13 +61,14 @@ def buscar(cidades, dias=2, timeout=30):
     q = urllib.parse.urlencode({
         "latitude": lats,
         "longitude": lons,
-        # os quatro últimos campos diários existem só pro bloco da Dona Maria:
-        # UV, horas de sol, vento e sensação térmica alimentam o índice de varal
+        # os quatro últimos campos diários existem pro bloco da Dona Maria:
+        # UV e sensação térmica viram batida no roteiro dela, vento e horas de
+        # sol entram na leitura do dia
         "daily": ("temperature_2m_max,temperature_2m_min,precipitation_sum,"
                   "weather_code,uv_index_max,sunshine_duration,"
                   "wind_speed_10m_max,apparent_temperature_max"),
-        # precipitation por HORA é o que revela a virada do tempo à tarde —
-        # o caso traiçoeiro do varal (manhã seca, chuva às 15h)
+        # precipitation por HORA revela a virada do tempo à tarde; continua
+        # sendo coletada porque diz A QUE HORAS o tempo vira
         "hourly": "relative_humidity_2m,precipitation",
         "timezone": TZ,
         "forecast_days": dias,
@@ -83,9 +84,9 @@ def primeira_chuva_da_tarde(precip_horaria, indice_dia, limiar=0.2,
                             inicio=12, fim=20):
     """Primeira hora da tarde com chuva prevista, ou None.
 
-    É o dado que separa "pode estender" de "estende e recolhe às 15h". Sem ele
-    o índice de varal olharia só o total do dia e mandaria estender a roupa numa
-    manhã seca que vira temporal à tarde.
+    Nasceu pro aviso de recolher o varal, que saiu do roteiro. Continua sendo
+    coletado (custa zero: vem na mesma resposta) porque é o dado que diz A QUE
+    HORAS o tempo vira — o candidato natural pra um alerta futuro.
     """
     if not precip_horaria:
         return None
@@ -173,8 +174,7 @@ def main():
     print(f"  umidade mín {dia['umidade_min']}%  |  vento {dia['vento_kmh']} km/h  |  "
           f"sol {dia['sol_h']}h  |  UV {dia['uv_max']}  |  sensação {dia['sensacao_max']}°")
     if dia["chuva_hora"] is not None:
-        print(f"  ATENÇÃO: chuva prevista a partir das {dia['chuva_hora']}h "
-              f"-> a Dona Maria vai avisar pra recolher o varal")
+        print(f"  chuva prevista a partir das {dia['chuva_hora']}h")
     for c in dia["cidades"][:4]:
         print(f"  {c['nome']:16s} {c['min']:3d}° / {c['max']:3d}°  {c['cond']:11s} "
               f"chuva {c['chuva_mm']}mm")
