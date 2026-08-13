@@ -21,6 +21,12 @@ Formato do dia.json (o que o Open-Meteo devolve, já resumido):
 O gerador de falas é uma MÁQUINA DE RESMUNGO: cada condição tem várias frases e
 ele sorteia usando a data como semente. Assim o texto varia todo dia, mas é
 reproduzível (rodar de novo no mesmo dia dá o mesmo vídeo).
+
+DIVISÃO DE DIAS ENTRE OS DOIS PERSONAGENS (regra do perfil):
+    Seu Ranzinza, 06:10 -> o dia de HOJE
+    Dona Maria,   18:00 -> o dia de AMANHÃ  (gerar_tarde.py)
+Nenhuma fala do velho pode afirmar coisa nenhuma sobre amanhã: a previsão do dia
+seguinte é dela, feita 12 horas depois e com dados mais novos.
 """
 import argparse, json, os, random, subprocess, sys, datetime
 
@@ -461,8 +467,12 @@ UMIDADE = [
     "Ar seco danado, {u} por cento. Cuidem de quem respira com dificuldade.",
 ]
 
+# ATENÇÃO: o velho só fala do dia de HOJE. A previsão de amanhã é da Dona Maria,
+# no Reel das 18h — e ela usa dados baixados 12h depois destes. A primeira frase
+# daqui era "Nem hoje, nem amanhã", que é exatamente o palpite que ela desmentia
+# à noite quando a previsão virava. Nenhuma fala dele promete nada sobre amanhã.
 SEM_CHUVA = [
-    "Chuva? Nenhuma. Nem hoje, nem amanhã.",
+    "Chuva? Nenhuma. Hoje não cai uma gota.",
     "De chuva, nada. Continua tudo seco.",
     "Chuva nem pensar. Poeira até o teto.",
     "Nada de chuva. O céu esqueceu como se faz.",
