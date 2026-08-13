@@ -49,6 +49,8 @@ CENARIO = CONT.get("cenario", "sol")
 PERSONAGEM = CONT.get("personagem", "ranzinza")
 CENARIO_TIPO = CONT.get("cenario_tipo", "varanda")
 CALOR = CONT.get("calor", False)
+# só o Ranzinza abre guarda-chuva: ele fala do tempo que está caindo hoje.
+COM_GUARDA_CHUVA = PERSONAGEM != "maria"
 FIM = SEGS[-1]["fim"]
 
 Y_PAINEL = 4.5
@@ -152,12 +154,10 @@ def painel(tipo, d):
         return VGroup(_nuvem_grande(), gotas,
                       Text(f"{c['chuva_mm']}mm", font=P.FONTE, weight=BOLD,
                            font_size=38, color=WHITE).shift(DOWN * 1.6))
-    if tipo == "recolher":
-        return P.alerta_varal(d.get("hora"))
-    if tipo == "varal":
-        nota = d["nota"]
-        cor = "#8fbf72" if nota >= 7 else ("#e8b04b" if nota >= 4 else P.VERM)
-        return P.numero_gigante(f"{nota}/10", "VARAL HOJE", cor=cor, fs=150)
+    if tipo == "preparar":
+        # o bloco útil da Dona Maria: o que deixar separado HOJE pra amanhã
+        return _faixa(d.get("cartaz", "AMANHÃ"), "deixe separado hoje",
+                      cor=P.AMAR)
     if tipo == "uv":
         u = d["uv"]
         cor = "#8fbf72" if u <= 5 else ("#e8b04b" if u <= 7 else P.VERM)
@@ -166,13 +166,13 @@ def painel(tipo, d):
     if tipo == "sensacao":
         return _duplo(_card_valor("Termômetro", d["real"]),
                       _card_valor("Você sente", d["sente"]))
-    if tipo == "neste_dia":
-        return _faixa(f"{d['valor']}", f"neste dia em {d['ano']}",
-                      cor="#7aa9c4", cor_txt=BLACK)
     if tipo == "cta":
         return P.cta_seguir(chamada=d.get("chamada", "TOCA NO SEGUIR"))
     if tipo == "fecho":
-        return _faixa("SEGUE PRA PREVISÃO DE AMANHÃ", cor=P.VERM, cor_txt=WHITE)
+        # o texto vem da batida: o velho fecha chamando o vídeo de amanhã,
+        # a Dona Maria fecha porque acabou de DAR a previsão de amanhã
+        return _faixa(d.get("texto", "SEGUE PRA PREVISÃO DE AMANHÃ"),
+                      cor=P.VERM, cor_txt=WHITE)
     return None
 
 
@@ -181,9 +181,8 @@ class Piloto(MovingCameraScene):
         # ---------------- cenário com movimento ----------------
         if CENARIO_TIPO == "quintal":
             cen = P.quintal_varal(CENARIO)
-            # a força do balanço das roupas ESPELHA o índice de varal do dia:
-            # o fundo mostra o que ela está dizendo, sem precisar explicar
-            P.roupas_balancando(cen["roupas"], vento=CONT.get("vento_visual", 1.0))
+            # brisa constante: o varal é cenário, não é mais o assunto dela
+            P.roupas_balancando(cen["roupas"], vento=CONT.get("vento_visual", 0.7))
         else:
             cen = P.varanda(CENARIO)
         self.add(cen["grupo"])
@@ -196,9 +195,10 @@ class Piloto(MovingCameraScene):
 
         # Em dia de chuva o guarda-chuva soma altura ao personagem e o domo
         # invade a faixa do painel de dados. Mede o conjunto ANTES de montar a
-        # cena e abaixa o personagem só o necessário — assim funciona pros dois,
-        # que ficam em alturas diferentes no quadro.
-        if CENARIO in ("chuva", "tempestade"):
+        # cena e abaixa o personagem só o necessário.
+        # A Dona Maria não usa guarda-chuva desde que passou a falar do dia
+        # seguinte: o cenário dela é o entardecer de hoje, não a chuva de amanhã.
+        if COM_GUARDA_CHUVA and CENARIO in ("chuva", "tempestade"):
             prova = P.guarda_chuva(v)
             excesso = prova.get_top()[1] - TETO_CENA
             if excesso > 0:
@@ -212,18 +212,14 @@ class Piloto(MovingCameraScene):
 
         # ---------------- ações e adereços ----------------
         if PERSONAGEM == "maria":
-            jw = [(SEGS[i]["ini"], SEGS[i]["fim"]) for i, b in enumerate(BATIDAS)
-                  if i < len(SEGS) and b["tipo"] in ("varal", "recolher")]
+            jw = janelas("apontar")
             if jw:
                 P.apontar(v, jw)
-            jr = [(SEGS[i]["ini"], SEGS[i]["fim"]) for i, b in enumerate(BATIDAS)
-                  if i < len(SEGS) and b["tipo"] == "recolher"]
-            if jr and CENARIO_TIPO == "quintal":
-                P.roupa_molhada(self, cen["roupas"], jr)
         P.vestir(self, v, CENARIO,
                  janelas_frio=janelas("tremer") or None,
                  janelas_calor=janelas("abanar") or None,
-                 janelas_beber=janelas("beber") or None)
+                 janelas_beber=janelas("beber") or None,
+                 com_guarda_chuva=COM_GUARDA_CHUVA)
 
         self.add(P.marca_dagua().move_to([0, 6.35, 0]))
 
