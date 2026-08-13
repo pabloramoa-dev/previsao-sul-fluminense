@@ -207,6 +207,11 @@ CEUS = {
     "chuva":      (["#7d8b9c", "#4a5666"], "#9aa8b8"),
     "tempestade": (["#5c6472", "#2f3540"], "#7d8797"),
     "frio":       (["#a9c4d8", "#6e8598"], "#dfe8ef"),
+    # Céu do Reel das 18h (Dona Maria). NÃO é uma condição de tempo: é a HORA
+    # em que ela grava. O tempo de que ela fala é o de amanhã, e vive nos cards
+    # — se o fundo seguisse a previsão, um dia de chuva colocaria chuva caindo
+    # em cima dela às 18h de um dia seco.
+    "entardecer": (["#ffb27a", "#e2685f"], "#ffd9a0"),
 }
 
 
@@ -597,7 +602,7 @@ def bafo(scene, v, janelas, n=3):
 
 
 def apontar(v, janelas, alvo=UP * 2.2 + RIGHT * 1.6, dur=1.4):
-    """Levanta o braço direito apontando (a Dona Maria mostrando o varal).
+    """Levanta o braço direito apontando (a Dona Maria mostrando o cartaz).
 
     Pose calculada por inteiro a cada frame a partir de `f` e reconstruída com
     `become` — nunca incremental, senão o braço não volta e o loop quebra.
@@ -616,34 +621,6 @@ def apontar(v, janelas, alvo=UP * 2.2 + RIGHT * 1.6, dur=1.4):
                 f = max(f, np.sin(d / dur * PI) ** 0.6)
         mo.become(base.copy().move_to(p0 + alvo * f))
     mao.add_updater(_apontar)
-
-
-def roupa_molhada(scene, roupas, janelas, n=3):
-    """Pingos escorrendo das peças no varal — o aviso visual de que a roupa
-    está tomando chuva."""
-    rng = np.random.default_rng(41)
-    g = VGroup()
-    alvos = []
-    for p in list(roupas)[:n]:
-        for _ in range(2):
-            g.add(Line(ORIGIN, DOWN * 0.16, stroke_color="#9fd4f0", stroke_width=4))
-            alvos.append((p, rng.uniform(0, 1)))
-    st = {"t": 0.0}
-
-    def _pingar(mo, dt):
-        st["t"] += dt
-        dentro = any(ini <= st["t"] <= fim for ini, fim in janelas)
-        for gt, (p, fase) in zip(mo, alvos):
-            if not dentro:
-                gt.set_opacity(0)
-                continue
-            f = ((st["t"] / 1.2) + fase) % 1.0
-            b = p.get_bottom()
-            gt.move_to([b[0] + (fase - 0.5) * p.width * 0.6, b[1] - 1.4 * f, 0])
-            gt.set_opacity(0.9 * (1 - f))
-    g.add_updater(_pingar)
-    scene.add(g)
-    return g
 
 
 def abanar(v, janelas, amp=0.30, vel=6.0):
@@ -747,12 +724,17 @@ def pingar_guarda_chuva(scene, gc, por_lado=2):
 
 
 def vestir(scene, v, condicao, janelas_frio=None, janelas_calor=None,
-           janelas_beber=None):
+           janelas_beber=None, com_guarda_chuva=True):
     """Aplica adereços e ações conforme o dia. Devolve os mobjects criados
-    (o chamador precisa deles pra ordem de desenho)."""
+    (o chamador precisa deles pra ordem de desenho).
+
+    `com_guarda_chuva=False` desliga o adereço mesmo em cenário de chuva. É o
+    caso da Dona Maria: o cenário dela é sempre o entardecer de HOJE e a chuva
+    de que ela fala é a de AMANHÃ, então não há água caindo pra ela se proteger.
+    """
     extras = {}
     G = v["grupo"]
-    if condicao in ("chuva", "tempestade"):
+    if com_guarda_chuva and condicao in ("chuva", "tempestade"):
         gc = guarda_chuva(v)
         scene.add(gc)
         pingar_guarda_chuva(scene, gc)
@@ -1016,7 +998,7 @@ BLUSA_M = "#7aa9c4"
 
 
 def dona_maria(humor="simpatica"):
-    """A vizinha que entende de varal, de sol e de tempo antigo.
+    """A vizinha que já sabe como vai ser o dia de amanhã.
 
     humor: "simpatica" (padrão, sorriso aberto) | "conspirando" (sorriso torto,
     uma sobrancelha erguida — pra quando ela fala do Ranzinza).
@@ -1154,8 +1136,9 @@ def dona_maria(humor="simpatica"):
 
 # =====================================================================
 #  QUINTAL COM VARAL — o cenário da Dona Maria
-#  As roupas balançam com o vento: além de dar vida, é o próprio assunto
-#  dela (índice de varal) ilustrado no fundo.
+#  O varal é a marca visual dela e as roupas balançam pra cena respirar.
+#  Ele NÃO é mais assunto do roteiro (o índice de varal saiu quando ela passou
+#  a dar a previsão do dia seguinte, às 18h).
 # =====================================================================
 CORES_ROUPA = ["#e2685f", "#7aa9c4", "#e8b04b", "#8fbf72", "#d98cb3", "#f2f0e6"]
 
@@ -1200,7 +1183,15 @@ def quintal_varal(condicao="sol", n_pecas=5):
 
     raios = astro = None
     nuvens = VGroup()
-    if condicao == "sol":
+    if condicao == "entardecer":
+        # sol baixo, grande e sem raios: raio girando lê como meio-dia. A altura
+        # (H/2 - 4.2) deixa o disco entre os morros e a faixa do painel de dados.
+        astro = Circle(radius=0.85, fill_color="#ffd06a", fill_opacity=1,
+                       stroke_width=0)
+        g.add(astro.move_to([-W / 2 + 1.8, H / 2 - 4.2, 0]))
+        nuvens.add(_nuvem(0.95, "#f7b58f", 0.85).move_to([W / 2 - 1.8, H / 2 - 2.4, 0]),
+                   _nuvem(0.70, "#f9cbae", 0.80).move_to([-W / 2 + 2.4, H / 2 - 1.5, 0]))
+    elif condicao == "sol":
         astro = Circle(radius=0.55, fill_color="#ffe08a", fill_opacity=1, stroke_width=0)
         raios = VGroup(*[Line(RIGHT * 0.68, RIGHT * 1.02, stroke_color="#ffe08a", stroke_width=8)
                          .rotate(a, about_point=ORIGIN) for a in np.arange(0, TAU, TAU / 12)])
@@ -1212,9 +1203,13 @@ def quintal_varal(condicao="sol", n_pecas=5):
                    _nuvem(0.85, cor_n, 0.95).move_to([W / 2 - 1.7, H / 2 - 2.8, 0]))
     g.add(nuvens)
 
-    # morros ao fundo
+    # morros ao fundo — no entardecer o verde escurece e puxa pro roxo, senão
+    # o quintal fica com cor de meio-dia embaixo de um céu laranja
+    entardecer = condicao == "entardecer"
+    morros = ([(0.0, "#4a5a63", 1.0), (-0.5, "#3a4450", 1.25)] if entardecer
+              else [(0.0, "#4a6b52", 1.0), (-0.5, "#3a5742", 1.25)])
     base_y = -H / 2 + 4.4
-    for (dy, cor, esc) in [(0.0, "#4a6b52", 1.0), (-0.5, "#3a5742", 1.25)]:
+    for (dy, cor, esc) in morros:
         pts = [[-W / 2 - 1, base_y + dy - 2, 0]]
         xs = np.linspace(-W / 2 - 1, W / 2 + 1, 9)
         for x, a in zip(xs, [0.5, 1.5, 0.9, 1.9, 1.1, 1.7, 0.8, 1.4, 0.6]):
@@ -1223,10 +1218,12 @@ def quintal_varal(condicao="sol", n_pecas=5):
         g.add(Polygon(*pts, fill_color=cor, fill_opacity=1, stroke_width=0))
 
     # chão de grama
+    grama, grama_esc = (("#5c7f4c", "#4b6a3e") if entardecer
+                        else ("#6f9b58", "#5b8248"))
     piso_y = -H / 2 + 2.6
-    g.add(Rectangle(width=W + 2, height=5.4, fill_color="#6f9b58", fill_opacity=1,
+    g.add(Rectangle(width=W + 2, height=5.4, fill_color=grama, fill_opacity=1,
                     stroke_width=0).move_to([0, piso_y - 2.7, 0]))
-    g.add(Rectangle(width=W + 2, height=0.10, fill_color="#5b8248", fill_opacity=1,
+    g.add(Rectangle(width=W + 2, height=0.10, fill_color=grama_esc, fill_opacity=1,
                     stroke_width=0).move_to([0, piso_y, 0]))
     # tufos de grama
     rng = np.random.default_rng(13)
@@ -1234,7 +1231,7 @@ def quintal_varal(condicao="sol", n_pecas=5):
         x = rng.uniform(-W / 2, W / 2)
         y = rng.uniform(piso_y - 2.4, piso_y - 0.2)
         g.add(Line([x, y, 0], [x + rng.uniform(-0.08, 0.08), y + 0.18, 0],
-                   stroke_color="#5b8248", stroke_width=5))
+                   stroke_color=grama_esc, stroke_width=5))
 
     # --- o varal ---
     varal_y = piso_y + 3.5
@@ -1279,35 +1276,12 @@ def quintal_varal(condicao="sol", n_pecas=5):
                 piso_y=piso_y, roupas=roupas, corda=corda)
 
 
-def alerta_varal(hora=None):
-    """Cartaz de RECOLHER A ROUPA — o aviso mais útil que ela dá.
-
-    Vermelho e com ícone de varal riscado: precisa ser lido em meio segundo,
-    porque quem está com roupa no varal vai agir na hora."""
-    l = larg_segura()
-    txt = Text("TIRE A ROUPA", font=FONTE, weight=BOLD, font_size=58, color=WHITE)
-    sub = Text(f"vai chover às {hora}" if hora else "vai chover à tarde",
-               font=FONTE, weight=BOLD, font_size=38, color="#ffe3e0")
-    # varalzinho riscado
-    corda = Line(LEFT * 0.85, RIGHT * 0.85, stroke_color=WHITE, stroke_width=6)
-    peca = Polygon([-0.22, 0, 0], [0.22, 0, 0], [0.22, -0.42, 0], [-0.22, -0.42, 0],
-                   fill_color=WHITE, fill_opacity=1, stroke_width=0).shift(DOWN * 0.02)
-    risco = VGroup(
-        Line(LEFT * 0.7 + UP * 0.45, RIGHT * 0.7 + DOWN * 0.6, stroke_color="#ffd0cb", stroke_width=12))
-    icone = VGroup(corda, peca, risco).scale(0.8)
-    miolo = VGroup(icone, txt, sub).arrange(DOWN, buff=0.16)
-    if miolo.width > l - 0.7:
-        miolo.scale((l - 0.7) / miolo.width)
-    band = RoundedRectangle(width=l, height=miolo.height + 0.7, corner_radius=0.25,
-                            fill_color=VERM, fill_opacity=1,
-                            stroke_color=WHITE, stroke_width=5)
-    miolo.move_to(band)
-    return VGroup(band, miolo)
-
-
 def roupas_balancando(roupas, vento=1.0, vel=1.5):
-    """Balanço das peças no varal. `vento` 0..2 escala a amplitude — assim o
-    fundo mostra o próprio índice de varal de que ela está falando."""
+    """Balanço das peças no varal. `vento` 0..2 escala a amplitude.
+
+    Antes o valor vinha do índice de varal (fundo ilustrando a nota). O índice
+    saiu do roteiro; hoje o varal é só cenário, com uma brisa constante e suave
+    pra cena não ficar congelada."""
     st = {"t": 0.0}
     for p in roupas:
         p.ang = 0.0
@@ -1344,7 +1318,8 @@ def cta_seguir(handle="@previsaosulfluminense", chamada="TOCA NO SEGUIR"):
     txt_botao.move_to(pilula)
 
     arroba = Text(handle, font=FONTE, weight=BOLD, font_size=36, color=AMAR)
-    sub = Text("previsão todo dia, de manhã e no almoço",
+    # os dois horários do perfil: 06:10 o velho (hoje), 18:00 ela (amanhã)
+    sub = Text("previsão todo dia, de manhã e às seis da tarde",
                font=FONTE, weight=BOLD, font_size=26, color="#d8d4cd")
 
     miolo = VGroup(botao, arroba, sub).arrange(DOWN, buff=0.26)
