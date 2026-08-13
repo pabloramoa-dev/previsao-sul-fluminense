@@ -16,6 +16,7 @@ Variáveis de ambiente:
 
 Uso:
     python postar_reel.py --video https://.../REEL.mp4 --dados dia.json
+    python postar_reel.py --video ... --dados amanha.json --voz maria --quando amanha
     python postar_reel.py --video ... --dados dia.json --dry-run   # só mostra a legenda
 """
 import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
@@ -29,38 +30,79 @@ API = "https://graph.instagram.com/v22.0"
 
 EMOJI = {"sol": "☀️", "nublado": "☁️", "chuva": "🌧️", "tempestade": "⛈️", "frio": "🥶"}
 
-# a legenda também tem que ter a voz do personagem — não pode ser um boletim seco
+# A legenda também tem que ter a voz do personagem — não pode ser um boletim
+# seco. E cada um fala do SEU dia: o velho, do dia de hoje, às 06:10; a Dona
+# Maria, do dia seguinte, às 18:00. A legenda dela precisa dizer "AMANHÃ" logo
+# na primeira linha, senão os mesmos números aparecem duas vezes no perfil sem
+# nada indicando que são de dias diferentes.
 GANCHOS = {
-    "sol": "Sol de rachar de novo. Alguém avisa esse céu que já deu.",
-    "nublado": "Nublado. Nem chove, nem faz sol. Só enrola.",
-    "chuva": "Vai chover. Depois não venham dizer que eu não avisei.",
-    "tempestade": "Temporal à vista. Guardem o que voa.",
-    "frio": "Frio de doer o osso. Casaco, e não é sugestão.",
+    "ranzinza": {
+        "sol": "Sol de rachar de novo. Alguém avisa esse céu que já deu.",
+        "nublado": "Nublado. Nem chove, nem faz sol. Só enrola.",
+        "chuva": "Vai chover. Depois não venham dizer que eu não avisei.",
+        "tempestade": "Temporal à vista. Guardem o que voa.",
+        "frio": "Frio de doer o osso. Casaco, e não é sugestão.",
+    },
+    "maria": {
+        "sol": "Amanhã tem sol, meus queridos. Já deixa o protetor na bolsa.",
+        "nublado": "Amanhã vem encoberto. Nada demais, mas não conta com sol.",
+        "chuva": "Amanhã chove. Deixa o guarda-chuva na porta hoje à noite.",
+        "tempestade": "Amanhã vem temporal. Guarda o que voa antes de dormir.",
+        "frio": "Amanhã amanhece frio. Separa o casaco hoje, meu bem.",
+    },
+}
+
+FECHOS_LEGENDA = {
+    "ranzinza": "E aí, vai precisar de casaco na sua cidade? Comenta aí 👇",
+    "maria": ("Já sabe o que separar pra amanhã? Conta aqui embaixo 👇\n"
+              "Amanhã cedo o ranzinza confirma — do jeito mal-humorado dele."),
 }
 
 HASHTAGS = ("#sulfluminense #voltaredonda #barramansa #resende #portoreal "
             "#barradopirai #previsaodotempo #tempo #riodejaneiro #interiordorio")
 
 
-def legenda(dia):
+def legenda(dia, voz="ranzinza", quando="hoje"):
+    """Monta a legenda do post.
+
+    `voz`    — "ranzinza" ou "maria"; muda o gancho e o convite ao comentário.
+    `quando` — "hoje" ou "amanha"; só marca de que dia são os números. Os dados
+               já vêm do arquivo certo (o workflow das 18h passa amanha.json).
+    """
+    ganchos = GANCHOS.get(voz, GANCHOS["ranzinza"])
+    amanha = quando == "amanha"
     cid = dia["cidades"]
     cond = cid[0].get("cond", "sol")
-    linhas = [GANCHOS.get(cond, GANCHOS["sol"]), ""]
+    linhas = [ganchos.get(cond, ganchos["sol"]), ""]
+    if amanha:
+        dma = _dia_br(dia.get("data"))
+        linhas += ["🗓️ PREVISÃO PARA AMANHÃ" + (f" — {dma}" if dma else ""), ""]
     for c in cid[:6]:
         linhas.append(f"{EMOJI.get(c.get('cond','sol'),'🌡️')} {c['nome']}: "
                       f"{c['min']}° / {c['max']}°")
     u = dia.get("umidade_min")
     if u and u <= 40:
-        linhas += ["", f"💧 Umidade mínima de {u}%. Bebam água, criaturas."]
-    if all(c.get("chuva_mm", 0) < 1 for c in cid):
-        linhas += ["", "☔ Chuva: nenhuma."]
+        seco = ("Umidade mínima de {u}%. Já enche a garrafa de água."
+                if voz == "maria" else
+                "Umidade mínima de {u}%. Bebam água, criaturas.")
+        linhas += ["", "💧 " + seco.format(u=u)]
+    if all((c.get("chuva_mm", 0) or 0) < 1 for c in cid):
+        linhas += ["", "☔ Amanhã: sem chuva prevista." if amanha
+                       else "☔ Chuva: nenhuma."]
     else:
-        pico = max(cid, key=lambda c: c.get("chuva_mm", 0))
-        linhas += ["", f"☔ Chuva prevista, até {pico['chuva_mm']}mm em {pico['nome']}."]
-    linhas += ["",
-               "E aí, vai precisar de casaco na sua cidade? Comenta aí 👇",
+        pico = max(cid, key=lambda c: c.get("chuva_mm", 0) or 0)
+        linhas += ["", f"☔ {'Amanhã, chuva' if amanha else 'Chuva prevista'}, "
+                       f"até {pico['chuva_mm']}mm em {pico['nome']}."]
+    linhas += ["", FECHOS_LEGENDA.get(voz, FECHOS_LEGENDA["ranzinza"]),
                "", HASHTAGS]
     return "\n".join(linhas)
+
+
+def _dia_br(data_iso):
+    """'2026-08-14' -> '14/08'. Devolve '' se a data não vier."""
+    if not data_iso or len(data_iso) < 10:
+        return ""
+    return f"{data_iso[8:10]}/{data_iso[5:7]}"
 
 
 # ---------------------------------------------------------------- HTTP
@@ -145,10 +187,14 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="mostra a legenda e sai")
     ap.add_argument("--sem-feed", action="store_true", help="não espelhar o Reel no feed")
     ap.add_argument("--sem-stories", action="store_true", help="nao publicar tambem no Stories")
+    ap.add_argument("--voz", choices=["ranzinza", "maria"], default="ranzinza",
+                    help="de quem é a legenda")
+    ap.add_argument("--quando", choices=["hoje", "amanha"], default="hoje",
+                    help="de que dia são os números (o Reel das 18h é 'amanha')")
     a = ap.parse_args()
 
     dia = json.load(open(a.dados))
-    cap = legenda(dia)
+    cap = legenda(dia, voz=a.voz, quando=a.quando)
 
     if a.dry_run:
         print(cap)
