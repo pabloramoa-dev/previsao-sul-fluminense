@@ -1,0 +1,12 @@
+# Artefatos de execução dos Reels (Manim/Kokoro). Nascem em qualquer máquina
+# que rode gerar_dia.py ou gerar_tarde.py e não devem ir pro repositório.
+reels/_trab/
+reels/media/
+reels/*.mp4
+reels/dia.json
+reels/amanha.json
+reels/historico.json
+
+# Python
+__pycache__/
+*.py[cod]
