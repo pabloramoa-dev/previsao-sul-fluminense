@@ -1,8 +1,14 @@
 name: Post Noite (18h BRT)
 
 on:
-  schedule:
-    - cron: "20 17 * * *"  # dispara cedo; o job espera ate 21:00 UTC (18:00 BRT)
+  # AGENDAMENTO DESLIGADO em 2026-08-13.
+  # As 18h agora sai o Reel da Dona Maria com a previsao de amanha (workflow
+  # "Reels diarios"). Este post ocupava o mesmo horario com a previsao do
+  # mesmo dia, entao o perfil publicava a mesma informacao duas vezes seguidas.
+  # Continua disponivel no botao "Run workflow" para disparo manual.
+  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
+  # schedule:
+  #   - cron: "20 17 * * *"  # dispara cedo; o job espera ate 21:00 UTC (18:00 BRT)
   workflow_dispatch:
     inputs:
       dry_run:
