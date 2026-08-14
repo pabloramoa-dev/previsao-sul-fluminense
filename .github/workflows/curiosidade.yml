@@ -1,8 +1,14 @@
 name: Carrossel Mito ou Verdade (domingo 12h BRT)
 
 on:
-  schedule:
-    - cron: "10 11 * * 0"  # dispara cedo; o job espera ate 15:00 UTC (12:00 BRT domingo)
+  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
+  # alcance mediano 4 e zero interacao em 2 posts.
+  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
+  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
+  # Continua disponivel no botao "Run workflow" para disparo manual.
+  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
+  # schedule:
+  #    - cron: "10 11 * * 0"  # dispara cedo; o job espera ate 15:00 UTC (12:00 BRT domingo)
   workflow_dispatch:
     inputs:
       dry_run:
