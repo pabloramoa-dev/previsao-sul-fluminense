@@ -1,8 +1,14 @@
 name: Post Manha (06h BRT)
 
 on:
-  schedule:
-    - cron: "5 5 * * *"  # dispara cedo; o job espera ate 09:13 UTC (06:13 BRT)
+  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
+  # colidia com o Reel do Ranzinza (06h10 x 06h13) e entregava alcance mediano 4 contra 109 do Reel.
+  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
+  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
+  # Continua disponivel no botao "Run workflow" para disparo manual.
+  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
+  # schedule:
+  #    - cron: "5 5 * * *"  # dispara cedo; o job espera ate 09:13 UTC (06:13 BRT)
   workflow_dispatch:
     inputs:
       dry_run:
