@@ -21,6 +21,9 @@ Uso:
 """
 import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import engajamento
+
 # ATENÇÃO — este host precisa bater com o tipo de token.
 # A conta @previsaosulfluminense usa "Instagram API com login do Instagram",
 # cujo token só é aceito em graph.instagram.com. O bot de imagens que já
@@ -52,14 +55,17 @@ GANCHOS = {
     },
 }
 
-FECHOS_LEGENDA = {
-    "ranzinza": "E aí, vai precisar de casaco na sua cidade? Comenta aí 👇",
-    "maria": ("Já sabe o que separar pra amanhã? Conta aqui embaixo 👇\n"
-              "Amanhã cedo o ranzinza confirma — do jeito mal-humorado dele."),
+# O convite ao comentário vem de engajamento.pergunta(): fechada, com o nome de
+# uma cidade real e respondível numa palavra. O texto fixo que estava aqui
+# ("comenta aí") acompanhou 33 Reels e 20 deles fecharam com zero interação.
+# A assinatura da Dona Maria (a passagem de bastão) continua, antes da pergunta.
+ASSINATURA = {
+    "ranzinza": "",
+    "maria": "Amanhã cedo o ranzinza confirma — do jeito mal-humorado dele.",
 }
 
-HASHTAGS = ("#sulfluminense #voltaredonda #barramansa #resende #portoreal "
-            "#barradopirai #previsaodotempo #tempo #riodejaneiro #interiordorio")
+# As hashtags saíam idênticas em todo Reel, todo dia. Agora rodam em 5
+# conjuntos (engajamento.py), com manhã e noite nunca coincidindo no mesmo dia.
 
 
 def legenda(dia, voz="ranzinza", quando="hoje"):
@@ -93,8 +99,15 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
         pico = max(cid, key=lambda c: c.get("chuva_mm", 0) or 0)
         linhas += ["", f"☔ {'Amanhã, chuva' if amanha else 'Chuva prevista'}, "
                        f"até {pico['chuva_mm']}mm em {pico['nome']}."]
-    linhas += ["", FECHOS_LEGENDA.get(voz, FECHOS_LEGENDA["ranzinza"]),
-               "", HASHTAGS]
+    slot = "noite" if voz == "maria" else "manha"
+    # A assinatura vem ANTES da pergunta: o convite ao comentário tem que ser a
+    # última linha antes das hashtags, colada na caixa de comentário.
+    assinatura = ASSINATURA.get(voz, "")
+    if assinatura:
+        linhas += ["", assinatura]
+    linhas += ["", engajamento.pergunta(slot, cond, cid,
+                                        quando="amanhã" if amanha else "hoje")]
+    linhas += ["", engajamento.hashtags(slot, cond)]
     return "\n".join(linhas)
 
 
