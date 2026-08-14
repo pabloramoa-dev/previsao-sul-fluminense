@@ -1,8 +1,14 @@
 name: Carrossel Fim de Semana (quinta 18h30 BRT)
 
 on:
-  schedule:
-    - cron: "40 17 * * 4"  # dispara cedo; o job espera ate 21:30 UTC (18:30 BRT quinta)
+  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
+  # alcance mediano 4 e zero interacao em 7 posts.
+  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
+  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
+  # Continua disponivel no botao "Run workflow" para disparo manual.
+  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
+  # schedule:
+  #    - cron: "40 17 * * 4"  # dispara cedo; o job espera ate 21:30 UTC (18:30 BRT quinta)
   workflow_dispatch:
     inputs:
       dry_run:
