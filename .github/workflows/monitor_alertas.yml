@@ -34,19 +34,45 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-v1
 
+      - name: Dependencias de sistema do Chromium (tolerante a falha)
+        id: deps
+        run: |
+          python -m playwright install-deps chromium \
+            || echo "::warning::playwright install-deps falhou; seguindo com as libs da imagem do runner"
+
       - name: Baixar o Chromium (renderiza os cards em HTML)
-        run: python -m playwright install --with-deps chromium
+        id: chromium
+        run: python -m playwright install chromium
 
       - name: Detectar e publicar alertas
+        id: detectar
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
         run: |
+          set -o pipefail
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python -m src.main alertas --dry-run
+            python -m src.main alertas --dry-run 2>&1 | tee /tmp/alertas.log
           else
-            python -m src.main alertas
+            python -m src.main alertas 2>&1 | tee /tmp/alertas.log
           fi
+
+      - name: Coletar motivo da falha
+        if: failure()
+        id: motivo
+        run: |
+          if [ "${{ steps.chromium.outcome }}" = "failure" ]; then
+            echo "passo=Baixar o Chromium" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.detectar.outcome }}" = "failure" ]; then
+            echo "passo=Detectar e publicar alertas" >> "$GITHUB_OUTPUT"
+          else
+            echo "passo=(anterior ao detector - ver log)" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo "trecho<<FIM"
+            tail -n 25 /tmp/alertas.log 2>/dev/null || echo "(sem saida capturada)"
+            echo "FIM"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Commit estado (anti-spam)
         run: |
@@ -55,6 +81,7 @@ jobs:
           git add assets/output src/estado.json || true
           git commit -m "chore: monitor alertas $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
           git push || echo "Nada para enviar"
+
       - name: Avisar falha por e-mail
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -70,9 +97,13 @@ jobs:
           body: |
             O workflow "${{ github.workflow }}" falhou e NAO publicou.
 
+            PASSO QUE FALHOU: ${{ steps.motivo.outputs.passo }}
+
+            Ultimas linhas da saida:
+            ---------------------------------------------
+            ${{ steps.motivo.outputs.trecho }}
+            ---------------------------------------------
+
             Repositorio: ${{ github.repository }}
             Disparo....: ${{ github.event_name }}
             Log completo: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Se a falha foi no passo "Publicar no Instagram", a causa mais
-            provavel e o token (IG_ACCESS_TOKEN) vencido ou invalidado.
