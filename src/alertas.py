@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 alertas.py - Deteccao de variacao brusca do tempo + gatilho "choveu quanto".
@@ -27,6 +28,18 @@ ESTADO_PATH = Path(__file__).parent / "estado.json"
 
 LIMITE_ALERTAS_DIA = 2
 INTERVALO_MIN_MESMO_TIPO_H = 6
+
+# Quando mais de um tipo dispara no mesmo dia, o limite acima corta os
+# excedentes. Sem uma ordem explicita o corte seguia a ordem de insercao no
+# dicionario, e os alertas de temperatura (que entram primeiro) engoliam
+# tempestade e vento - justamente os que justificam card e impulsionamento.
+SEVERIDADE = {
+    "tempestade": 3,
+    "vento": 3,
+    "chuva_forte": 2,
+    "queda_temperatura": 1,
+    "subida_temperatura": 1,
+}
 DELTA_TEMP = 6.0
 PROB_CHUVA_FORTE = 70.0
 MM_CHUVA_FORTE = 10.0
@@ -46,18 +59,26 @@ def _salvar(estado: dict[str, Any]) -> None:
 
 
 def _agora() -> dt.datetime:
-    return dt.datetime.now()
+    # As series do Open-Meteo vem em America/Sao_Paulo (clima.TIMEZONE). O
+    # runner do GitHub roda em UTC, entao datetime.now() cru desalinhava a
+    # janela em 3 horas.
+    from .clima import _TZ
+    return dt.datetime.now(_TZ).replace(tzinfo=None)
+
+
+def _indice_agora(cidade) -> int:
+    """Posicao da hora corrente dentro da serie horaria da cidade."""
+    horas = cidade.horarias.get("time", [])
+    alvo = _agora().replace(minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:00")
+    try:
+        return horas.index(alvo)
+    except ValueError:
+        return 0
 
 
 def _proximas_horas(cidade, n: int = 3) -> dict[str, list]:
     """Recorta as proximas n horas das series horarias a partir de agora."""
-    horas = cidade.horarias.get("time", [])
-    agora = _agora().replace(minute=0, second=0, microsecond=0)
-    alvo = agora.strftime("%Y-%m-%dT%H:00")
-    try:
-        i0 = horas.index(alvo)
-    except ValueError:
-        i0 = 0
+    i0 = _indice_agora(cidade)
     fatia = slice(i0, i0 + n)
     return {
         "prob": cidade.horarias.get("precipitation_probability", [])[fatia],
@@ -145,7 +166,11 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
         "tempestade": "ALERTA: RISCO DE TEMPESTADE",
     }
 
-    for tipo, cidades_afetadas in afetadas.items():
+    # Mais severo primeiro, para que o LIMITE_ALERTAS_DIA corte o trivial e
+    # nao o temporal.
+    ordenados = sorted(afetadas.items(),
+                       key=lambda kv: -SEVERIDADE.get(kv[0], 0))
+    for tipo, cidades_afetadas in ordenados:
         if _pode_disparar(estado, tipo):
             alertas.append({
                 "tipo": tipo,
@@ -156,12 +181,18 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
             _registrar(estado, tipo)
             estado = _carregar()  # recarrega apos registrar
 
-    # Atualiza ultima leitura para a proxima comparacao
-    estado["ultima_leitura"] = {
-        c.nome: (c.horarias.get("temperature_2m", [None])[0]
-                 if c.horarias.get("temperature_2m") else c.tmax)
-        for c in cidades
-    }
+    # Atualiza ultima leitura para a proxima comparacao.
+    # Precisa ser a temperatura da HORA CORRENTE - o indice [0] da serie e
+    # 00:00 de hoje (madrugada), e comparar "agora" contra a madrugada fazia
+    # o amanhecer normal parecer subida brusca de temperatura.
+    def _temp_agora(c):
+        serie = c.horarias.get("temperature_2m") or []
+        if not serie:
+            return c.tmax
+        i = _indice_agora(c)
+        return serie[i] if i < len(serie) and serie[i] is not None else c.tmax
+
+    estado["ultima_leitura"] = {c.nome: _temp_agora(c) for c in cidades}
     _salvar(estado)
     return alertas
 
