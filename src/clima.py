@@ -95,14 +95,25 @@ def _get_json(url: str, params: dict[str, Any]) -> dict[str, Any]:
             return resp.json()
         except (requests.RequestException, ValueError) as exc:
             ultimo_erro = exc
-            status = getattr(getattr(exc, "response", None), "status_code", None)
-            # So faz retry em erros transitorios (5xx/timeout/conexao).
+            resp_erro = getattr(exc, "response", None)
+            status = getattr(resp_erro, "status_code", None)
+            # Erros transitorios: conexao/timeout (status None), 5xx, e tambem
+            # 408 (timeout) e 429 (rate limit). O Open-Meteo responde 429 quando
+            # o IP compartilhado do runner do GitHub estoura a cota por minuto -
+            # sem este retry o job morre na hora, que era o comportamento antigo.
             transitorio = (
-                status is None or status >= 500
+                status is None or status >= 500 or status in (408, 429)
             )
             if not transitorio or tentativa == 3:
                 break
-            time.sleep(2 * tentativa)
+            espera = 2 * tentativa
+            # Respeita o Retry-After quando a API mandar um.
+            if status == 429 and resp_erro is not None:
+                try:
+                    espera = max(espera, min(int(resp_erro.headers.get("Retry-After", 0)), 30))
+                except (TypeError, ValueError):
+                    pass
+            time.sleep(espera)
     raise ultimo_erro if ultimo_erro else RuntimeError("Falha desconhecida em _get_json")
 
 
