@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-"""Pacote de automacao do @previsaosulfluminense."""
+"""Pacote de automacao do @previsaosulflu."""
