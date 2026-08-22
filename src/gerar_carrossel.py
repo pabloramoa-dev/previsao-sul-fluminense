@@ -181,7 +181,7 @@ def slide_sol_lua(tipo: str, resumo: dict[str, Any], nascer: str, por: str,
     return _salvar(img, f"{tipo}_sol_lua.png")
 
 
-def slide_pergunta(tipo: str, pergunta: str, perfil: str = "@previsaosulfluminense") -> str:
+def slide_pergunta(tipo: str, pergunta: str, perfil: str = "@previsaosulflu") -> str:
     pal = PALETAS[tipo]
     img = _fundo(tipo)
     d = ImageDraw.Draw(img)
