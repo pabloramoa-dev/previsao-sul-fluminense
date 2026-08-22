@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-captions.py -- Geracao automatica de captions para o @previsaosulfluminense.
+captions.py -- Geracao automatica de captions para o @previsaosulflu.
 Tres tipos: manha (06h), noite (18h) e alerta (variacao brusca).
 """
 
 HASHTAGS = (
-    "#voltaredonda #resende #barramansa #portoreal #angradosreis "
+    "#voltaredonda #barramansa #resende #portoreal #barradopirai #pirai "
     "#sulfluminense #previsaodotempo #climarj #tempoagora"
 )
 
@@ -133,6 +133,6 @@ def caption_alerta(tipo: str, detalhe: str, cidades_afetadas: list) -> str:
         f"Cidades afetadas: {lista}\n\n"
         f"{dicas.get(tipo, 'Fique atento às atualizações!')}\n\n"
         f"COMPARTILHA agora com quem mora ou trabalha na região.\n\n"
-        f"Ativa as notificações do @previsaosulfluminense.\n\n"
+        f"Ativa as notificações do @previsaosulflu.\n\n"
         f"{HASHTAGS} #alertadetempo"
     )
