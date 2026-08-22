@@ -1,11 +1,16 @@
 {
   "indice_pergunta_frio_chuva": 6,
   "ultima_leitura": {
-    "Volta Redonda": 19.2,
-    "Barra Mansa": 19.7,
-    "Resende": 20.1,
-    "Porto Real": 19.5,
-    "Angra dos Reis": 19.6
+    "Volta Redonda": 17.9,
+    "Barra Mansa": 17.8,
+    "Porto Real": 18.4,
+    "Resende": 17.9,
+    "Barra do Piraí": 17.6,
+    "Piraí": 17.2,
+    "Itatiaia": 18.5,
+    "Quatis": 18.4,
+    "Pinheiral": 17.7,
+    "Rio Claro": 18.3
   },
   "indice_curiosidade": 6,
   "indice_pergunta_calor_sol": 1
