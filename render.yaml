@@ -1,0 +1,30 @@
+# Blueprint do robo de DM do @previsaosulflu.
+#
+# Este arquivo existe para tirar do caminho o erro mais provavel do deploy:
+# esquecer de apontar o Root Directory para dm/. Sem isso o Render instala o
+# requirements.txt da raiz (playwright, Pillow) e o webhook_ig.py nao acha o
+# dm_bairro.py, porque os imports dele sao rasos.
+#
+# Como usar: no Render, New > Blueprint, apontando para este repositorio.
+# Os dois tokens ficam com sync: false de proposito -- eles nao entram no Git,
+# voce digita no painel do Render depois que o servico aparecer.
+services:
+  - type: web
+    name: previsaosulflu-dm
+    runtime: python
+    plan: free
+    region: ohio
+    rootDir: dm
+    buildCommand: pip install -r requirements.txt
+    # --workers 1 nao e detalhe: o cache da previsao vive na memoria do
+    # processo. Com varios workers cada um mantem o seu e o Open-Meteo leva
+    # uma chamada por worker. As threads dao conta de DMs simultaneas.
+    startCommand: gunicorn webhook_ig:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 60
+    healthCheckPath: /ping
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: IG_VERIFY_TOKEN
+        sync: false
+      - key: IG_ACCESS_TOKEN
+        sync: false
