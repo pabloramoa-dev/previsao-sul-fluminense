@@ -295,7 +295,30 @@ def montar_lista(tipo, titulo, legenda, itens, rodape="Sul Fluminense") -> str:
 
 def montar_pergunta(tipo: str, pergunta: str) -> str:
     valores = _base(tipo)
+    valores["{{CHAPEU}}"] = "Pergunta do dia"
     valores["{{PERGUNTA}}"] = pergunta
+    valores["{{CONVITE}}"] = "Responde nos coment&aacute;rios"
+    valores["{{ICONE_BALAO}}"] = ICONES["balao"]
+    valores["{{ICONE_CONVITE}}"] = ICONES["seta"]
+    valores["{{RODAPE_ESQ}}"] = PERFIL
+    return _preencher(PERGUNTA, valores)
+
+
+def montar_bairro(tipo: str) -> str:
+    """Último slide de todo carrossel: a chamada do robô de DM por bairro.
+
+    Substituiu o slide de pergunta em 2026-08-22. A pergunta pedia comentário e
+    entregava zero interação nos números de 25/07 a 13/08; esta pede uma
+    mensagem e devolve alguma coisa — a previsão do bairro de quem responder,
+    que é o único conteúdo do perfil que ninguém mais da região tem.
+
+    Quem atende do outro lado é o serviço em dm/ (325 bairros, 10 cidades).
+    Se ele sair do ar, este slide vira promessa falsa.
+    """
+    valores = _base(tipo)
+    valores["{{CHAPEU}}"] = "A previs&atilde;o do seu bairro"
+    valores["{{PERGUNTA}}"] = "Manda o nome do teu bairro na DM"
+    valores["{{CONVITE}}"] = "e eu respondo a previs&atilde;o dele"
     valores["{{ICONE_BALAO}}"] = ICONES["balao"]
     valores["{{ICONE_CONVITE}}"] = ICONES["seta"]
     valores["{{RODAPE_ESQ}}"] = PERFIL
@@ -337,7 +360,7 @@ def paginas_manha(cidades, resumo, indices_itens, pergunta, fase_lua,
          ("por", f"Sol se põe às {cidades[0].por_sol}", True),
          ("lua", f"Fase da lua: {fase_lua}", True),
          ("protetor", f"Índice UV máximo: {resumo['uv_max']:.0f}", True)])))
-    paginas.append((f"{n + 1:02d} pergunta", montar_pergunta("manha", pergunta)))
+    paginas.append((f"{n + 1:02d} bairro", montar_bairro("manha")))
     return paginas
 
 
@@ -360,7 +383,7 @@ def paginas_noite(cidades, resumo, pergunta, fase_lua) -> list:
         [("lua", f"Fase da lua: {fase_lua}", True),
          ("nascer", f"Amanhã o sol nasce às {cidades[0].nascer_sol}", True),
          ("termometro", f"Mínima da madrugada: {madrugada:.0f}\u00b0C", True)])))
-    paginas.append((f"{n + 1:02d} pergunta", montar_pergunta("noite", pergunta)))
+    paginas.append((f"{n + 1:02d} bairro", montar_bairro("noite")))
     return paginas
 
 
@@ -449,7 +472,7 @@ def paginas_fim_de_semana(cidades, resumo, pergunta) -> list:
     for i, c in enumerate(cidades, start=2):
         paginas.append((f"{i:02d} {c.nome}", montar_html(c)))
     n = len(cidades) + 2
-    paginas.append((f"{n:02d} pergunta", montar_pergunta(tipo, pergunta)))
+    paginas.append((f"{n:02d} bairro", montar_bairro(tipo)))
     return paginas
 
 
@@ -474,7 +497,7 @@ def paginas_curiosidade(item: dict, pergunta: str) -> list:
         blocos.append(("aqui na regiao", montar_texto(
             tipo, "Aqui na região", "Por que isso importa", regional,
             rodape="Sul Fluminense", icone="sol_nuvem")))
-    blocos.append(("pergunta", montar_pergunta(tipo, pergunta)))
+    blocos.append(("bairro", montar_bairro(tipo)))
 
     return [(f"{i:02d} {nome}", html)
             for i, (nome, html) in enumerate(blocos, start=1)]
