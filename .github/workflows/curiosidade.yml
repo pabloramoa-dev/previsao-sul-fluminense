@@ -1,14 +1,16 @@
 name: Carrossel Mito ou Verdade (domingo 12h BRT)
 
 on:
-  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
-  # alcance mediano 4 e zero interacao em 2 posts.
-  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
-  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
-  # Continua disponivel no botao "Run workflow" para disparo manual.
-  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
-  # schedule:
-  #    - cron: "10 11 * * 0"  # dispara cedo; o job espera ate 15:00 UTC (12:00 BRT domingo)
+  # AGENDAMENTO RELIGADO em 2026-08-22, no mesmo horario de antes.
+  # Foi desligado em 2026-08-14 porque entregava alcance mediano 4 e zero interacao em 2 posts.
+  # Voltou porque os carrosseis passaram a levar a chamada do robo de DM por
+  # bairro no ultimo slide -- conteudo que o Reel sozinho nao entrega.
+  # O horario nao mudou: domingo 12h nao competia com Reel nenhum
+  # (os Reels sao 06h10 e 18h00). So o gatilho passou a disparar 50 min
+  # antes do alvo, em vez de 4 horas antes, pra nao dormir de graca no runner.
+  # PARA DESLIGAR: comente as duas linhas de schedule abaixo.
+  schedule:
+    - cron: "10 14 * * 0"  # dispara cedo; o job espera ate 15:00 UTC (12:00 BRT domingo)
   workflow_dispatch:
     inputs:
       dry_run:
