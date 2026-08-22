@@ -167,7 +167,9 @@ def painel(tipo, d):
         return _duplo(_card_valor("Termômetro", d["real"]),
                       _card_valor("Você sente", d["sente"]))
     if tipo == "cta":
-        return P.cta_seguir(chamada=d.get("chamada", "TOCA NO SEGUIR"))
+        return P.cta_seguir(
+            chamada=d.get("chamada", "TEU BAIRRO NA DM"),
+            sub=d.get("sub", "manda o nome e eu respondo a previsão daí"))
     if tipo == "fecho":
         # o texto vem da batida: o velho fecha chamando o vídeo de amanhã,
         # a Dona Maria fecha porque acabou de DAR a previsão de amanhã
