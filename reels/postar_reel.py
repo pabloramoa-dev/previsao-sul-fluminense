@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import engajamento
 
 # ATENÇÃO — este host precisa bater com o tipo de token.
-# A conta @previsaosulfluminense usa "Instagram API com login do Instagram",
+# A conta @previsaosulflu usa "Instagram API com login do Instagram",
 # cujo token só é aceito em graph.instagram.com. O bot de imagens que já
 # funciona (publicar.py) usa exatamente este host. Apontar para
 # graph.facebook.com com este mesmo token devolve erro 190 (OAuth inválido).
