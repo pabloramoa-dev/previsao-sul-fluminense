@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 clima.py - Coleta de dados meteorologicos do Open-Meteo para o
-@previsaosulflu. Cobre 5 cidades do Sul Fluminense.
+@previsaosulflu. Cobre 10 cidades do Sul Fluminense.
 
 Endpoints usados (todos gratuitos, sem chave):
 - /v1/forecast    : previsao diaria + horaria + sol/UV
@@ -32,6 +32,9 @@ TIMEOUT = 30
 # da lista e estourar o timeout de leitura. Espalhar as chamadas custa ~15s
 # por execucao e evita o engasgo.
 PAUSA_ENTRE_CIDADES = 1.5
+# Minimo de cidades que precisam responder para a execucao valer. Abaixo disso
+# o dado e parcial demais e e melhor falhar do que publicar um panorama torto.
+MIN_CIDADES_OK = 7
 
 # Cidades cobertas (nome -> coordenadas)
 #
@@ -265,14 +268,28 @@ def processar_cidade(cidade: dict[str, Any]) -> CidadeClima:
 def coletar_todas() -> list[CidadeClima]:
     """Coleta clima de todas as cidades de CIDADES. Retorna lista de CidadeClima."""
     resultado: list[CidadeClima] = []
+    falhas: list[str] = []
     for indice, cidade in enumerate(CIDADES):
         if indice:
             time.sleep(PAUSA_ENTRE_CIDADES)
         try:
             resultado.append(processar_cidade(cidade))
         except requests.RequestException as e:
+            # Uma cidade que nao responde nao pode derrubar o alerta das outras
+            # nove. Ate 21/08/2026 este except abortava a execucao inteira:
+            # bastava o Open-Meteo engasgar em Itatiaia para ninguem no Sul
+            # Fluminense receber alerta naquele ciclo. A ordem de CIDADES e
+            # preservada (main.py usa cidades[0] como cidade-ancora dos ganchos).
             print(f"[clima] ERRO ao coletar {cidade['nome']}: {e}")
-            raise
+            falhas.append(cidade["nome"])
+    if falhas:
+        print(f"[clima] AVISO: seguindo sem {', '.join(falhas)} "
+              f"({len(resultado)}/{len(CIDADES)} cidades responderam).")
+    if len(resultado) < MIN_CIDADES_OK:
+        raise RuntimeError(
+            f"So {len(resultado)} de {len(CIDADES)} cidades responderam "
+            f"(minimo {MIN_CIDADES_OK}). Sem dado suficiente para publicar."
+        )
     return resultado
 
 
