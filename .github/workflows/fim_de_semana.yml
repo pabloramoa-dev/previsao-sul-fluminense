@@ -1,14 +1,15 @@
-name: Carrossel Fim de Semana (quinta 18h30 BRT)
+name: Carrossel Fim de Semana (quinta 19h30 BRT)
 
 on:
-  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
-  # alcance mediano 4 e zero interacao em 7 posts.
-  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
-  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
-  # Continua disponivel no botao "Run workflow" para disparo manual.
-  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
-  # schedule:
-  #    - cron: "40 17 * * 4"  # dispara cedo; o job espera ate 21:30 UTC (18:30 BRT quinta)
+  # AGENDAMENTO RELIGADO em 2026-08-22, em HORARIO NOVO.
+  # Foi desligado em 2026-08-14 porque entregava alcance mediano 4 e zero interacao em 7 posts.
+  # Voltou porque os carrosseis passaram a levar a chamada do robo de DM por
+  # bairro no ultimo slide -- conteudo que o Reel sozinho nao entrega.
+  # O horario mudou pra nao competir com os Reels (06h10 e 18h00):
+  # era 18h30 BRT, agora e 19h30 BRT.
+  # PARA DESLIGAR: comente as duas linhas de schedule abaixo.
+  schedule:
+    - cron: "40 21 * * 4"  # dispara cedo; o job espera ate 22:30 UTC (19:30 BRT quinta)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -24,10 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
-      - name: Aguardar o horario alvo (18:30 BRT quinta)
+      - name: Aguardar o horario alvo (19:30 BRT quinta)
         if: github.event_name == 'schedule'
         run: |
-          ALVO=$(date -u -d "today 21:30" +%s)
+          ALVO=$(date -u -d "today 22:30" +%s)
           AGORA=$(date -u +%s)
           if [ "$AGORA" -lt "$ALVO" ]; then
             ESPERA=$((ALVO - AGORA))
