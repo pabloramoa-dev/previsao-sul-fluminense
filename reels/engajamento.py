@@ -150,6 +150,31 @@ def _cidade_do_assunto(cidades, condicao: str) -> str:
     return cidades[0]["nome"]
 
 
+# =====================================================================
+#  CHAMADA DO BAIRRO — a última linha da legenda, antes das hashtags
+# =====================================================================
+#  Substituiu a pergunta fechada em 2026-08-22. A pergunta pedia um comentário
+#  de uma palavra; esta pede uma mensagem direta, que vale mais no ranqueamento
+#  e ainda entrega alguma coisa de volta pra quem responde — a previsão do
+#  bairro dela, que nenhum outro perfil da região dá.
+#
+#  O robô que atende está em dm/ (325 bairros, 10 cidades). Se ele sair do ar,
+#  esta linha vira promessa falsa: veja o runbook antes de deixar quebrado.
+CHAMADA_BAIRRO = [
+    "📩 Manda o nome do teu bairro aqui na DM. Eu respondo a previsão só dele.",
+    "📩 Quer a previsão do TEU bairro? Manda o nome numa DM e recebe na hora.",
+    "📩 Teu bairro na DM. São 325 bairros das 10 cidades — o teu está aí.",
+    "📩 Manda uma DM com o nome do bairro. A previsão volta pronta, do teu canto.",
+]
+
+
+def chamada_bairro(slot: str, data=None) -> str:
+    """A chamada do dia. Roda o banco por data e alterna manhã/noite, do mesmo
+    jeito que as hashtags — pra quem vê os dois Reels não ler a mesma frase."""
+    i = (_ordinal(data) + (0 if slot == "manha" else 1)) % len(CHAMADA_BAIRRO)
+    return CHAMADA_BAIRRO[i]
+
+
 def pergunta(slot: str, condicao: str, cidades=None, quando: str = "hoje",
              data=None) -> str:
     banco = PERGUNTAS.get(condicao) or PERGUNTAS["nublado"]
