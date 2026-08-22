@@ -30,7 +30,7 @@ SAIDA = RAIZ / "assets" / "output"
 
 LARGURA, ALTURA = 1080, 1350
 LARGURA_STORY, ALTURA_STORY = 1080, 1920
-PERFIL = "@previsaosulfluminense"
+PERFIL = "@previsaosulflu"
 
 # paleta fixa dos slides que nao dependem do weathercode
 PALETAS_TIPO = {
