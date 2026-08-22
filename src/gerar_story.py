@@ -89,7 +89,7 @@ def gerar_story(pergunta: str, opcao_a: str, opcao_b: str,
     y += 60
     _centralizar(d, y, "Responde no post do feed! Arrasta pra cima",
                  _fonte(40), (255, 255, 255))
-    _centralizar(d, H - 180, "@previsaosulfluminense", _fonte(44, bold=True), (255, 255, 255))
+    _centralizar(d, H - 180, "@previsaosulflu", _fonte(44, bold=True), (255, 255, 255))
     caminho = OUTPUT / f"story_{tipo}.jpg"
     if img.mode != "RGB":
         img = img.convert("RGB")
