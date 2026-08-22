@@ -4,6 +4,14 @@ captions.py -- Geracao automatica de captions para o @previsaosulflu.
 Tres tipos: manha (06h), noite (18h) e alerta (variacao brusca).
 """
 
+# A última linha antes das hashtags. Trocou a pergunta de comentário em
+# 2026-08-22: o robô em dm/ responde a previsão do bairro de quem mandar
+# mensagem, e mensagem direta vale mais que comentário no ranqueamento.
+CHAMADA_BAIRRO = (
+    "📩 Manda o nome do teu bairro aqui na DM e eu respondo a previsão só dele "
+    "— são 325 bairros nas 10 cidades da região."
+)
+
 HASHTAGS = (
     "#voltaredonda #barramansa #resende #portoreal #barradopirai #pirai "
     "#sulfluminense #previsaodotempo #climarj #tempoagora"
@@ -68,8 +76,7 @@ def caption_manha(data_extenso: str, cidades: list, pergunta: str) -> str:
         f"{linhas_cidades}"
         f"{aviso_chuva}\n\n"
         f"Arrasta pro lado e vê a previsão completa da sua cidade!\n\n"
-        f"{pergunta}\n"
-        f"Responde aqui nos comentários!\n\n"
+        f"{CHAMADA_BAIRRO}\n\n"
         f"Compartilha com quem precisa saber e ativa as notificações.\n\n"
         f"{HASHTAGS}"
     )
@@ -102,8 +109,7 @@ def caption_noite(data_extenso: str, cidades: list, pergunta: str) -> str:
         f"{linhas_cidades}"
         f"{aviso}{frio}\n\n"
         f"Arrasta pro lado pra ver os detalhes da sua cidade!\n\n"
-        f"{pergunta}\n"
-        f"Responde aqui nos comentários!\n\n"
+        f"{CHAMADA_BAIRRO}\n\n"
         f"{HASHTAGS}"
     )
 
