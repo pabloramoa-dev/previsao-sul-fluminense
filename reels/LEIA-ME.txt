@@ -1,0 +1,26 @@
+Os 8 arquivos alterados da pasta reels/ do previsao-sul-fluminense.
+
+Como subir pelo navegador, sem git:
+
+1. Extraia este zip numa pasta qualquer (a Área de Trabalho serve).
+2. Abra:
+   https://github.com/pabloramoa-dev/previsao-sul-fluminense/upload/main/reels
+   (esse endereço já aponta pra DENTRO da pasta reels — é o que faz os
+   arquivos caírem no lugar certo em vez de na raiz do repositório)
+3. Arraste os 8 arquivos .py e .md pra área de upload. NÃO arraste este
+   LEIA-ME.txt.
+4. Em "Commit changes", cole a mensagem abaixo e confirme.
+
+Rodizio diario de cidades + selo da cidade na abertura
+
+- coletar_tempo: ordem_do_dia() gira a lista por data. Cada cidade volta a
+  cada 10 dias. DESLOCA_TARDE=5 evita que Ranzinza e Dona Maria caiam na
+  mesma cidade no mesmo dia. --sem-rodizio volta ao comportamento antigo.
+- previsao_lib.selo_cidade(): "HOJE EM / <CIDADE>" em caixa alta.
+- piloto: desenha o selo em Y_SELO=3.95, da abertura ate a primeira batida
+  que ocupa a faixa do painel. Primeiro e ultimo frame seguem limpos.
+- postar_reel: thumb_offset=1500ms, senao a capa da grade seria o frame
+  limpo do inicio. --capa-ms 0 volta ao anterior.
+- engajamento.hashtags(): a tag do municipio da vez entra na frente.
+
+Os 8 arquivos sao substituicoes completas: pode subir todos de uma vez.

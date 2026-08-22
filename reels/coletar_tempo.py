@@ -12,28 +12,69 @@ Uso:
     python coletar_tempo.py --saida dia.json --cidades "Volta Redonda,Resende"
 
 A ORDEM das cidades importa pro roteiro: a primeira é a "cidade principal"
-(ganha a fala com mínima e máxima por extenso), a 2ª e a 3ª entram juntas na
-fala do "mesma bagunça", e a 4ª ganha o destaque de amanhecer. Por isso Volta
-Redonda vem primeiro — é a maior audiência do perfil.
+(ganha a fala com mínima e máxima por extenso, e é ela que define o cenário do
+vídeo), a 2ª e a 3ª entram juntas na fala do "mesma bagunça", e a 4ª ganha o
+destaque de amanhecer.
+
+RODÍZIO DIÁRIO (desde 2026-08-22)
+---------------------------------
+Volta Redonda era fixa na primeira posição, porque é a maior audiência do
+perfil. O efeito colateral apareceu na grade: todo vídeo abria pela mesma
+cidade, e quem mora nas outras nove nunca via o nome do seu município. A lista
+agora GIRA por data — a cidade principal muda todo dia e cada uma volta a cada
+dez dias, sem repetir na sequência.
+
+O giro é determinístico (função da data), então rodar duas vezes no mesmo dia
+dá exatamente o mesmo vídeo — a mesma garantia que a semente do roteiro já dava.
+
+`--desloca N` gira mais N posições. É o que separa os dois vídeos do mesmo dia:
+o Ranzinza (06h10) roda com deslocamento 0 e a Dona Maria (18h) com 5, então
+eles nunca destacam a mesma cidade no mesmo dia.
 """
 import argparse, json, sys, urllib.parse, urllib.request, datetime
 
 API = "https://api.open-meteo.com/v1/forecast"
 TZ = "America/Sao_Paulo"
 
-# ordem = ordem de aparição no vídeo
+# ordem BASE do rodízio. Não é mais a ordem de aparição no vídeo: `ordem_do_dia`
+# gira esta lista pela data. A sequência abaixo é a ordem em que as cidades se
+# revezam — vizinhas de audiência ficam separadas de propósito, pra que dois
+# dias seguidos não abram os dois em municípios pequenos.
 CIDADES = [
     ("Volta Redonda", -22.5231, -44.1041),
-    ("Barra Mansa",   -22.5441, -44.1712),
-    ("Porto Real",    -22.4189, -44.2947),
-    ("Resende",       -22.4686, -44.4468),
-    ("Barra do Piraí", -22.4711, -43.8256),
-    ("Piraí",         -22.6289, -43.8981),
-    ("Itatiaia",      -22.4906, -44.5636),
     ("Quatis",        -22.4064, -44.2578),
+    ("Barra Mansa",   -22.5441, -44.1712),
     ("Pinheiral",     -22.5136, -44.0022),
+    ("Resende",       -22.4686, -44.4468),
+    ("Piraí",         -22.6289, -43.8981),
+    ("Porto Real",    -22.4189, -44.2947),
     ("Rio Claro",     -22.7203, -44.1400),
+    ("Barra do Piraí", -22.4711, -43.8256),
+    ("Itatiaia",      -22.4906, -44.5636),
 ]
+
+# Deslocamento do vídeo da tarde. Com 10 cidades, 5 é a metade exata da volta:
+# a Dona Maria fica sempre no lado oposto do rodízio, então nunca cai na mesma
+# cidade que o Ranzinza destacou de manhã.
+DESLOCA_TARDE = 5
+
+
+def ordem_do_dia(cidades, data=None, desloca=0):
+    """Gira a lista de cidades pela data — a principal muda todo dia.
+
+    `data` é a data de PUBLICAÇÃO, não a da previsão. Os dois vídeos do mesmo
+    dia (o do Ranzinza fala de hoje, o da Dona Maria fala de amanhã) precisam
+    girar pelo mesmo referencial, senão o de 18h repetiria a cidade que o de
+    06h já usou. Quem separa os dois é `desloca`, não a data.
+
+    Determinístico: mesma data, mesma ordem. Rodar de novo hoje refaz o mesmo
+    vídeo, igual à semente do roteiro em gerar_dia.py.
+    """
+    if not cidades:
+        return cidades
+    d = data or datetime.date.today()
+    n = (d.toordinal() + int(desloca)) % len(cidades)
+    return cidades[n:] + cidades[:n]
 
 
 # --- WMO weather code -> a condição que a lib de desenho entende -------------
@@ -134,6 +175,9 @@ def montar(cidades, respostas, indice_dia):
 
     return {
         "data": data,
+        # a cidade da vez: é ela que dá o nome ao selo na tela e, por
+        # consequência, o que a miniatura da grade mostra
+        "destaque": saida[0]["nome"] if saida else None,
         "cidades": saida,
         "umidade_min": round(min(umidades)) if umidades else None,
         # --- usados pelo bloco da Dona Maria ---
@@ -152,7 +196,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--saida", default="dia.json")
     ap.add_argument("--quando", choices=["hoje", "amanha"], default="hoje")
-    ap.add_argument("--cidades", help="lista separada por vírgula pra sobrescrever a padrão")
+    ap.add_argument("--cidades", help="lista separada por vírgula pra sobrescrever a padrão "
+                                      "(desliga o rodízio: a ordem passa a ser a sua)")
+    ap.add_argument("--desloca", type=int, default=None,
+                    help="posições extras no rodízio. Padrão: 0 pra hoje (Ranzinza) "
+                         f"e {DESLOCA_TARDE} pra amanhã (Dona Maria)")
+    ap.add_argument("--sem-rodizio", action="store_true",
+                    help="mantém a ordem fixa da lista (Volta Redonda sempre primeiro)")
     a = ap.parse_args()
 
     cidades = CIDADES
@@ -164,6 +214,11 @@ def main():
             sys.exit(f"cidade desconhecida: {', '.join(faltando)}\n"
                      f"disponíveis: {', '.join(c[0] for c in CIDADES)}")
         cidades = [por_nome[n] for n in querido]
+    elif not a.sem_rodizio:
+        desloca = a.desloca
+        if desloca is None:
+            desloca = 0 if a.quando == "hoje" else DESLOCA_TARDE
+        cidades = ordem_do_dia(cidades, desloca=desloca)
 
     idx = 0 if a.quando == "hoje" else 1
     respostas = buscar(cidades, dias=idx + 1 + 1)
@@ -171,6 +226,7 @@ def main():
 
     json.dump(dia, open(a.saida, "w"), ensure_ascii=False, indent=2)
     print(f"ok: {a.saida} — {dia['data']}, {len(dia['cidades'])} cidades")
+    print(f"  cidade da vez: {dia['destaque']}")
     print(f"  umidade mín {dia['umidade_min']}%  |  vento {dia['vento_kmh']} km/h  |  "
           f"sol {dia['sol_h']}h  |  UV {dia['uv_max']}  |  sensação {dia['sensacao_max']}°")
     if dia["chuva_hora"] is not None:

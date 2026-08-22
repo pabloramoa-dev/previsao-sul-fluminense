@@ -397,7 +397,14 @@ def main():
              extra={"data": d["data"],
                     # brisa do fim de tarde: constante e suave, sem significar
                     # nota nenhuma (o índice de varal não existe mais)
-                    "vento_visual": 0.7})
+                    "vento_visual": 0.7,
+                    # a cidade da vez. O coletar_tempo roda o vídeo dela com
+                    # DESLOCA_TARDE, então nunca é a mesma que o Ranzinza
+                    # destacou de manhã — duas cidades citadas por dia.
+                    "destaque": d.get("destaque") or d["cidades"][0]["nome"],
+                    # ela fala do dia seguinte; o rótulo tem que dizer isso,
+                    # senão o selo desmente o cartão logo abaixo
+                    "destaque_rotulo": "AMANHÃ EM"})
 
 
 if __name__ == "__main__":

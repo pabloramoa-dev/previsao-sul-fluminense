@@ -18,6 +18,19 @@ Uso:
     python postar_reel.py --video https://.../REEL.mp4 --dados dia.json
     python postar_reel.py --video ... --dados amanha.json --voz maria --quando amanha
     python postar_reel.py --video ... --dados dia.json --dry-run   # só mostra a legenda
+
+CAPA (thumb_offset)
+-------------------
+Por padrão o Instagram usa o PRIMEIRO frame do vídeo como capa — e o primeiro
+frame aqui é de propósito um frame limpo, sem painel nem legenda, pro loop
+fechar sem emenda (ver piloto.py, técnica 2). Resultado na grade do perfil: dez
+miniaturas iguais, sem nada dizendo de que cidade é cada vídeo.
+
+`thumb_offset` resolve isso sem estragar o loop: a capa passa a ser um frame
+lá do meio da abertura, quando o selo da cidade está na tela. O padrão de
+1500 ms cai dentro dessa janela com folga — o selo entra em 0,18 s e só sai
+quando o cartão de mínima/máxima toma a faixa do painel, o que nunca acontece
+antes da 4ª batida (uns 8 s de narração).
 """
 import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
@@ -108,7 +121,10 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
     # Em 2026-08-22 a pergunta fechada deu lugar à chamada do bairro. A função
     # pergunta() continua no engajamento.py, pronta pra voltar se a DM cansar.
     linhas += ["", engajamento.chamada_bairro(slot)]
-    linhas += ["", engajamento.hashtags(slot, cond)]
+    # a cidade da vez vai na frente das hashtags: o vídeo pode ser inteiro
+    # sobre Quatis enquanto o conjunto do dia só cita Volta Redonda
+    linhas += ["", engajamento.hashtags(
+        slot, cond, destaque=dia.get("destaque") or (cid[0]["nome"] if cid else None))]
     return "\n".join(linhas)
 
 
@@ -205,6 +221,9 @@ def main():
                     help="de quem é a legenda")
     ap.add_argument("--quando", choices=["hoje", "amanha"], default="hoje",
                     help="de que dia são os números (o Reel das 18h é 'amanha')")
+    ap.add_argument("--capa-ms", type=int, default=1500,
+                    help="milissegundo do vídeo usado como capa na grade. "
+                         "0 = primeiro frame (limpo, sem o nome da cidade)")
     a = ap.parse_args()
 
     dia = json.load(open(a.dados))
@@ -222,13 +241,19 @@ def main():
     cota(ig_user, token)
 
     print("[1/3] criando o container do Reel")
-    r = _post(f"{ig_user}/media", {
+    if a.capa_ms:
+        print(f"  capa: frame de {a.capa_ms} ms "
+              f"(onde o selo de {dia.get('destaque') or 'cidade'} está na tela)")
+    corpo_reel = {
         "media_type": "REELS",
         "video_url": a.video,
         "caption": cap,
         "share_to_feed": "false" if a.sem_feed else "true",
         "access_token": token,
-    })
+    }
+    if a.capa_ms:
+        corpo_reel["thumb_offset"] = str(a.capa_ms)
+    r = _post(f"{ig_user}/media", corpo_reel)
     cid = r["id"]
     print(f"  container {cid}")
 

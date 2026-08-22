@@ -18,6 +18,11 @@ AS QUATRO TÉCNICAS DE RETENÇÃO:
   4. CÂMERA — push-in nos primeiros segundos e deriva lenta depois; nunca
      totalmente parada.
 
+E uma quinta coisa, que não é retenção e sim IDENTIFICAÇÃO: o SELO DA CIDADE da
+vez, na faixa do painel, durante as primeiras batidas. Ele existe pela grade do
+perfil — sem ele, dez Reels seguidos são dez miniaturas idênticas e ninguém
+sabe de que cidade é cada uma. Ver `previsao_lib.selo_cidade`.
+
 Render:
   RANZINZA_TRAB=_trab DVH_LIP_JSON=_trab/lip_full.json \
       manim -qm --fps 30 piloto.py Piloto
@@ -54,6 +59,15 @@ COM_GUARDA_CHUVA = PERSONAGEM != "maria"
 FIM = SEGS[-1]["fim"]
 
 Y_PAINEL = 4.5
+# O selo da cidade fica ABAIXO da faixa do painel, e não é capricho estético:
+# ele é o único elemento desenhado pra ser lido na GRADE do perfil, e a grade
+# mostra o Reel recortado (hoje 3:4, |y| <= 5.33; já foi 1:1, |y| <= 4.0). Em
+# 3.95 o selo cabe com folga nos dois recortes, o que faz dele o único elemento
+# à prova de a Meta mexer nisso de novo.
+#
+# Embaixo ele também está livre: o topo do Ranzinza é 2.37, o do cartaz do
+# gancho (que fica no centro) é 2.91, e a base do selo aqui é 3.33.
+Y_SELO = 3.95
 Y_LEGENDA = -2.2          # terço central, não o rodapé
 TETO_CENA = 3.25          # nada do personagem passa disto: acima é o painel
 LIMPO = 0.30              # frame limpo no FIM, pro loop fechar
@@ -248,6 +262,28 @@ class Piloto(MovingCameraScene):
                 m.move_to([0, Y_PAINEL, 0])
             paineis.append((ini, fim, m))
         self.add(P.trilha_temporal(paineis, pop=0.20))
+
+        # ---------------- selo da cidade da vez (o que a GRADE mostra) -----
+        # A faixa do painel só é ocupada a partir da primeira batida que desenha
+        # um cartão lá em cima — até lá ela está vazia, porque o gancho mora no
+        # centro da tela. O selo ocupa essa janela e sai antes de disputar
+        # espaço com qualquer coisa.
+        destaque = CONT.get("destaque")
+        if destaque:
+            fim_selo = FIM - LIMPO
+            for i, b in enumerate(BATIDAS):
+                if i == 0 or i >= len(SEGS):
+                    continue
+                if b["tipo"] in ("gancho", "cta"):
+                    continue          # esses dois vão pro centro, não pra faixa
+                if painel(b["tipo"], b.get("dados") or {}) is not None:
+                    fim_selo = max(SEGS[i]["ini"], ABERTURA)
+                    break
+            if fim_selo > ABERTURA:
+                selo = P.selo_cidade(destaque,
+                                     CONT.get("destaque_rotulo", "HOJE EM"))
+                selo.move_to([0, Y_SELO, 0])
+                self.add(P.trilha_temporal([(ABERTURA, fim_selo, selo)], pop=0.20))
 
         # ---------------- TÉCNICA 3: legenda karaokê central --------------
         legs = []

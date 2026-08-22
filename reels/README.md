@@ -82,6 +82,57 @@ cerca de 150 min/mês. Repositório público tem Actions ilimitado.
 4. **Câmera** — push-in nos primeiros 2s, deriva lenta depois, volta ao
    enquadramento inicial pro loop fechar.
 
+## Rodízio de cidades e o selo na grade
+
+Volta Redonda era sempre a cidade principal — a primeira da lista em
+`coletar_tempo.py`. Duas consequências ruins, e a segunda só aparece quando se
+olha o perfil em vez do vídeo:
+
+1. As outras nove cidades nunca abriam um vídeo. Quem mora em Quatis ouvia o
+   nome do município no meio da terceira batida, se ouvisse.
+2. Na **grade**, dez Reels seguidos eram dez miniaturas do mesmo velho na mesma
+   varanda. Nada ali dizia de que cidade era cada vídeo.
+
+O conserto tem três partes:
+
+**A lista gira por data.** `ordem_do_dia()` roda a lista de cidades em
+`(data.toordinal() + desloca) % 10`. A cidade principal muda todo dia e cada uma
+volta a cada dez dias, sem repetir na sequência. Continua determinístico: rodar
+duas vezes no mesmo dia dá o mesmo vídeo.
+
+**Os dois vídeos do dia nunca coincidem.** O Ranzinza roda com deslocamento 0 e
+a Dona Maria com `DESLOCA_TARDE = 5` — metade exata da volta, então ela está
+sempre no lado oposto do rodízio. São duas cidades citadas por dia.
+
+**O nome vai pra tela nas primeiras batidas.** `previsao_lib.selo_cidade()`
+desenha "HOJE EM / VOLTA REDONDA" (ou "AMANHÃ EM", no vídeo dela) em `Y_SELO`,
+enquanto o gancho está no centro e a faixa do painel está livre. O selo sai
+quando o cartão de mínima/máxima ocupa aquele lugar, por volta dos 11s.
+
+**A capa não é o primeiro frame.** O primeiro frame é de propósito limpo, pro
+loop fechar sem emenda — se a capa fosse ele, todo esse trabalho não apareceria
+na grade. `postar_reel.py` manda `thumb_offset=1500` (ms), um frame de dentro da
+janela do selo. `--capa-ms 0` volta ao comportamento antigo.
+
+**A hashtag da cidade da vez entra na frente.** Os cinco conjuntos de hashtags
+foram escritos quando Volta Redonda era fixa. Com o rodízio, o vídeo pode ser
+inteiro sobre Quatis e o conjunto do dia citar só Volta Redonda e Barra Mansa —
+justamente quem procura pelo município não acharia. `engajamento.hashtags()`
+agora recebe `destaque` e põe `#quatis` na primeira posição, sem duplicar se a
+tag já estiver no conjunto.
+
+Duas medidas que valem lembrar se mexer no selo:
+
+- **`Y_SELO = 3.95`, e não a faixa do painel (4.5).** A grade mostra o Reel
+  recortado — hoje 3:4 (|y| ≤ 5.33), já foi 1:1 (|y| ≤ 4.0). Em 3.95 o selo cabe
+  nos dois, o que o deixa imune à Meta mexer nisso de novo.
+- **Corpo 56 em caixa alta.** Na grade o quadro aparece com ~330px de largura,
+  menos de um terço do render. O que não se lê nesse tamanho não existe.
+
+Pra desligar tudo: `coletar_tempo.py --sem-rodizio` volta a ordem fixa, e sem o
+campo `destaque` no JSON o `piloto.py` simplesmente não desenha o selo.
+
+
 ## Índice de varal
 
 Não existe índice oficial. É uma composição própria de umidade (35%), vento

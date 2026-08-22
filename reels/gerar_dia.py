@@ -763,7 +763,13 @@ def gerar(dados, saida, quality="m"):
                     calor=max(c["max"] for c in dados["cidades"]) >= 31,
                     personagem="ranzinza", cenario_tipo="varanda",
                     quality=quality, voz="pm_alex", pitch=0.88,
-                    extra={"data": dados["data"]})
+                    extra={"data": dados["data"],
+                           # a cidade da vez, escrita na tela nas primeiras
+                           # batidas: é o que faz a miniatura da grade dizer
+                           # de que cidade é este vídeo (ver selo_cidade)
+                           "destaque": dados.get("destaque")
+                                       or dados["cidades"][0]["nome"],
+                           "destaque_rotulo": "HOJE EM"})
 
 
 DEMO = {

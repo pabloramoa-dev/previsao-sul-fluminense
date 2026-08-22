@@ -985,6 +985,43 @@ def marca_dagua():
     return VGroup(band, t)
 
 
+def selo_cidade(nome, rotulo="HOJE EM"):
+    """A cidade da vez, escrita grande acima da cabeça do personagem.
+
+    Existe por causa da GRADE do perfil, não do vídeo. Na grade os dez últimos
+    Reels são dez miniaturas do mesmo velho na mesma varanda — nada ali diz de
+    que cidade é cada um. Este selo é o que diferencia uma miniatura da outra.
+
+    Três decisões:
+
+    - **Na faixa do painel (y ≈ 4.5), não no topo do quadro.** A grade exibe o
+      Reel recortado em 3:4, ou seja, corta ~240px de cima e de baixo do 9:16.
+      A marca d'água (y 6.35) fica FORA desse recorte — colocar o nome junto
+      dela seria escrever pra ninguém. Em y 4.5 o nome sobrevive ao corte.
+
+    - **Só nas primeiras batidas.** Nessa altura o gancho está no centro da
+      tela e a faixa do painel está livre; a partir da batida `cidade` o
+      cartão de mínima/máxima ocupa o mesmo lugar e o selo sai. O primeiro
+      frame continua limpo (`ABERTURA`), então o loop segue sem emenda — quem
+      escolhe o frame da capa é o `thumb_offset` do postar_reel.py.
+
+    - **Caixa alta e corpo grande.** Na grade o quadro aparece com ~330px de
+      largura, menos de um terço do render. O que não se lê nesse tamanho não
+      existe: por isso o nome vem em 56 e o rótulo, que é acessório, em 26.
+    """
+    largura = larg_segura()
+    rot = Text(rotulo, font=FONTE, weight=BOLD, font_size=26, color=AMAR)
+    cid = Text(nome.upper(), font=FONTE, weight=BOLD, font_size=56, color=WHITE)
+    miolo = VGroup(rot, cid).arrange(DOWN, buff=0.08)
+    if miolo.width > largura - 0.7:
+        miolo.scale((largura - 0.7) / miolo.width)
+    band = RoundedRectangle(width=largura, height=miolo.height + 0.5,
+                            corner_radius=0.2, fill_color=BLACK, fill_opacity=0.68,
+                            stroke_color=WHITE, stroke_width=3)
+    miolo.move_to(band)
+    return VGroup(band, miolo)
+
+
 # =====================================================================
 #  DONA MARIA — o bloco prático da hora do almoço
 #  Contraponto do Ranzinza: ele reclama de manhã, ela resolve à tarde.

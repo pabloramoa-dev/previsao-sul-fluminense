@@ -27,6 +27,7 @@ cálculo do índice.
 from __future__ import annotations
 
 import datetime as _dt
+import unicodedata as _unicodedata
 
 SLOTS = ("manha", "noite")
 
@@ -77,13 +78,32 @@ def _indice(slot: str, data=None) -> int:
     return i_noite if i_noite != i_manha else (i_noite + 1) % len(CONJUNTOS)
 
 
-def hashtags(slot: str, condicao: str = "nublado", data=None) -> str:
-    """Conjunto do dia + as tags de contexto, sem repetir.
+def tag_cidade(nome: str) -> str:
+    """#nomedacidade — minúsculas, sem espaço e sem acento."""
+    base = _unicodedata.normalize("NFKD", nome or "")
+    base = "".join(c for c in base if not _unicodedata.combining(c))
+    return "#" + "".join(c for c in base.lower() if c.isalnum())
+
+
+def hashtags(slot: str, condicao: str = "nublado", data=None,
+             destaque: str = None) -> str:
+    """Conjunto do dia + a cidade da vez + as tags de contexto, sem repetir.
 
     O dedup importa: #chuvahoje está no conjunto 5 E no contexto de chuva, e a
     mesma tag duas vezes na legenda é sinal de spam pro Instagram.
+
+    `destaque` entra na FRENTE e nunca falta: desde que a lista de cidades gira
+    por data (ver coletar_tempo.ordem_do_dia), o vídeo pode ser inteiro sobre
+    Quatis enquanto o conjunto do dia só cita Volta Redonda e Barra Mansa. A
+    tag do município de que o vídeo fala é a única que não pode estar ausente —
+    é por ela que quem mora lá encontra o vídeo.
     """
-    tags = list(CONJUNTOS[_indice(slot, data)])
+    tags = []
+    if destaque:
+        tags.append(tag_cidade(destaque))
+    for t in CONJUNTOS[_indice(slot, data)]:
+        if t not in tags:
+            tags.append(t)
     for t in CONTEXTO.get(condicao, []):
         if t not in tags:
             tags.append(t)
