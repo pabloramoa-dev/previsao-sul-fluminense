@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-astronomia.py -- Fase da lua para os carrosseis do @previsaosulfluminense.
+astronomia.py -- Fase da lua para os carrosseis do @previsaosulflu.
 Usa a biblioteca astral (Apache-2.0, gratuita, sem API/chave), ja que o
 Open-Meteo NAO fornece fase da lua. Nascer/por do sol continuam vindo do
 Open-Meteo; aqui tratamos apenas a Lua.
