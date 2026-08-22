@@ -36,7 +36,7 @@ PERGUNTA = AQUI / "pergunta.html"
 SAIDA = AQUI / "saida"
 
 LARGURA, ALTURA = 1080, 1350
-PERFIL = "@previsaosulfluminense"
+PERFIL = "@previsaosulflu"
 
 # paleta fixa dos slides que nao dependem do weathercode
 PALETAS_TIPO = {
