@@ -205,38 +205,26 @@ FECHOS = [
     "Cuidem-se com carinho. A tia se despede por hoje.",
 ]
 
-# Mesmo CTA, outra voz: ela pede com jeito, ele pede contrariado.
+# Mesmo CTA do bairro, outra voz: ela pede com jeito, ele pede contrariado.
+# Ver a nota longa em gerar_dia.py sobre por que a fala diz "mensagem" e
+# nunca "DM" — o Kokoro soletra sigla.
 CTA = [
-    "E segue a gente, viu? Assim você não perde nenhum.",
-    "Aperta o seguir, meu bem. É rapidinho.",
-    "Segue o perfil pra não ser pego de surpresa amanhã.",
-    "Se ainda não segue, segue agora. Eu agradeço.",
-    "Segue a gente, meu amor, pra não perder nada.",
-    "Aperta o seguir, é rapidinho e ajuda demais.",
-    "Segue o perfil e me chama se precisar.",
-    "Ainda não segue? Segue agora, eu agradeço de coração.",
-    "Toca no seguir, meu bem. Faz companhia pra tia.",
-    "Segue a gente pra receber a dica todo dia certinho.",
-    "Aperta o seguir e compartilha com quem você ama.",
-    "Segue o canal, que amanhã tem mais cuidado com você.",
-    "Clica no seguir, viu? É de graça e ajuda muito a gente.",
-    "Segue o perfil pra nunca mais sair sem guarda-chuva.",
-    "Aperta o seguir, meu amor. A tia fica feliz.",
-    "Segue a gente e manda pro grupo da família.",
-    "Toca no seguir e ative o sininho, pra não perder aviso.",
-    "Segue o perfil, que juntos a gente se cuida melhor.",
-    "Aperta ali no seguir. Leva um segundinho, só.",
-    "Segue a gente, meu bem, e me acompanha todo dia.",
-    "Clica no seguir e marca aquele amigo esquecido.",
-    "Segue o canal pra saber quando a chuva vem.",
-    "Aperta o seguir com carinho. A tia retribui em dica.",
-    "Segue a gente pra acordar sempre sabendo o que vem.",
-    "Toca no seguir, meu amor. Assim eu sei que você tá aí.",
-    "Segue o perfil e compartilha com a vizinhança.",
-    "Aperta o seguir. É o carinho que mantém a gente aqui.",
-    "Segue a gente e não perde nenhum aviso importante.",
-    "Clica no seguir, viu? Prometo dica boa todo dia.",
-    "Segue o canal pra cuidar melhor de quem você ama.",
+    "Manda o nome do teu bairro na mensagem, meu bem. Eu respondo na hora.",
+    "Me escreve o teu bairro numa mensagem, meu amor. A tia diz o tempo daí.",
+    "Manda mensagem com o nome do teu bairro. Aí a previsão é sua, viu?",
+    "Quer saber do teu bairro? Me manda o nome numa mensagem, meu bem.",
+    "Escreve o teu bairro na mensagem, meu amor. Eu já te devolvo certinho.",
+    "Manda o bairro numa mensagem pra tia. Respondo rapidinho, prometo.",
+    "Me diz onde você mora numa mensagem. É só o nome do bairro, meu bem.",
+    "Manda mensagem com o teu bairro e recebe a previsão do teu canto.",
+    "Teu bairro numa mensagem, meu amor. A tia cuida do resto.",
+    "Escreve o nome do bairro na mensagem. Assim eu falo direto com você.",
+    "Manda o teu bairro pra mim numa mensagem. Nem precisa dizer oi.",
+    "Me manda o bairro numa mensagem, viu? Eu respondo até tarde.",
+    "Manda o nome do teu bairro. Uma mensagem só, meu bem, e pronto.",
+    "Escreve o teu bairro numa mensagem e compartilha com a vizinhança.",
+    "Manda mensagem com o bairro, meu amor. A tia não te deixa na chuva.",
+    "Teu bairro, numa mensagem. Aí a previsão sai sob medida pra você.",
 ]
 
 
@@ -338,7 +326,8 @@ def montar_roteiro(d):
     add(f"{rnd.choice(FECHOS)} {rnd.choice(PASSAGEM)}",
         "Amanhã cedo o velho confirma.",
         tipo="fecho", texto="AMANHÃ VOCÊ JÁ SABE")
-    add(rnd.choice(CTA), tipo="cta", chamada="TOCA NO SEGUIR")
+    add(rnd.choice(CTA), tipo="cta", chamada="TEU BAIRRO NA DM",
+        sub="manda o nome e eu respondo a previsão daí")
     return batidas
 
 
