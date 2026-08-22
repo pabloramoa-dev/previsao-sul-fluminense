@@ -181,6 +181,26 @@ def slide_sol_lua(tipo: str, resumo: dict[str, Any], nascer: str, por: str,
     return _salvar(img, f"{tipo}_sol_lua.png")
 
 
+def slide_bairro(tipo: str, perfil: str = "@previsaosulflu") -> str:
+    """Fallback em Pillow do último slide: a chamada do robô de DM por bairro.
+
+    Espelha o motor HTML (cards_html/motor.py :: montar_bairro). Se o Playwright
+    falhar no runner, é este slide que sai — e ele precisa dizer a mesma coisa,
+    senão o carrossel promete uma coisa e o Reel promete outra.
+    """
+    pal = PALETAS[tipo]
+    img = _fundo(tipo)
+    d = ImageDraw.Draw(img)
+    y = 360
+    y = _texto_centralizado(d, y, "Manda o nome do teu bairro na DM",
+                            _fonte(72, bold=True), pal["texto"])
+    y += 60
+    y = _texto_centralizado(d, y, "e eu respondo a previsão dele",
+                            _fonte(50), pal["destaque"])
+    _texto_centralizado(d, H - 200, perfil, _fonte(40), pal["texto"])
+    return _salvar(img, f"{tipo}_bairro.png")
+
+
 def slide_pergunta(tipo: str, pergunta: str, perfil: str = "@previsaosulflu") -> str:
     pal = PALETAS[tipo]
     img = _fundo(tipo)
@@ -217,7 +237,7 @@ def _manha_pillow(cidades, resumo, indices_itens, pergunta,
         slides.append(slide_cidade("manha", c, i))
     slides.append(slide_sol_lua("manha", resumo,
                                 cidades[0].nascer_sol, cidades[0].por_sol, fase_lua))
-    slides.append(slide_pergunta("manha", pergunta))
+    slides.append(slide_bairro("manha"))
     return slides
 
 
@@ -231,7 +251,7 @@ def _noite_pillow(cidades, resumo, pergunta, fase_lua) -> list[str]:
     slides.append(slide_texto_livre("noite", "LUA E AMANHÃ",
                                     f"Fase: {fase_lua}. Amanhã o sol nasce às "
                                     f"{cidades[0].nascer_sol}.", "lua_amanha"))
-    slides.append(slide_pergunta("noite", pergunta))
+    slides.append(slide_bairro("noite"))
     return slides
 
 
@@ -296,7 +316,7 @@ def _fim_de_semana_pillow(cidades, resumo, pergunta) -> list[str]:
                          resumo["data_extenso"], "SUL FLUMINENSE")]
     for i, c in enumerate(cidades, start=1):
         slides.append(slide_cidade("fim_de_semana", c, i))
-    slides.append(slide_pergunta("fim_de_semana", pergunta))
+    slides.append(slide_bairro("fim_de_semana"))
     return slides
 
 
@@ -309,7 +329,7 @@ def _curiosidade_pillow(item, pergunta) -> list[str]:
                           item.get("titulo", ""), "capa"),
         slide_texto_livre("curiosidade", item.get("veredito", ""), corpo,
                           "resposta"),
-        slide_pergunta("curiosidade", pergunta),
+        slide_bairro("curiosidade"),
     ]
 
 
