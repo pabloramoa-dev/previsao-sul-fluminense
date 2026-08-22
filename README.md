@@ -1,7 +1,7 @@
 # previsao-sul-fluminense
 
 Automacao 100% automatica de previsao do tempo para o Instagram
-**@previsaosulfluminense**, cobrindo 5 cidades do Sul Fluminense:
+**@previsaosulflu**, cobrindo 5 cidades do Sul Fluminense:
 Volta Redonda, Barra Mansa, Resende, Porto Real e Angra dos Reis.
 
 ## O que ele publica
