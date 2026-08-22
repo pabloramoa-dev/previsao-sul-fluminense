@@ -93,6 +93,48 @@ jobs:
           gh secret set IG_ACCESS_TOKEN --body "${NOVO}" --repo "${{ github.repository }}"
           echo "Secret IG_ACCESS_TOKEN atualizado."
 
+      - name: Atualizar o token no robo de DM (Render)
+        id: render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: srv-da4m8fbtqb8s738a3afg
+          NOVO: ${{ steps.refresh.outputs.novo_token }}
+        run: |
+          # O robo de DM (dm/webhook_ig.py) roda no Render com uma COPIA deste
+          # token. Sem este passo, a copia nao recebe a renovacao e o robo para
+          # de responder DM uns 60 dias depois, em silencio, sem avisar ninguem.
+          #
+          # Este passo NUNCA derruba o workflow: neste ponto a renovacao do
+          # token ja deu certo e o secret ja foi gravado. O que acontecer aqui
+          # e relatado no e-mail de sucesso, nao vira falha.
+          set -uo pipefail
+          if [ -z "${RENDER_API_KEY:-}" ]; then
+            echo "status=NAO CONFIGURADO (falta o secret RENDER_API_KEY)" >> "$GITHUB_OUTPUT"
+            echo "::warning::RENDER_API_KEY ausente. O robo de DM segue com o token antigo e vai parar quando ele vencer."
+            exit 0
+          fi
+          corpo=$(python3 -c 'import json,os;print(json.dumps({"value":os.environ["NOVO"]}))')
+          code=$(curl -sS -o /tmp/render.json -w '%{http_code}' -X PUT \
+            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars/IG_ACCESS_TOKEN" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "${corpo}")
+          if [ "${code}" != "200" ] && [ "${code}" != "201" ]; then
+            echo "status=FALHOU (HTTP ${code}) -- o robo de DM vai vencer" >> "$GITHUB_OUTPUT"
+            echo "::warning::O Render recusou a atualizacao do token (HTTP ${code})."
+            cat /tmp/render.json
+            exit 0
+          fi
+          # Trocar a variavel nem sempre dispara deploy sozinha; forcamos um
+          # para o processo do Flask reler o token novo.
+          dcode=$(curl -sS -o /tmp/deploy.json -w '%{http_code}' -X POST \
+            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache":"do_not_clear"}')
+          echo "status=OK (deploy solicitado, HTTP ${dcode})" >> "$GITHUB_OUTPUT"
+          echo "Token atualizado no Render e deploy disparado."
+
       - name: Avisar sucesso por e-mail
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -110,6 +152,7 @@ jobs:
 
             Nova validade: ${{ steps.refresh.outputs.dias }} dias.
             Proxima renovacao: dia 1o do mes que vem.
+            Robo de DM (Render): ${{ steps.render.outputs.status }}
 
             Nenhuma acao necessaria da sua parte.
 
