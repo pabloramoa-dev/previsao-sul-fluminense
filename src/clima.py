@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 clima.py - Coleta de dados meteorologicos do Open-Meteo para o
-@previsaosulfluminense. Cobre 5 cidades do Sul Fluminense.
+@previsaosulflu. Cobre 5 cidades do Sul Fluminense.
 
 Endpoints usados (todos gratuitos, sem chave):
 - /v1/forecast    : previsao diaria + horaria + sol/UV
@@ -29,12 +29,24 @@ _TZ = ZoneInfo(TIMEZONE)
 TIMEOUT = 30
 
 # Cidades cobertas (nome -> coordenadas)
+#
+# IMPORTANTE: esta lista tem que espelhar CIDADES de reels/coletar_tempo.py.
+# Ate 21/08/2026 as duas divergiam: os Reels diarios falavam de Barra do Pirai,
+# Pirai, Itatiaia, Quatis, Pinheiral e Rio Claro, mas o detector de alertas so
+# olhava 5 cidades e incluia Angra dos Reis, que nao aparece em nenhum conteudo
+# nem na bio do perfil. Na pratica, um temporal em Barra do Pirai nunca gerava
+# alerta. Se voce mexer aqui, mexa la tambem.
 CIDADES = [
-    {"nome": "Volta Redonda", "lat": -22.5231, "lon": -44.1042},
-    {"nome": "Barra Mansa", "lat": -22.5446, "lon": -44.1719},
-    {"nome": "Resende", "lat": -22.4705, "lon": -44.4509},
-    {"nome": "Porto Real", "lat": -22.4175, "lon": -44.2952},
-    {"nome": "Angra dos Reis", "lat": -23.0067, "lon": -44.3181},
+    {"nome": "Volta Redonda", "lat": -22.5231, "lon": -44.1041},
+    {"nome": "Barra Mansa", "lat": -22.5441, "lon": -44.1712},
+    {"nome": "Porto Real", "lat": -22.4189, "lon": -44.2947},
+    {"nome": "Resende", "lat": -22.4686, "lon": -44.4468},
+    {"nome": "Barra do Piraí", "lat": -22.4711, "lon": -43.8256},
+    {"nome": "Piraí", "lat": -22.6289, "lon": -43.8981},
+    {"nome": "Itatiaia", "lat": -22.4906, "lon": -44.5636},
+    {"nome": "Quatis", "lat": -22.4064, "lon": -44.2578},
+    {"nome": "Pinheiral", "lat": -22.5136, "lon": -44.0022},
+    {"nome": "Rio Claro", "lat": -22.7203, "lon": -44.1400},
 ]
 
 # Dias e meses em portugues (runner do Actions nao tem locale pt_BR)
