@@ -69,40 +69,34 @@ ABERTURAS = [
     "Bom dia. Já reclamando, pra não perder o costume.",
 ]
 
-# CTA de seguir — entra no FIM DE TODO VÍDEO, na voz do personagem. Pedido
-# seco funciona mal; no jeito dele (a contragosto) vira piada e as pessoas
-# lembram. É a última batida antes do frame limpo que fecha o loop.
+# CTA DO BAIRRO — entra no FIM DE TODO VÍDEO, na voz do personagem.
+#
+# Trocou o antigo "toca no seguir" em 2026-08-22. O motivo: o robô de DM por
+# bairro entrou no ar e nada no perfil apontava pra ele — a permissão de
+# mensagens tinha ZERO chamadas. Pedir o bairro é um pedido mais forte que
+# pedir seguir: mensagem direta pesa mais que curtida no ranqueamento, e a
+# resposta automática já termina com "Segue o @previsaosulflu", então o
+# pedido de seguir continua acontecendo, só que depois da conversa.
+#
+# A fala diz "mensagem", nunca "DM": o Kokoro lê sigla soletrando. Quem
+# escreve "DM" é o cartaz na tela, que ninguém precisa pronunciar.
 CTA = [
-    "E segue o perfil. Não que eu me importe.",
-    "Aperta o seguir aí. Faz isso por mim, vai.",
-    "Se seguir, eu volto amanhã. Se não seguir, também volto.",
-    "Segue aí. Custa o quê, um dedo?",
-    "Segue o perfil. Já que perdeu tempo até aqui.",
-    "Aperta o seguir. Não vai doer, prometo. Quase.",
-    "Segue. Faça um velho feliz, pra variar.",
-    "Clica no seguir. É de graça, diferente de tudo hoje.",
-    "Segue aí, vai. Nem eu aguento repetir isso todo dia.",
-    "Aperta o seguir. Depois não diga que não avisei do tempo.",
-    "Segue o perfil. Assim divido meu mau humor com mais gente.",
-    "Toca no seguir. É o mínimo depois de me ouvir reclamar.",
-    "Segue. Prometo continuar rabugento, se é isso que te prende.",
-    "Aperta ali no seguir. Um clique, uma boa ação.",
-    "Segue o canal. Amanhã tem mais reclamação garantida.",
-    "Clica no seguir antes que eu mude de ideia.",
-    "Segue aí. Não é pedido, é quase uma ordem.",
-    "Aperta o seguir. Faça de conta que gosta de mim.",
-    "Segue o perfil. Eu finjo que não ligo, mas ligo.",
-    "Toca no seguir. É rápido, ao contrário desse frio.",
-    "Segue. Um velho ranzinza também precisa de plateia.",
-    "Aperta ali. Seguir é grátis, chorar depois também.",
-    "Segue o perfil pra não errar o guarda-chuva amanhã.",
-    "Clica no seguir. Vai por mim, que erro pouco.",
-    "Segue aí. Depois reclama comigo nos comentários.",
-    "Aperta o seguir. Assim você me aguenta oficialmente.",
-    "Segue o canal. Previsão certa e mau humor de brinde.",
-    "Toca no seguir. Nem custa e ainda me faz companhia.",
-    "Segue. Quem avisa tempo ruim merece ser seguido.",
-    "Aperta o seguir. Depois não venha dizer que ninguém te avisou.",
+    "Manda o nome do teu bairro na mensagem. Eu respondo, contrariado.",
+    "Não sabe como fica no teu bairro? Manda o nome na mensagem.",
+    "Me manda o teu bairro por mensagem. É a única conversa que eu aceito.",
+    "Escreve o nome do teu bairro na mensagem. Respondo na hora, infelizmente.",
+    "Manda mensagem com o teu bairro. Eu digo o tempo daí, direitinho.",
+    "Teu bairro, por mensagem. Eu respondo antes de me arrepender.",
+    "Manda o bairro na mensagem. Sim, funciona. Não, não pergunte como.",
+    "Escreve o teu bairro aqui na mensagem. Eu já devolvo a previsão.",
+    "Manda mensagem com o nome do bairro. Faço isso por vocês, criaturas.",
+    "Quer a previsão do teu canto? Manda o bairro na mensagem.",
+    "Me diz o teu bairro por mensagem. Eu respondo até de madrugada.",
+    "Manda o nome do bairro na mensagem. Aí acaba a desculpa de não saber.",
+    "Bairro na mensagem. É só isso. Não compliquem.",
+    "Manda o teu bairro na mensagem. Prometo responder sem reclamar. Quase.",
+    "Escreve o bairro na mensagem que eu digo o tempo exato daí.",
+    "Manda mensagem com o teu bairro. É rápido, ao contrário de vocês.",
 ]
 
 FECHOS = [
@@ -689,7 +683,8 @@ def montar_roteiro(dados):
             tipo="chuva", cidade=pico)
 
     add(rnd.choice(FECHOS), tipo="fecho")
-    add(rnd.choice(CTA), tipo="cta", chamada="TOCA NO SEGUIR")
+    add(rnd.choice(CTA), tipo="cta", chamada="TEU BAIRRO NA DM",
+        sub="manda o nome e eu respondo a previsão daí")
     return batidas
 
 
