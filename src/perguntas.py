@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 perguntas.py -- Banco de perguntas fechadas para o slide de engajamento
-do @previsaosulfluminense. Rotacao sem repeticao via estado.json.
+do @previsaosulflu. Rotacao sem repeticao via estado.json.
 """
 
 import json
