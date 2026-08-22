@@ -1,5 +1,5 @@
 """
-previsao_lib — Seu Ranzinza e os cenários de tempo para o @previsaosulfluminense.
+previsao_lib — Seu Ranzinza e os cenários de tempo para o @previsaosulflu.
 
 Mesma filosofia da dvh_lib: tudo desenhado por código, traço grosso, cabeça
 grande, personagem SEMPRE idêntico entre os vídeos. Custo zero, sem IA de imagem.
@@ -978,7 +978,7 @@ def trilha_temporal(itens, pop=0.16):
 
 def marca_dagua():
     """Selo do perfil no topo — identidade visual fixa."""
-    t = Text("@previsaosulfluminense", font=FONTE, weight=BOLD, font_size=28, color=WHITE)
+    t = Text("@previsaosulflu", font=FONTE, weight=BOLD, font_size=28, color=WHITE)
     band = RoundedRectangle(width=t.width + 0.5, height=t.height + 0.3,
                             corner_radius=0.14, fill_color=BLACK, fill_opacity=0.55,
                             stroke_width=0)
@@ -1298,7 +1298,7 @@ def roupas_balancando(roupas, vento=1.0, vel=1.5):
 # =====================================================================
 #  CTA DE SEGUIR — última batida de todo vídeo
 # =====================================================================
-def cta_seguir(handle="@previsaosulfluminense", chamada="TOCA NO SEGUIR"):
+def cta_seguir(handle="@previsaosulflu", chamada="TOCA NO SEGUIR"):
     """Cartaz de "siga o perfil" pro fim do vídeo.
 
     Fica no CENTRO da tela, não na faixa do topo: é a última coisa que a pessoa
