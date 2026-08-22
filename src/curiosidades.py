@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 curiosidades.py -- Banco de 52 curiosidades/mitos do clima para o
-carrossel "Mito ou Verdade" de domingo do @previsaosulfluminense.
+carrossel "Mito ou Verdade" de domingo do @previsaosulflu.
 Rotacao sem repeticao (1 por semana = 1 ano completo) via estado.json.
 """
 
