@@ -1,14 +1,16 @@
-name: Post Manha (06h BRT)
+name: Post Manha (11h BRT)
 
 on:
-  # AGENDAMENTO DESLIGADO em 2026-08-14, com base nos numeros de 25/07 a 13/08:
-  # colidia com o Reel do Ranzinza (06h10 x 06h13) e entregava alcance mediano 4 contra 109 do Reel.
-  # A distribuicao do perfil hoje vem dos Reels; os carrosseis de feed
-  # gastavam cota de publicacao da conta e minutos de Actions por ~4 pessoas.
-  # Continua disponivel no botao "Run workflow" para disparo manual.
-  # PARA RELIGAR: descomente as duas linhas de schedule abaixo.
-  # schedule:
-  #    - cron: "5 5 * * *"  # dispara cedo; o job espera ate 09:13 UTC (06:13 BRT)
+  # AGENDAMENTO RELIGADO em 2026-08-22, em HORARIO NOVO.
+  # Foi desligado em 2026-08-14 porque colidia com o Reel do Ranzinza (06h10 x 06h13)
+  # e entregava alcance mediano 4 contra 109 do Reel.
+  # Voltou porque os carrosseis passaram a levar a chamada do robo de DM por
+  # bairro no ultimo slide -- conteudo que o Reel sozinho nao entrega.
+  # O horario mudou pra nao competir com os Reels (06h10 e 18h00):
+  # era 06h13 BRT, agora e 11h00 BRT.
+  # PARA DESLIGAR: comente as duas linhas de schedule abaixo.
+  schedule:
+    - cron: "5 13 * * *"  # dispara cedo; o job espera ate 14:00 UTC (11:00 BRT)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -24,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
-      - name: Aguardar o horario alvo (06:13 BRT)
+      - name: Aguardar o horario alvo (11:00 BRT)
         if: github.event_name == 'schedule'
         run: |
-          ALVO=$(date -u -d "today 09:13" +%s)
+          ALVO=$(date -u -d "today 14:00" +%s)
           AGORA=$(date -u +%s)
           if [ "$AGORA" -lt "$ALVO" ]; then
             ESPERA=$((ALVO - AGORA))
