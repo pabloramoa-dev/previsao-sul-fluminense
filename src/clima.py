@@ -27,6 +27,11 @@ AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 TIMEZONE = "America/Sao_Paulo"
 _TZ = ZoneInfo(TIMEZONE)
 TIMEOUT = 30
+# Pausa entre uma cidade e a proxima em coletar_todas(). Com 10 cidades
+# (2 requisicoes cada) a rajada fazia o Open-Meteo parar de responder no meio
+# da lista e estourar o timeout de leitura. Espalhar as chamadas custa ~15s
+# por execucao e evita o engasgo.
+PAUSA_ENTRE_CIDADES = 1.5
 
 # Cidades cobertas (nome -> coordenadas)
 #
@@ -258,9 +263,11 @@ def processar_cidade(cidade: dict[str, Any]) -> CidadeClima:
 
 
 def coletar_todas() -> list[CidadeClima]:
-    """Coleta clima de todas as 5 cidades. Retorna lista de CidadeClima."""
+    """Coleta clima de todas as cidades de CIDADES. Retorna lista de CidadeClima."""
     resultado: list[CidadeClima] = []
-    for cidade in CIDADES:
+    for indice, cidade in enumerate(CIDADES):
+        if indice:
+            time.sleep(PAUSA_ENTRE_CIDADES)
         try:
             resultado.append(processar_cidade(cidade))
         except requests.RequestException as e:
