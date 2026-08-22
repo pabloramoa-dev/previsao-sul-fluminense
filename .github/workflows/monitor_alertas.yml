@@ -44,11 +44,17 @@ jobs:
         id: chromium
         run: python -m playwright install chromium
 
-      - name: Detectar e publicar alertas
+      # Ate 21/08/2026 este passo gerava o card E mandava o Instagram busca-lo
+      # em raw.githubusercontent.com na mesma execucao - mas o commit das
+      # imagens so acontecia no fim do job. O Instagram batia numa URL que
+      # ainda nao existia e devolvia "The media could not be fetched from this
+      # URI", derrubando o job toda vez que um alerta disparava. Agora o
+      # monitor segue o mesmo desenho dos outros quatro workflows do repo:
+      # gera -> commita -> espera propagar -> publica.
+      - name: Detectar alertas e gerar os cards (sem publicar)
         id: detectar
         env:
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          PUBLICAR_FASE: gerar
         run: |
           set -o pipefail
           if [ "${{ inputs.dry_run }}" = "true" ]; then
@@ -57,6 +63,33 @@ jobs:
             python -m src.main alertas 2>&1 | tee /tmp/alertas.log
           fi
 
+      # So as imagens. O src/estado.json (anti-spam) fica de fora de proposito:
+      # se a publicacao falhar depois, o alerta NAO pode ficar marcado como ja
+      # enviado - ele precisa poder tentar de novo no ciclo seguinte.
+      - name: Commit e push dos cards (antes de publicar)
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/output || true
+          git commit -m "chore: cards de alerta $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
+          git push || echo "Nada para enviar"
+
+      - name: Aguardar propagacao do raw.githubusercontent
+        if: ${{ inputs.dry_run != true }}
+        run: sleep 45
+
+      - name: Publicar no Instagram
+        id: publicar
+        if: ${{ inputs.dry_run != true }}
+        env:
+          PUBLICAR_FASE: publicar
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          set -o pipefail
+          python -c "from src import publicar; publicar.publicar_fila()" 2>&1 | tee -a /tmp/alertas.log
+
       - name: Coletar motivo da falha
         if: failure()
         id: motivo
@@ -64,7 +97,9 @@ jobs:
           if [ "${{ steps.chromium.outcome }}" = "failure" ]; then
             echo "passo=Baixar o Chromium" >> "$GITHUB_OUTPUT"
           elif [ "${{ steps.detectar.outcome }}" = "failure" ]; then
-            echo "passo=Detectar e publicar alertas" >> "$GITHUB_OUTPUT"
+            echo "passo=Detectar alertas e gerar os cards" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.publicar.outcome }}" = "failure" ]; then
+            echo "passo=Publicar no Instagram" >> "$GITHUB_OUTPUT"
           else
             echo "passo=(anterior ao detector - ver log)" >> "$GITHUB_OUTPUT"
           fi
