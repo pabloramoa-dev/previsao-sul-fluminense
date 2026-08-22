@@ -1,5 +1,5 @@
 """
-piloto.py — Reel diário do @previsaosulfluminense com o Seu Ranzinza.
+piloto.py — Reel diário do @previsaosulflu com o Seu Ranzinza.
 
 9:16 (1080x1920), no tempo EXATO da narração, sem slow-fit (lição #14: cena com
 boca sincronizada não pode ser desacelerada).
