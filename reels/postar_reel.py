@@ -100,13 +100,14 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
         linhas += ["", f"☔ {'Amanhã, chuva' if amanha else 'Chuva prevista'}, "
                        f"até {pico['chuva_mm']}mm em {pico['nome']}."]
     slot = "noite" if voz == "maria" else "manha"
-    # A assinatura vem ANTES da pergunta: o convite ao comentário tem que ser a
-    # última linha antes das hashtags, colada na caixa de comentário.
+    # A assinatura vem ANTES da chamada: o pedido tem que ser a última linha
+    # antes das hashtags, que é onde o olho para antes de abrir a legenda toda.
     assinatura = ASSINATURA.get(voz, "")
     if assinatura:
         linhas += ["", assinatura]
-    linhas += ["", engajamento.pergunta(slot, cond, cid,
-                                        quando="amanhã" if amanha else "hoje")]
+    # Em 2026-08-22 a pergunta fechada deu lugar à chamada do bairro. A função
+    # pergunta() continua no engajamento.py, pronta pra voltar se a DM cansar.
+    linhas += ["", engajamento.chamada_bairro(slot)]
     linhas += ["", engajamento.hashtags(slot, cond)]
     return "\n".join(linhas)
 
