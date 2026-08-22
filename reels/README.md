@@ -1,4 +1,4 @@
-# Seu Ranzinza & Dona Maria — Reels diários do @previsaosulfluminense
+# Seu Ranzinza & Dona Maria — Reels diários do @previsaosulflu
 
 Dois personagens animados, dois horários:
 
