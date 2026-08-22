@@ -1298,7 +1298,8 @@ def roupas_balancando(roupas, vento=1.0, vel=1.5):
 # =====================================================================
 #  CTA DE SEGUIR — última batida de todo vídeo
 # =====================================================================
-def cta_seguir(handle="@previsaosulflu", chamada="TOCA NO SEGUIR"):
+def cta_seguir(handle="@previsaosulflu", chamada="TEU BAIRRO NA DM",
+               sub="manda o nome e eu respondo a previsão daí"):
     """Cartaz de "siga o perfil" pro fim do vídeo.
 
     Fica no CENTRO da tela, não na faixa do topo: é a última coisa que a pessoa
@@ -1318,9 +1319,10 @@ def cta_seguir(handle="@previsaosulflu", chamada="TOCA NO SEGUIR"):
     txt_botao.move_to(pilula)
 
     arroba = Text(handle, font=FONTE, weight=BOLD, font_size=36, color=AMAR)
-    # os dois horários do perfil: 06:10 o velho (hoje), 18:00 ela (amanhã)
-    sub = Text("previsão todo dia, de manhã e às seis da tarde",
-               font=FONTE, weight=BOLD, font_size=26, color="#d8d4cd")
+    # A linha de baixo explica o que fazer. Virou parâmetro em 2026-08-22, com
+    # a troca do CTA de seguir pelo CTA do bairro: o cartaz precisa dizer o que
+    # acontece depois da mensagem, senão o pedido fica solto.
+    sub = Text(sub, font=FONTE, weight=BOLD, font_size=26, color="#d8d4cd")
 
     miolo = VGroup(botao, arroba, sub).arrange(DOWN, buff=0.26)
     if miolo.width > l - 0.7:
