@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "tipo": "carrossel",
+    "caminhos": [
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_01_capa.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_02_resposta.jpg",
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_curiosidade_03_bairro.jpg"
+    ],
+    "caption": "MITO OU VERDADE? Guarda-chuva atrai raio.\n\nMITO: O material comum não atrai raio. O risco real é estar em campo aberto, sendo o ponto mais alto.\n\n#sulfluminense #previsaodotempo #curiosidades"
+  }
+]
