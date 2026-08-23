@@ -8,8 +8,9 @@ on:
   # O horario mudou pra nao competir com os Reels (06h10 e 18h00):
   # era 18h30 BRT, agora e 19h30 BRT.
   # PARA DESLIGAR: comente as duas linhas de schedule abaixo.
-  schedule:
-    - cron: "40 21 * * 4"  # dispara cedo; o job espera ate 22:30 UTC (19:30 BRT quinta)
+  # DESLIGADO em 2026-08-23 (carrossel substituido pelos Reels; ver README).
+  #   schedule:
+  #     - cron: "40 21 * * 4"  # dispara cedo; o job espera ate 22:30 UTC (19:30 BRT quinta)
   workflow_dispatch:
     inputs:
       dry_run:

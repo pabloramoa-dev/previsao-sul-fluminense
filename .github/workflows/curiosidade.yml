@@ -1,93 +1,127 @@
-name: Carrossel Mito ou Verdade (domingo 12h BRT)
+name: Mito ou Verdade (Reel, domingo 12h BRT)
 
-on:
-  # AGENDAMENTO RELIGADO em 2026-08-22, no mesmo horario de antes.
-  # Foi desligado em 2026-08-14 porque entregava alcance mediano 4 e zero interacao em 2 posts.
-  # Voltou porque os carrosseis passaram a levar a chamada do robo de DM por
-  # bairro no ultimo slide -- conteudo que o Reel sozinho nao entrega.
-  # O horario nao mudou: domingo 12h nao competia com Reel nenhum
-  # (os Reels sao 06h10 e 18h00). So o gatilho passou a disparar 50 min
-  # antes do alvo, em vez de 4 horas antes, pra nao dormir de graca no runner.
-  # PARA DESLIGAR: comente as duas linhas de schedule abaixo.
-  schedule:
-    - cron: "10 14 * * 0"  # dispara cedo; o job espera ate 15:00 UTC (12:00 BRT domingo)
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Rodar em modo dry-run (nao publica)"
-        type: boolean
-        default: false
+# TROCOU DE FORMATO em 2026-08-23: era carrossel (Pillow/Playwright), virou
+# Reel com os personagens (Manim/Kokoro), no mesmo molde de ranzinza.yml.
+# O motivo está medido no README/engajamento.py: carrossel = alcance mediano 4
+# e quase zero interação; Reel = alcance mediano 106. O personagem se reveza
+# por semana ISO (par = Ranzinza, ímpar = Dona Maria) — ver gerar_curiosidade.py.
+#
+# PARA DESLIGAR sem mexer em mais nada: comente as duas linhas de cron abaixo.
+# Com elas comentadas o workflow só roda pelo botão "Run workflow", e lá o
+# "publicar" vem desmarcado por padrão.
 
 permissions:
   contents: write
+
+on:
+  schedule:
+    - cron: "10 14 * * 0"  # dispara cedo; o job espera até 15:00 UTC (12:00 BRT domingo)
+  workflow_dispatch:
+    inputs:
+      personagem:
+        description: "Quem apresenta (auto = rodízio por semana)"
+        type: choice
+        options: [auto, ranzinza, maria]
+        default: auto
+      publicar:
+        description: "Publicar no Instagram? (desmarcado = só gera o vídeo como artifact)"
+        type: boolean
+        default: false
 
 jobs:
   publicar:
     runs-on: ubuntu-latest
     timeout-minutes: 330
+    # os arquivos do Manim vivem em reels/, mesmo pipeline do Ranzinza/Dona Maria
+    defaults:
+      run:
+        working-directory: reels
+
     steps:
-      - name: Aguardar o horario alvo (12:00 BRT domingo)
+      - name: Aguardar o horário alvo (12:00 BRT domingo)
         if: github.event_name == 'schedule'
+        working-directory: .
         run: |
           ALVO=$(date -u -d "today 15:00" +%s)
           AGORA=$(date -u +%s)
           if [ "$AGORA" -lt "$ALVO" ]; then
-            ESPERA=$((ALVO - AGORA))
-            echo "Runner iniciou cedo. Aguardando $((ESPERA/60)) min ate 15:00 UTC (12:00 BRT domingo)."
-            sleep "$ESPERA"
+            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min até 15:00 UTC."
+            sleep $((ALVO - AGORA))
           else
-            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Publicando imediatamente."
+            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APÓS o alvo. Seguindo imediatamente."
           fi
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      - name: Instalar dependencias
-        run: pip install -r requirements.txt
-
-      - name: Cache do Chromium do Playwright
+      # --- cache pesado: sem isto o job gasta ~8 min só instalando ---
+      - name: Cache do modelo Kokoro (~350MB)
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-v1
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
 
-      - name: Baixar o Chromium (renderiza os cards em HTML)
-        run: python -m playwright install --with-deps chromium
+      - name: Cache do pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('reels/requirements.txt') }}
 
-      - name: Gerar imagens (sem publicar)
-        env:
-          PUBLICAR_FASE: gerar
+      - name: Dependências de sistema
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python -m src.main curiosidade --dry-run
-          else
-            python -m src.main curiosidade
-          fi
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng \
+            libpango1.0-dev libcairo2-dev pkg-config
+          # fonte Poppins (o pacote apt não existe; vem do repo do Google Fonts)
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
 
-      - name: Commit e push das imagens (antes de publicar)
-        if: ${{ inputs.dry_run != true }}
+      - name: Dependências Python
+        run: pip install -r requirements.txt
+
+      - name: Gerar o Reel do Mito ou Verdade
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/output src/estado.json src/historico.json || true
-          git commit -m "chore: assets curiosidade $(date -u +%Y-%m-%d)" || echo "Nada para commitar"
-          git push || echo "Nada para enviar"
+          PERSONAGEM="${{ inputs.personagem || 'auto' }}"
+          python gerar_curiosidade.py --saida CURIOSIDADE.mp4 --personagem "$PERSONAGEM" --quality m
 
-      - name: Aguardar propagacao do raw.githubusercontent
-        if: ${{ inputs.dry_run != true }}
-        run: sleep 45
+      - name: Guardar o vídeo como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-curiosidade
+          path: |
+            reels/CURIOSIDADE.mp4
+            reels/LEGENDA.txt
+          retention-days: 7
 
-      - name: Publicar no Instagram
-        if: ${{ inputs.dry_run != true }}
+      # O Instagram exige que o MP4 esteja numa URL pública. Um Release do
+      # próprio repo resolve — mesma técnica do ranzinza.yml.
+      - name: Publicar o MP4 num Release
+        id: upload
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
         env:
-          PUBLICAR_FASE: publicar
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="curiosidade-$(date +%Y-%m-%d)"
+          gh release create "$TAG" CURIOSIDADE.mp4 --title "$TAG" --notes "Mito ou Verdade automático" || \
+            gh release upload "$TAG" CURIOSIDADE.mp4 --clobber
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/CURIOSIDADE.mp4" >> $GITHUB_OUTPUT
+
+      - name: Postar como Reels
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
-        run: python -c "from src import publicar; publicar.publicar_fila()"
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          VIDEO_URL: ${{ steps.upload.outputs.url }}
+        run: python postar_reel.py --video "$VIDEO_URL" --legenda-arquivo LEGENDA.txt
+
       - name: Avisar falha por e-mail
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -97,15 +131,10 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "[Previsao Sul Fluminense] FALHOU: ${{ github.workflow }}"
+          subject: "[Previsao Sul Fluminense] FALHOU: Reel do Mito ou Verdade"
           to: pablo.ramoa@gmail.com
           from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
           body: |
-            O workflow "${{ github.workflow }}" falhou e NAO publicou.
+            O Reel de domingo (Mito ou Verdade) falhou e NAO foi publicado.
 
-            Repositorio: ${{ github.repository }}
-            Disparo....: ${{ github.event_name }}
-            Log completo: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Se a falha foi no passo "Publicar no Instagram", a causa mais
-            provavel e o token (IG_ACCESS_TOKEN) vencido ou invalidado.
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
