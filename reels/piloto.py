@@ -68,6 +68,12 @@ Y_PAINEL = 4.5
 # Embaixo ele também está livre: o topo do Ranzinza é 2.37, o do cartaz do
 # gancho (que fica no centro) é 2.91, e a base do selo aqui é 3.33.
 Y_SELO = 3.95
+# O quadro das cinco cidades não mora na faixa dos outros painéis: durante essa
+# batida o personagem SAI do quadro (ver P.sair_de_cena), e o que sobra na tela
+# é só a lista. Por isso ele fica no meio da tela, não espremido no topo — não
+# há mais cabeça nenhuma pra desviar. Em 1.2, com até 5.6 de altura, ocupa de
+# -1.6 a 4.0: bem dentro do enquadramento fechado (|y| <= 5.83).
+Y_RESUMO = 1.2
 Y_LEGENDA = -2.2          # terço central, não o rodapé
 TETO_CENA = 3.25          # nada do personagem passa disto: acima é o painel
 LIMPO = 0.30              # frame limpo no FIM, pro loop fechar
@@ -146,6 +152,11 @@ def painel(tipo, d):
     if tipo == "cidade":
         c = d["cidade"]
         return P.card_cidade(c["nome"], c["min"], c["max"], c.get("cond", "sol"))
+    if tipo == "resumo":
+        # com o personagem fora de cena o quadro fica sozinho: cabe mais folga
+        # entre as linhas e um título maior, que é o que se lê de longe
+        return P.card_resumo(d["cidades"], d.get("titulo", "AS CINCO PRINCIPAIS"),
+                             altura_max=5.6, buff=0.34, fs_titulo=32)
     if tipo == "amplitude":
         c = d["cidade"]
         return _duplo(_card_valor("Manhã", c["min"]),
@@ -231,13 +242,31 @@ class Piloto(MovingCameraScene):
             jw = janelas("apontar")
             if jw:
                 P.apontar(v, jw)
-        P.vestir(self, v, CENARIO,
-                 janelas_frio=janelas("tremer") or None,
-                 janelas_calor=janelas("abanar") or None,
-                 janelas_beber=janelas("beber") or None,
-                 com_guarda_chuva=COM_GUARDA_CHUVA)
+        extras = P.vestir(self, v, CENARIO,
+                          janelas_frio=janelas("tremer") or None,
+                          janelas_calor=janelas("abanar") or None,
+                          janelas_beber=janelas("beber") or None,
+                          com_guarda_chuva=COM_GUARDA_CHUVA)
 
         self.add(P.marca_dagua().move_to([0, 6.35, 0]))
+
+        # ---------------- o personagem sai de cena no resumo ---------------
+        # Enquanto ele lê as cinco cidades, o quadro delas ocupa o centro da
+        # tela e o personagem sai pela direita. Ele volta a tempo de encerrar.
+        #
+        # Guarda-chuva e cachecol são desenhados UMA vez, na posição do
+        # personagem, e não o seguem (o copo, o bafo e o suor seguem, porque
+        # esses leem `v["maoE"]`/`v["boca"]` a cada frame). Se só o grupo
+        # saísse, os dois ficariam pendurados no ar no meio do céu — por isso
+        # eles viajam junto.
+        janela_resumo = [(SEGS[i]["ini"], SEGS[i]["fim"])
+                         for i, b in enumerate(BATIDAS)
+                         if i < len(SEGS) and b["tipo"] == "resumo"]
+        if janela_resumo:
+            r_ini, r_fim = janela_resumo[0]
+            juntos = [G] + [extras[k] for k in ("guarda_chuva", "cachecol")
+                            if k in extras]
+            P.sair_de_cena(G, juntos, r_ini, r_fim)
 
         # ---------------- TÉCNICA 4: câmera nunca parada ----------------
         # a câmera termina de voltar ANTES do fim e fica parada no enquadramento
@@ -258,16 +287,28 @@ class Piloto(MovingCameraScene):
                 continue
             if b["tipo"] in ("gancho", "cta"):
                 m.move_to([0, 1.2, 0])          # centro da tela
+            elif b["tipo"] == "resumo":
+                m.move_to([0, Y_RESUMO, 0])     # tela inteira: o boneco saiu
             else:
                 m.move_to([0, Y_PAINEL, 0])
             paineis.append((ini, fim, m))
         self.add(P.trilha_temporal(paineis, pop=0.20))
 
         # ---------------- selo da cidade da vez (o que a GRADE mostra) -----
-        # A faixa do painel só é ocupada a partir da primeira batida que desenha
-        # um cartão lá em cima — até lá ela está vazia, porque o gancho mora no
-        # centro da tela. O selo ocupa essa janela e sai antes de disputar
-        # espaço com qualquer coisa.
+        # ELE COMEÇA NO FRAME ZERO, e é essa a diferença que importa: o
+        # Instagram usa o primeiro frame como capa quando não recebe outra
+        # ordem, e é a capa que vira a miniatura da grade. Enquanto o selo só
+        # aparecia a partir de ABERTURA, a grade dependia inteiramente do
+        # `thumb_offset` do postar_reel.py — se a Meta ignorasse o parâmetro, a
+        # miniatura saía sem nome nenhum.
+        #
+        # Pôr coisa no frame 0 normalmente quebraria o loop (o primeiro e o
+        # último frame têm que ser idênticos). Por isso o selo VOLTA nos
+        # últimos LIMPO segundos: os dois extremos do vídeo mostram a mesma
+        # imagem, agora com o nome da cidade nos dois.
+        #
+        # No meio ele sai: a faixa é ocupada pela primeira batida que desenha
+        # um cartão lá em cima.
         destaque = CONT.get("destaque")
         if destaque:
             fim_selo = FIM - LIMPO
@@ -279,17 +320,32 @@ class Piloto(MovingCameraScene):
                 if painel(b["tipo"], b.get("dados") or {}) is not None:
                     fim_selo = max(SEGS[i]["ini"], ABERTURA)
                     break
-            if fim_selo > ABERTURA:
-                selo = P.selo_cidade(destaque,
-                                     CONT.get("destaque_rotulo", "HOJE EM"))
-                selo.move_to([0, Y_SELO, 0])
-                self.add(P.trilha_temporal([(ABERTURA, fim_selo, selo)], pop=0.20))
+            base_selo = P.selo_cidade(
+                destaque, CONT.get("destaque_rotulo", "HOJE EM"))
+            base_selo.move_to([0, Y_SELO, 0])
+            # adicionado JÁ montado (e não por trilha_temporal, que só desenha
+            # no primeiro tick do updater): assim ele existe no frame 0, que é
+            # exatamente o frame que precisa dele
+            selo = base_selo.copy()
+            self.add(selo)
+            st_selo = {"t": 0.0, "on": True}
+
+            def _selo(mo, dt):
+                st_selo["t"] += dt
+                on = st_selo["t"] < fim_selo or st_selo["t"] >= FIM - LIMPO
+                if on != st_selo["on"]:
+                    mo.become(base_selo.copy() if on else VGroup())
+                    st_selo["on"] = on
+            selo.add_updater(_selo)
 
         # ---------------- TÉCNICA 3: legenda karaokê central --------------
         legs = []
         for i, b in enumerate(BATIDAS):
-            if i >= len(SEGS) or b["tipo"] in ("gancho", "cta"):
-                continue                         # no gancho, o número JÁ é o texto
+            if i >= len(SEGS) or b["tipo"] in ("gancho", "cta", "resumo"):
+                continue    # no gancho o número JÁ é o texto, e no resumo o
+                            # quadro das cinco cidades já é a legenda inteira —
+                            # repetir os mesmos números embaixo só rouba atenção
+                            # de quem está procurando a linha da cidade dele
             ini = max(SEGS[i]["ini"], ABERTURA)
             fim = SEGS[i]["fim"] if i + 1 < len(BATIDAS) else FIM - LIMPO
             legs += P.legenda_karaoke(b["legenda"], ini, fim, y=Y_LEGENDA, fs=48)

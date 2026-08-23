@@ -33,7 +33,20 @@ import argparse, json, os, random, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 from gerar_dia import (produzir, num_extenso, LIMIAR_CHUVA_MM,
-                       chove_de_verdade)
+                       chove_de_verdade, fala_do_resumo)
+from coletar_tempo import resumo_cinco
+
+# Entradas do resumo na voz DELA. O velho manda anotar; ela oferece.
+INTRO_RESUMO_MARIA = [
+    "Olha as cinco principais pra amanhã, meu bem.",
+    "Anota aí as cinco principais de amanhã.",
+    "As cinco maiores, pra você já se programar.",
+    "Vamos às cinco principais de amanhã.",
+    "Separei as cinco principais pra você.",
+    "As cinco de sempre, pra amanhã.",
+    "Repara nas cinco principais.",
+    "Olha aqui como fica amanhã nas cinco principais.",
+]
 
 
 UV_AVISO = [
@@ -292,12 +305,28 @@ def montar_roteiro(d):
     add(rnd.choice(ABERTURAS))
     add(rnd.choice(CITA_VELHO))
 
-    # --- 2. mínima e máxima de amanhã na cidade principal ---
-    add(f"Em {principal['nome']}, amanhã: mínima de "
-        f"{num_extenso(principal['min'])} graus, máxima de "
-        f"{num_extenso(principal['max'])}.",
-        f"Amanhã: {principal['min']}° / {principal['max']}°",
-        tipo="cidade", cidade=principal)
+    # --- 2. AS CINCO PRINCIPAIS: mínima e máxima de amanhã ---
+    # A batida que faltava. Até 2026-08-22 este roteiro lia só `cid[0]` do
+    # começo ao fim: com Volta Redonda fixa na primeira posição ninguém notou,
+    # mas no dia em que o rodízio pôs Piraí ali, o vídeo inteiro falou de Piraí
+    # e de mais nenhuma.
+    #
+    # Ficou no lugar do cartão solto da cidade principal, que dizia os mesmos
+    # dois números que o quadro repetiria logo em seguida. A cidade da vez não
+    # perdeu nada: continua com o selo no alto e é a primeira linha do quadro.
+    resumo = resumo_cinco(cid)
+    if len(resumo) > 1:
+        fala_r, leg_r = fala_do_resumo(resumo, rnd, intros=INTRO_RESUMO_MARIA)
+        # sem `acao`: ela sai do quadro nesta batida (P.sair_de_cena), e não
+        # dá pra apontar pra um cartaz de dentro dos bastidores
+        add(fala_r, leg_r, tipo="resumo", cidades=resumo,
+            titulo="AMANHÃ NAS CINCO PRINCIPAIS")
+    else:
+        add(f"Em {principal['nome']}, amanhã: mínima de "
+            f"{num_extenso(principal['min'])} graus, máxima de "
+            f"{num_extenso(principal['max'])}.",
+            f"Amanhã: {principal['min']}° / {principal['max']}°",
+            tipo="cidade", cidade=principal)
 
     # --- 3. o que separar hoje à noite (o bloco útil, no lugar do varal) ---
     cartaz, fala = o_que_separar(cid, d.get("uv_max"), d.get("umidade_min"))
@@ -333,7 +362,15 @@ def montar_roteiro(d):
 
 DEMO = {
     "data": "2026-07-30",
-    "cidades": [{"nome": "Volta Redonda", "min": 12, "max": 27, "cond": "sol", "chuva_mm": 0}],
+    # cinco cidades: sem isso a batida do resumo não entra e o --demo deixa de
+    # testar justamente a parte nova
+    "cidades": [
+        {"nome": "Porto Real", "min": 13, "max": 28, "cond": "sol", "chuva_mm": 0},
+        {"nome": "Volta Redonda", "min": 12, "max": 27, "cond": "sol", "chuva_mm": 0},
+        {"nome": "Barra Mansa", "min": 11, "max": 28, "cond": "sol", "chuva_mm": 0},
+        {"nome": "Resende", "min": 9, "max": 25, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Barra do Piraí", "min": 14, "max": 30, "cond": "sol", "chuva_mm": 0},
+    ],
     "umidade_min": 34, "vento_kmh": 14, "sol_h": 9,
     "sensacao_max": 30, "uv_max": 8,
 }
@@ -341,8 +378,13 @@ DEMO = {
 
 DEMO_CHUVA = {
     "data": "2026-11-13",
-    "cidades": [{"nome": "Volta Redonda", "min": 19, "max": 28, "cond": "chuva",
-                 "chuva_mm": 12.0}],
+    "cidades": [
+        {"nome": "Quatis", "min": 18, "max": 27, "cond": "chuva", "chuva_mm": 9.0},
+        {"nome": "Volta Redonda", "min": 19, "max": 28, "cond": "chuva", "chuva_mm": 12.0},
+        {"nome": "Barra Mansa", "min": 19, "max": 27, "cond": "chuva", "chuva_mm": 11.0},
+        {"nome": "Resende", "min": 17, "max": 25, "cond": "chuva", "chuva_mm": 14.0},
+        {"nome": "Barra do Piraí", "min": 20, "max": 29, "cond": "chuva", "chuva_mm": 8.0},
+    ],
     "umidade_min": 72, "vento_kmh": 9, "sol_h": 3,
     "sensacao_max": 31, "uv_max": 6,
 }
@@ -350,8 +392,13 @@ DEMO_CHUVA = {
 
 DEMO_FRIO = {
     "data": "2026-06-18",
-    "cidades": [{"nome": "Volta Redonda", "min": 9, "max": 21, "cond": "frio",
-                 "chuva_mm": 0}],
+    "cidades": [
+        {"nome": "Itatiaia", "min": 6, "max": 19, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Volta Redonda", "min": 9, "max": 21, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Barra Mansa", "min": 8, "max": 21, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Resende", "min": 5, "max": 18, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Barra do Piraí", "min": 10, "max": 22, "cond": "frio", "chuva_mm": 0},
+    ],
     "umidade_min": 48, "vento_kmh": 7, "sol_h": 6,
     "sensacao_max": 19, "uv_max": 4,
 }

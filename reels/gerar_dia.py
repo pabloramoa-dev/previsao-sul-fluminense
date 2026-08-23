@@ -31,6 +31,11 @@ seguinte é dela, feita 12 horas depois e com dados mais novos.
 import argparse, json, os, random, subprocess, sys, datetime
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AQUI)
+# resumo_cinco mora junto da lista de cidades, em coletar_tempo: é lá que está
+# escrito quais são as maiores audiências. O import é seguro (coletar_tempo só
+# usa a biblioteca padrão e não executa nada fora do __main__).
+from coletar_tempo import resumo_cinco
 
 
 # =====================================================================
@@ -582,6 +587,42 @@ def escolher_gancho(cid, umidade, rnd):
             f"{c['max']}°", c["nome"].upper(), "normal")
 
 
+# Entradas do resumo, na voz do velho. Curtas de propósito: a batida do resumo
+# já é a mais longa do vídeo (cinco cidades, dois números cada), e cada palavra
+# de enfeite aqui empurra a lista pra frente.
+INTRO_RESUMO = [
+    "Agora as cinco principais, prestem atenção.",
+    "As cinco maiores, já que sempre perguntam.",
+    "Vamos ao resto, que eu não vou repetir.",
+    "As cinco principais, uma de cada vez.",
+    "Anotem, que eu falo só uma vez.",
+    "Pelas cinco principais, então.",
+    "As cinco de sempre. Escutem direito.",
+    "Agora a lista. Não me interrompam.",
+]
+
+
+def fala_do_resumo(cidades, rnd, intros=None):
+    """A batida que lê as cinco cidades — voz e legenda de uma vez só.
+
+    A fala usa número por extenso (o Kokoro lê melhor) e a legenda usa
+    algarismo, pelo mesmo motivo de sempre: a boca diz "dezesseis", a tela
+    mostra "16°". Aqui a legenda quase nunca é usada — o piloto desenha o
+    quadro das cinco cidades no lugar dela — mas ela continua sendo o que
+    aparece no log ao montar o roteiro, e é por ela que se confere o vídeo
+    antes de renderizar.
+
+    "X a Y" e não "mínima de X, máxima de Y": repetir "mínima" e "máxima"
+    cinco vezes acrescenta uns seis segundos e não diz nada que o quadro na
+    tela já não mostre.
+    """
+    intros = INTRO_RESUMO if intros is None else intros
+    corpo = " ".join(f"{c['nome']}, {num_extenso(c['min'])} a "
+                     f"{num_extenso(c['max'])}." for c in cidades)
+    legenda = " · ".join(f"{c['nome']} {c['min']}/{c['max']}°" for c in cidades)
+    return f"{rnd.choice(intros)} {corpo}", legenda
+
+
 def num_extenso(n):
     """Kokoro lê melhor número por extenso em PT-BR."""
     u = ["zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito",
@@ -642,28 +683,38 @@ def montar_roteiro(dados):
     cond = refinar_cond(principal, dados.get("umidade_min"))
     add(rnd.choice(RESMUNGO.get(cond, RESMUNGO["sol"])))
 
-    add(f"{principal['nome']}: mínima de {num_extenso(principal['min'])} graus, "
-        f"máxima de {num_extenso(principal['max'])}.",
-        f"Mínima de {principal['min']}°, máxima de {principal['max']}°.",
-        tipo="cidade", cidade=principal)
+    # O RESUMO DAS CINCO — o corpo do vídeo.
+    #
+    # Tomou o lugar de TRÊS batidas antigas: o cartão da cidade principal, o
+    # "Fulana e Sicrana, a mesma bagunça" e o "Beltrana amanhece com X". As
+    # três juntas citavam quatro cidades e gastavam mais tempo do que esta.
+    #
+    # E o cartão da principal não podia continuar: ele dizia "Quatis, mínima de
+    # doze, máxima de vinte e seis" e dez segundos depois o resumo repetia
+    # "Quatis, doze a vinte e seis". A cidade da vez não perdeu destaque com
+    # isso — ela tem o selo lá em cima e é a PRIMEIRA linha do quadro.
+    resumo = resumo_cinco(cid)
+    if len(resumo) > 1:
+        fala_r, leg_r = fala_do_resumo(resumo, rnd)
+        # sem `acao`: o personagem está FORA do quadro nesta batida
+        # (P.sair_de_cena), e tremedeira de frio fora da tela é animação jogada
+        # fora — o frio aparece no cenário e no cachecol, que continuam lá
+        add(fala_r, leg_r, tipo="resumo", cidades=resumo,
+            titulo="AS CINCO PRINCIPAIS")
+    else:
+        # rede de segurança: com uma cidade só não há resumo, e sem esta batida
+        # o vídeo não daria número nenhum
+        add(f"{principal['nome']}: mínima de {num_extenso(principal['min'])} graus, "
+            f"máxima de {num_extenso(principal['max'])}.",
+            f"Mínima de {principal['min']}°, máxima de {principal['max']}°.",
+            tipo="cidade", cidade=principal)
 
+    # depois do quadro, não antes: a piada da amplitude ("sobe quinze graus do
+    # café ao almoço") só tem graça pra quem acabou de ver os dois números
     if principal["max"] - principal["min"] >= 12 and principal["min"] <= 15:
         add(rnd.choice(AMPLITUDE), "Frio de rachar cedo, forno à tarde.",
             tipo="amplitude", cidade=principal,
             acao="abanar" if principal["max"] >= 30 else None)
-
-    if len(cid) > 2:
-        add(f"{cid[1]['nome']} e {cid[2]['nome']}, a mesma bagunça.",
-            f"{cid[1]['nome']} e {cid[2]['nome']}: a mesma bagunça.",
-            tipo="duas_cidades", a=cid[1], b=cid[2])
-
-    if len(cid) > 3:
-        c = cid[3]
-        extra = " e neblina" if c.get("cond") in ("frio", "nublado") else ""
-        add(f"{c['nome']} amanhece com {num_extenso(c['min'])} graus{extra}.",
-            f"{c['min']} graus{extra} em {c['nome']}.",
-            tipo="cidade", cidade=c, nevoa=bool(extra),
-            acao="tremer" if c["min"] <= 12 else None)
 
     u = dados.get("umidade_min")
     if u and u <= 40:
@@ -775,12 +826,17 @@ def gerar(dados, saida, quality="m"):
 DEMO = {
     "data": "2026-07-29",
     "cidades": [
+        # a primeira é a cidade da vez (o rodízio já a colocou aqui); as demais
+        # entram no resumo pelas MAIORES, então o --demo exercita a batida nova
+        {"nome": "Quatis", "min": 12, "max": 26, "cond": "sol", "chuva_mm": 0},
         {"nome": "Volta Redonda", "min": 12, "max": 27, "cond": "sol", "chuva_mm": 0},
         {"nome": "Barra Mansa", "min": 11, "max": 28, "cond": "sol", "chuva_mm": 0},
         {"nome": "Porto Real", "min": 12, "max": 27, "cond": "sol", "chuva_mm": 0},
         {"nome": "Resende", "min": 9, "max": 25, "cond": "frio", "chuva_mm": 0},
+        {"nome": "Barra do Piraí", "min": 14, "max": 29, "cond": "sol", "chuva_mm": 0},
     ],
     "umidade_min": 30,
+    "destaque": "Quatis",
 }
 
 

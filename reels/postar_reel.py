@@ -21,16 +21,20 @@ Uso:
 
 CAPA (thumb_offset)
 -------------------
-Por padrão o Instagram usa o PRIMEIRO frame do vídeo como capa — e o primeiro
-frame aqui é de propósito um frame limpo, sem painel nem legenda, pro loop
-fechar sem emenda (ver piloto.py, técnica 2). Resultado na grade do perfil: dez
-miniaturas iguais, sem nada dizendo de que cidade é cada vídeo.
+O Instagram usa o PRIMEIRO frame do vídeo como capa, e a capa é o que vira a
+miniatura da grade. Isso já foi um problema: o primeiro frame era limpo de
+propósito, pro loop fechar sem emenda, e a grade ficava com dez miniaturas
+iguais sem dizer de que cidade era cada vídeo. A solução da época foi mandar
+`thumb_offset=1500` e pescar um frame do meio da abertura.
 
-`thumb_offset` resolve isso sem estragar o loop: a capa passa a ser um frame
-lá do meio da abertura, quando o selo da cidade está na tela. O padrão de
-1500 ms cai dentro dessa janela com folga — o selo entra em 0,18 s e só sai
-quando o cartão de mínima/máxima toma a faixa do painel, o que nunca acontece
-antes da 4ª batida (uns 8 s de narração).
+Não é mais necessário: o selo da cidade agora começa NO FRAME ZERO e volta nos
+últimos 0,3 s, então os dois extremos do vídeo trazem o nome e o loop continua
+fechado (ver piloto.py). O frame 0 virou a melhor capa que existe aqui —
+cenário limpo e o nome da cidade, sem o cartaz do gancho cobrindo o rosto do
+personagem.
+
+Por isso `--capa-ms` vem 0 (não manda o parâmetro, o Instagram usa o frame 0).
+Passar um valor continua funcionando, se um dia a capa tiver que ser outra.
 """
 import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
@@ -221,9 +225,9 @@ def main():
                     help="de quem é a legenda")
     ap.add_argument("--quando", choices=["hoje", "amanha"], default="hoje",
                     help="de que dia são os números (o Reel das 18h é 'amanha')")
-    ap.add_argument("--capa-ms", type=int, default=1500,
+    ap.add_argument("--capa-ms", type=int, default=0,
                     help="milissegundo do vídeo usado como capa na grade. "
-                         "0 = primeiro frame (limpo, sem o nome da cidade)")
+                         "0 (padrão) = primeiro frame, que já traz o selo da cidade")
     a = ap.parse_args()
 
     dia = json.load(open(a.dados))

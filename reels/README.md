@@ -104,15 +104,53 @@ duas vezes no mesmo dia dá o mesmo vídeo.
 a Dona Maria com `DESLOCA_TARDE = 5` — metade exata da volta, então ela está
 sempre no lado oposto do rodízio. São duas cidades citadas por dia.
 
-**O nome vai pra tela nas primeiras batidas.** `previsao_lib.selo_cidade()`
+**O nome fica na tela desde o frame zero.** `previsao_lib.selo_cidade()`
 desenha "HOJE EM / VOLTA REDONDA" (ou "AMANHÃ EM", no vídeo dela) em `Y_SELO`,
-enquanto o gancho está no centro e a faixa do painel está livre. O selo sai
-quando o cartão de mínima/máxima ocupa aquele lugar, por volta dos 11s.
+do primeiro frame até a faixa do painel ser ocupada pela primeira batida que
+desenha um cartão lá em cima — por volta dos 11 s. Depois ele volta nos últimos
+0,3 s (ver o parágrafo da capa, logo abaixo).
 
-**A capa não é o primeiro frame.** O primeiro frame é de propósito limpo, pro
-loop fechar sem emenda — se a capa fosse ele, todo esse trabalho não apareceria
-na grade. `postar_reel.py` manda `thumb_offset=1500` (ms), um frame de dentro da
-janela do selo. `--capa-ms 0` volta ao comportamento antigo.
+**A capa É o primeiro frame — e por isso o selo começa nele.** O Instagram usa
+o frame 0 como capa, e a capa vira a miniatura da grade. O frame 0 era limpo de
+propósito, pro loop fechar sem emenda; a primeira solução foi mandar
+`thumb_offset=1500` e pescar um frame do meio da abertura.
+
+Ficou melhor assim: o selo entra no frame 0 **e volta nos últimos 0,3 s**. Os
+dois extremos do vídeo passam a mostrar a mesma imagem — cenário limpo mais o
+nome da cidade — então o loop continua fechado e a miniatura traz o nome mesmo
+que a Meta ignore o `thumb_offset`. De quebra, a capa ficou mais bonita: sem o
+cartaz do gancho cobrindo o rosto do personagem. `postar_reel.py --capa-ms N`
+continua existindo pra forçar outro frame.
+
+**O resumo das cinco.** O rodízio sozinho criou um problema pior que o que
+resolveu, e ele só apareceu no Reel da Dona Maria de 22/08: o roteiro dela lia
+`cidades[0]` do começo ao fim, então quando o rodízio pôs Piraí naquela posição
+o vídeo inteiro falou de Piraí e de mais nenhuma. O rodízio não causou isso —
+revelou. Com Volta Redonda fixa, ninguém percebia que o vídeo cobria uma cidade
+só.
+
+Agora os dois roteiros têm uma batida `resumo`: `coletar_tempo.resumo_cinco()`
+monta **a cidade da vez + as maiores** (`MAIORES`), sem repetir, e
+`previsao_lib.card_resumo()` desenha as cinco de uma vez, com min/máx de cada.
+Quando a cidade da vez já é uma das maiores, a lista desce um degrau e entra a
+seguinte — são sempre cinco.
+
+Três consequências que valem lembrar:
+
+- **O cartão solto da cidade principal saiu.** Ele dizia "Quatis, mínima de
+  doze, máxima de vinte e seis" e dez segundos depois o quadro repetia "Quatis,
+  doze a vinte e seis". A cidade da vez não perdeu destaque: tem o selo no alto
+  e é a primeira linha do quadro.
+- **O personagem SAI de cena no resumo.** `previsao_lib.sair_de_cena()` leva o
+  boneco pela direita quando a batida começa e o traz de volta um pouco antes
+  do fim dela. Durante esses ~17 s o que está na tela é só a lista, no meio do
+  quadro (`Y_RESUMO = 1.2`, altura até 5.6) — sem cabeça pra desviar, o quadro
+  cabe maior e com mais folga entre as linhas. O guarda-chuva e o cachecol
+  viajam junto: os dois são desenhados uma vez e não seguem o personagem
+  sozinhos, então ficariam pendurados no céu.
+- **A batida `resumo` não leva legenda karaokê.** O quadro já traz os mesmos
+  números, e a legenda embaixo só disputaria o olho de quem está procurando a
+  linha da cidade dele.
 
 **A hashtag da cidade da vez entra na frente.** Os cinco conjuntos de hashtags
 foram escritos quando Volta Redonda era fixa. Com o rodízio, o vídeo pode ser

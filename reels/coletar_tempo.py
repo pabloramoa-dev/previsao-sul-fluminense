@@ -77,6 +77,56 @@ def ordem_do_dia(cidades, data=None, desloca=0):
     return cidades[n:] + cidades[:n]
 
 
+# As maiores audiências do perfil, em ordem. Entram no RESUMO de todo vídeo,
+# independentemente do rodízio: o rodízio existe pra dar palco às pequenas, não
+# pra tirar o palco das grandes. Um vídeo que não diz a temperatura de Volta
+# Redonda perde a maior parte de quem assiste.
+MAIORES = ["Volta Redonda", "Barra Mansa", "Resende", "Barra do Piraí", "Itatiaia"]
+
+# Quantas cidades o resumo mostra. Cinco é o teto do cartão: acima disso as
+# linhas encolhem a ponto de não se ler no celular.
+N_RESUMO = 5
+
+
+def resumo_cinco(cidades, n=N_RESUMO):
+    """As cidades do resumo: a cidade da vez primeiro, depois as maiores.
+
+    Sem isto o vídeo fala de UMA cidade só. Foi o que aconteceu no Reel da Dona
+    Maria de 2026-08-22: o rodízio pôs Piraí na primeira posição e o roteiro,
+    que só lia `cidades[0]`, falou de Piraí do começo ao fim — as outras nove
+    sumiram. O rodízio não era o problema; ele só revelou que o roteiro nunca
+    tinha olhado além da primeira.
+
+    A regra tem duas metades, e as duas importam:
+      - a cidade da VEZ abre, porque é dela o selo e a chamada do dia;
+      - as MAIORES vêm logo atrás, sempre, porque são a maior parte do público.
+    Quando a cidade da vez já é uma das maiores, a lista simplesmente desce mais
+    um degrau (entra a seguinte de MAIORES) — o resumo tem sempre `n` cidades.
+
+    `cidades` é a lista de dicts do dia.json, já na ordem do rodízio.
+    """
+    if not cidades:
+        return []
+    por_nome = {c["nome"]: c for c in cidades}
+    saida, vistos = [], set()
+
+    def juntar(c):
+        if c is not None and c["nome"] not in vistos:
+            vistos.add(c["nome"])
+            saida.append(c)
+
+    juntar(cidades[0])                      # a cidade da vez abre o resumo
+    for nome in MAIORES:                    # depois as maiores audiências
+        if len(saida) >= n:
+            break
+        juntar(por_nome.get(nome))
+    for c in cidades:                       # rede de segurança: completa na ordem
+        if len(saida) >= n:
+            break
+        juntar(c)
+    return saida[:n]
+
+
 # --- WMO weather code -> a condição que a lib de desenho entende -------------
 def condicao(code, tmin):
     """Traduz o código WMO do Open-Meteo pras 5 condições do cenário.

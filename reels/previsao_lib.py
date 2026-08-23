@@ -920,6 +920,117 @@ def card_cidade(cidade, tmin, tmax, condicao="sol", largura=None):
     return VGroup(band, linha)
 
 
+def card_resumo(cidades, titulo="AS CINCO PRINCIPAIS", altura_max=2.9,
+                buff=0.16, fs_titulo=26):
+    """O quadro com as cinco cidades e min/máx de cada, tudo de uma vez.
+
+    Por que TUDO de uma vez, e não um cartão por cidade: quem abre o Reel quer
+    a temperatura DA SUA cidade. Num carrossel de cinco cartões ele espera até
+    a vez dela — e a maioria desliza antes. Num quadro só, acha a linha dele no
+    primeiro segundo e fica pelo resto.
+
+    `altura_max` não é decoração. A câmera fecha até ZOOM_MIN, o que deixa
+    visível só |y| <= 5.83, e o cartão vive centrado na faixa do painel. Passar
+    disso corta a primeira linha justamente durante o push-in. O conteúdo é
+    montado no tamanho natural e depois encolhido pra caber — assim acrescentar
+    uma cidade a mais nunca estoura o quadro, só aperta as linhas.
+
+    `cidades`: lista de dicts do dia.json (nome, min, max).
+    """
+    largura = larg_segura()
+    util = largura - 0.7
+    linhas = VGroup()
+    if titulo:
+        t = Text(titulo, font=FONTE, weight=BOLD, font_size=fs_titulo, color=AMAR)
+        if t.width > util:            # "AMANHÃ NAS CINCO PRINCIPAIS" não cabe em 26
+            t.scale_to_fit_width(util)
+        linhas.add(t)
+    nomes = [Text(c["nome"], font=FONTE, weight=BOLD, font_size=38, color=WHITE)
+             for c in cidades]
+    temps = [Text(f"{int(c['min'])}°  /  {int(c['max'])}°", font=FONTE,
+                  weight=BOLD, font_size=38, color=AMAR) for c in cidades]
+
+    # UM fator de escala pra TODOS os nomes, calculado pelo mais comprido.
+    # Encolher só o nome que não coube — que foi a primeira versão — deixa
+    # "Volta Redonda" e "Barra do Piraí" visivelmente menores que "Resende" na
+    # mesma lista, e o quadro parece defeito de renderização, não escolha.
+    if nomes:
+        larg_nome = util - max(t.width for t in temps) - 0.35
+        maior = max(n.width for n in nomes)
+        if maior > larg_nome:
+            for n in nomes:
+                n.scale(larg_nome / maior)
+
+    for nome, temp in zip(nomes, temps):
+        # os dois extremos ancorados nas bordas: a coluna de temperaturas fica
+        # alinhada entre as linhas mesmo com nomes de larguras muito diferentes
+        # ("Quatis" e "Barra do Piraí" na mesma lista)
+        linha = VGroup(nome, temp)
+        nome.move_to(LEFT * (util / 2), aligned_edge=LEFT)
+        temp.move_to(RIGHT * (util / 2), aligned_edge=RIGHT)
+        linhas.add(linha)
+    linhas.arrange(DOWN, buff=buff)
+    if linhas.height > altura_max - 0.5:
+        linhas.scale((altura_max - 0.5) / linhas.height)
+    band = RoundedRectangle(width=largura, height=linhas.height + 0.5,
+                            corner_radius=0.2, fill_color=BLACK, fill_opacity=0.78,
+                            stroke_color=WHITE, stroke_width=3)
+    linhas.move_to(band)
+    return VGroup(band, linhas)
+
+
+def sair_de_cena(portador, mobs, ini, fim, dur=0.7, desloc=6.2, folga=0.25):
+    """Tira o personagem do quadro entre `ini` e `fim`, e o traz de volta.
+
+    Serve à batida do resumo: enquanto ele lê as cinco cidades, o quadro delas
+    fica sozinho no centro da tela. O personagem parado no canto durante
+    dezessete segundos não acrescenta nada — sair e voltar dá um respiro de
+    montagem e devolve a tela inteira ao conteúdo.
+
+    Três cuidados que o código carrega:
+
+    - **Sai pela direita, não pra baixo.** Descer atravessa o piso da varanda e
+      lê como bug; sair de lado lê como "ele foi ali e já volta".
+    - **Deslocamento por DIFERENÇA**, nunca posição absoluta. `respirar()` já
+      mexe no mesmo grupo pelo mesmo caminho; dois updaters que escrevessem
+      posição absoluta brigariam e o personagem tremeria.
+    - **Volta com `folga` antes do fim da batida.** Se voltasse exatamente no
+      fim, ele reapareceria no mesmo frame em que o quadro sai — dois
+      movimentos no mesmo instante que o olho lê como corte seco.
+
+    `portador` é quem carrega o updater (o grupo do personagem); `mobs` é tudo
+    que precisa viajar junto — inclui os adereços que não seguem o personagem
+    sozinhos (guarda-chuva, cachecol).
+    """
+    t_volta = max(ini + dur, fim - folga - dur)
+    st = {"t": 0.0, "x": 0.0}
+
+    def _suave(f):                       # começa e termina devagar
+        f = min(1.0, max(0.0, f))
+        return f * f * (3 - 2 * f)
+
+    def _sair(_mo, dt):
+        st["t"] += dt
+        t = st["t"]
+        if t < ini or t > t_volta + dur:
+            f = 0.0
+        elif t < ini + dur:
+            f = _suave((t - ini) / dur)
+        elif t < t_volta:
+            f = 1.0
+        else:
+            f = _suave(1 - (t - t_volta) / dur)
+        alvo = desloc * f
+        d = alvo - st["x"]
+        if d:
+            for m in mobs:
+                m.shift(RIGHT * d)
+            st["x"] = alvo
+
+    portador.add_updater(_sair)
+    return _sair
+
+
 def legenda_vertical(txt, y=-4.2, cor=WHITE, fs=46, larg=None):
     """Legenda do formato 9:16 — banda escura + Poppins Bold branco, SEM stroke.
     (Lição #4: contorno grosso embola as letras.)"""
