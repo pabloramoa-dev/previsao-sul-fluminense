@@ -10,23 +10,54 @@ Roda no Render (plano Free). Variaveis de ambiente necessarias:
 O endpoint /ping existe para um servico de keep-alive (cron-job.org) manter o
 Render acordado no horario das previsoes. No plano Free o servico dorme depois
 de ~15 min sem uso, e a primeira mensagem depois disso demora 30-60s.
+
+FOLLOW-GATE (desde 2026-08-23)
+------------------------------
+Antes de responder, o robo consulta o perfil de quem mandou a mensagem
+(GET /{IGSID}?fields=is_user_follow_business — mesma API, mesmo token, custo
+zero) e descobre se a pessoa segue o @previsaosulflu.
+
+  - Segue           -> responde normal, fecho de agradecimento.
+  - Nao segue, 1a   -> responde a previsao MAIS o aviso de que a proxima so
+    vem seguindo (a cortesia mostra que o robo funciona de verdade; pedir
+    follow antes de provar valor faz muita gente desistir).
+  - Nao segue, 2a+  -> nao entrega previsao; pede o follow e convida a mandar
+    o bairro de novo.
+  - API falhou      -> trata como seguidor. Nunca bloquear por erro nosso.
+
+A memoria da cortesia (_cortesia_gasta) vive no processo. No plano Free do
+Render ela zera quando o servico dorme ou reimplanta — ou seja, de tempos em
+tempos um nao-seguidor ganha outra resposta gratis. Aceitavel: o custo e zero
+e o comportamento continua empurrando para o follow. Se um dia precisar de
+memoria de verdade, um Redis gratis resolve; nao complique antes disso.
 """
 
 import os
 import threading
+import time
 
 import requests
 from flask import Flask, request
 
-from dm_bairro import montar_resposta_dm
+from resposta import montar_resposta, MSG_SIGA
 from recomendar_roupa import recomendar_roupa
-import dados  # precisa expor previsao_hoje() -> {cidade: {tmin,tmax,prob_chuva,...}}
+import dados  # expoe previsao_hoje() -> {cidade: {tmin,tmax,...,tmin_amanha,...}}
 
 app = Flask(__name__)
 
 VERIFY = os.environ["IG_VERIFY_TOKEN"]
 TOKEN = os.environ["IG_ACCESS_TOKEN"]
 GRAPH = "https://graph.instagram.com/v22.0/me/messages"
+GRAPH_PERFIL = "https://graph.instagram.com/v22.0"
+
+# IGSIDs de nao-seguidores que ja receberam a resposta de cortesia.
+_cortesia_gasta: set[str] = set()
+
+# Cache curto do status de follow, para nao consultar a API duas vezes na
+# mesma conversa (ex.: pessoa manda "Centro", robo pergunta a cidade, pessoa
+# responde "Resende" — duas mensagens em um minuto).
+_follow_cache: dict[str, tuple[float, bool]] = {}
+_FOLLOW_TTL = 10 * 60
 
 
 @app.get("/ping")
@@ -51,6 +82,35 @@ def receber():
     return "ok", 200
 
 
+def _segue_perfil(uid: str):
+    """True/False se deu para saber; None se a API nao respondeu.
+
+    O campo is_user_follow_business so existe depois que a pessoa mandou
+    mensagem para a conta — que e exatamente o nosso caso aqui.
+    """
+    agora = time.time()
+    em_cache = _follow_cache.get(uid)
+    if em_cache and agora - em_cache[0] < _FOLLOW_TTL:
+        return em_cache[1]
+    try:
+        r = requests.get(
+            f"{GRAPH_PERFIL}/{uid}",
+            params={"fields": "is_user_follow_business",
+                    "access_token": TOKEN},
+            timeout=10,
+        )
+        if r.status_code >= 400:
+            print(f"[webhook] perfil {uid} indisponivel "
+                  f"({r.status_code}): {r.text[:200]}")
+            return None
+        segue = bool(r.json().get("is_user_follow_business"))
+        _follow_cache[uid] = (agora, segue)
+        return segue
+    except requests.RequestException as exc:
+        print(f"[webhook] erro de rede ao checar follow: {exc}")
+        return None
+
+
 def _processar(corpo: dict) -> None:
     try:
         previsao = dados.previsao_hoje()
@@ -68,8 +128,22 @@ def _processar(corpo: dict) -> None:
             destino = evento.get("sender", {}).get("id")
             if not texto or not destino:
                 continue
-            resposta = montar_resposta_dm(texto, previsao, recomendar_roupa)
+
+            segue = _segue_perfil(destino)
+
+            # Nao segue e ja gastou a cortesia: pede o follow e para por ai.
+            if segue is False and destino in _cortesia_gasta:
+                _enviar(destino, MSG_SIGA)
+                continue
+
+            resposta, deu_previsao = montar_resposta(
+                texto, previsao, segue, recomendar_roupa)
             _enviar(destino, resposta)
+
+            # A cortesia so conta quando a previsao foi entregue de verdade —
+            # pergunta de desambiguacao ("qual cidade?") nao gasta a vez.
+            if segue is False and deu_previsao:
+                _cortesia_gasta.add(destino)
 
 
 def _enviar(uid: str, texto: str) -> None:

@@ -11,6 +11,12 @@ Aqui a coleta e uma unica requisicao ao Open-Meteo com as 10 cidades de uma vez,
 guardada em memoria por TTL_SEGUNDOS. Em um dia normal o robo bate na API poucas
 vezes por hora, nao uma vez por seguidor.
 
+Desde 2026-08-23 a mesma requisicao traz DOIS dias (forecast_days=2): a
+resposta da DM passou a entregar hoje E amanha, porque os Reels ja contam um
+dia cada (Ranzinza fala de hoje as 06h10, Dona Maria de amanha as 18h) e a DM
+que repetisse um dia so seria redundante com o video que a pessoa acabou de
+ver. Os campos de amanha chegam com o sufixo _amanha.
+
 Fonte das coordenadas: src/clima.py (CIDADES). Os nomes precisam bater com
 dm_bairro.CIDADES -- se alguem editar um lado so, este modulo se recusa a
 carregar, na mesma logica da trava do dm_bairro.py.
@@ -71,7 +77,7 @@ def _numero(valor, padrao: float = 0.0) -> float:
 
 
 def _coletar() -> dict[str, dict]:
-    """Uma requisicao, as 10 cidades. Devolve {cidade: {tmin, tmax, ...}}."""
+    """Uma requisicao, as 10 cidades, DOIS dias. Devolve {cidade: {...}}."""
     resposta = requests.get(
         FORECAST_URL,
         params={
@@ -80,7 +86,7 @@ def _coletar() -> dict[str, dict]:
             "daily": ("temperature_2m_min,temperature_2m_max,"
                       "precipitation_probability_max,wind_gusts_10m_max"),
             "timezone": TIMEZONE,
-            "forecast_days": 1,
+            "forecast_days": 2,
         },
         timeout=TIMEOUT,
     )
@@ -93,24 +99,33 @@ def _coletar() -> dict[str, dict]:
             f"dados.py: pedi {len(_NOMES)} cidades e o Open-Meteo devolveu "
             f"{len(blocos)}.")
 
+    def _dia(d: dict, chave: str, indice: int) -> float:
+        serie = d.get(chave) or []
+        return _numero(serie[indice] if indice < len(serie) else None)
+
     saida: dict[str, dict] = {}
     for nome, bloco in zip(_NOMES, blocos):
         d = bloco.get("daily") or {}
         saida[nome] = {
-            "tmin": _numero((d.get("temperature_2m_min") or [None])[0]),
-            "tmax": _numero((d.get("temperature_2m_max") or [None])[0]),
-            "prob_chuva": _numero(
-                (d.get("precipitation_probability_max") or [None])[0]),
-            "rajada_kmh": _numero((d.get("wind_gusts_10m_max") or [None])[0]),
+            # hoje (indice 0) — mesmos nomes de sempre, nada quebra
+            "tmin": _dia(d, "temperature_2m_min", 0),
+            "tmax": _dia(d, "temperature_2m_max", 0),
+            "prob_chuva": _dia(d, "precipitation_probability_max", 0),
+            "rajada_kmh": _dia(d, "wind_gusts_10m_max", 0),
+            # amanha (indice 1)
+            "tmin_amanha": _dia(d, "temperature_2m_min", 1),
+            "tmax_amanha": _dia(d, "temperature_2m_max", 1),
+            "prob_chuva_amanha": _dia(d, "precipitation_probability_max", 1),
+            "rajada_kmh_amanha": _dia(d, "wind_gusts_10m_max", 1),
         }
     return saida
 
 
 def previsao_hoje() -> dict[str, dict]:
-    """Previsao de hoje das 10 cidades, com cache.
+    """Previsao de hoje E de amanha das 10 cidades, com cache.
 
     {"Resende": {"tmin": 14.2, "tmax": 27.9, "prob_chuva": 10.0,
-                 "rajada_kmh": 23.4}, ...}
+                 "rajada_kmh": 23.4, "tmin_amanha": 15.0, ...}, ...}
 
     Se a API falhar mas houver cache recente, devolve o cache e segue. So
     levanta excecao quando nao ha nada util para responder.
@@ -141,4 +156,6 @@ def previsao_hoje() -> dict[str, dict]:
 if __name__ == "__main__":
     for cidade, p in previsao_hoje().items():
         print(f"{cidade:<16} {p['tmin']:.0f}/{p['tmax']:.0f}  "
-              f"chuva {p['prob_chuva']:.0f}%  rajada {p['rajada_kmh']:.0f} km/h")
+              f"chuva {p['prob_chuva']:.0f}%  rajada {p['rajada_kmh']:.0f} km/h  "
+              f"| amanha {p['tmin_amanha']:.0f}/{p['tmax_amanha']:.0f}  "
+              f"chuva {p['prob_chuva_amanha']:.0f}%")
