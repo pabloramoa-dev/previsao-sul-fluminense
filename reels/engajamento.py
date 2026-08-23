@@ -181,10 +181,10 @@ def _cidade_do_assunto(cidades, condicao: str) -> str:
 #  O robô que atende está em dm/ (325 bairros, 10 cidades). Se ele sair do ar,
 #  esta linha vira promessa falsa: veja o runbook antes de deixar quebrado.
 CHAMADA_BAIRRO = [
-    "📩 Manda o nome do teu bairro aqui na DM. Eu respondo a previsão só dele.",
-    "📩 Quer a previsão do TEU bairro? Manda o nome numa DM e recebe na hora.",
+    "📩 Manda o nome do teu bairro aqui na DM. Volta a previsão de hoje e a de amanhã.",
+    "📩 Quer saber de amanhã no TEU bairro? Manda o nome numa DM e recebe na hora.",
     "📩 Teu bairro na DM. São 325 bairros das 10 cidades — o teu está aí.",
-    "📩 Manda uma DM com o nome do bairro. A previsão volta pronta, do teu canto.",
+    "📩 Manda uma DM com o nome do bairro. Volta a de hoje e a de amanhã, do teu canto.",
 ]
 
 
