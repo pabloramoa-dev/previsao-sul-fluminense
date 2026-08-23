@@ -18,6 +18,8 @@ Uso:
     python postar_reel.py --video https://.../REEL.mp4 --dados dia.json
     python postar_reel.py --video ... --dados amanha.json --voz maria --quando amanha
     python postar_reel.py --video ... --dados dia.json --dry-run   # só mostra a legenda
+    python postar_reel.py --video ... --legenda-arquivo LEGENDA.txt   # legenda pronta
+                                                                       # (Mito ou Verdade)
 
 CAPA (thumb_offset)
 -------------------
@@ -217,7 +219,11 @@ def cota(ig_user, token):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True, help="URL pública do MP4")
-    ap.add_argument("--dados", required=True, help="dia.json")
+    ap.add_argument("--dados", help="dia.json — dispensável com --legenda-arquivo")
+    ap.add_argument("--legenda-arquivo",
+                    help="legenda já pronta (ex.: LEGENDA.txt do Mito ou Verdade); "
+                         "quando passado, ignora --dados/--voz/--quando na montagem "
+                         "da legenda")
     ap.add_argument("--dry-run", action="store_true", help="mostra a legenda e sai")
     ap.add_argument("--sem-feed", action="store_true", help="não espelhar o Reel no feed")
     ap.add_argument("--sem-stories", action="store_true", help="nao publicar tambem no Stories")
@@ -230,8 +236,17 @@ def main():
                          "0 (padrão) = primeiro frame, que já traz o selo da cidade")
     a = ap.parse_args()
 
-    dia = json.load(open(a.dados))
-    cap = legenda(dia, voz=a.voz, quando=a.quando)
+    if a.legenda_arquivo:
+        # Mito ou Verdade e qualquer outro Reel sem dia.json: a legenda já
+        # vem pronta do gerador (ver gerar_curiosidade.py). destaque só serve
+        # pra logar qual cidade tem o selo na tela; sem dia.json, não existe.
+        cap = open(a.legenda_arquivo, encoding="utf-8").read().strip()
+        dia = {}
+    else:
+        if not a.dados:
+            sys.exit("faltou --dados (ou use --legenda-arquivo)")
+        dia = json.load(open(a.dados))
+        cap = legenda(dia, voz=a.voz, quando=a.quando)
 
     if a.dry_run:
         print(cap)
