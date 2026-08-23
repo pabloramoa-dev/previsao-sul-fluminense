@@ -221,23 +221,28 @@ FECHOS = [
 # Mesmo CTA do bairro, outra voz: ela pede com jeito, ele pede contrariado.
 # Ver a nota longa em gerar_dia.py sobre por que a fala diz "mensagem" e
 # nunca "DM" — o Kokoro soletra sigla.
+#
+# Desde 2026-08-23 o robô responde HOJE e AMANHÃ do bairro. Ela acabou de
+# contar o amanhã no vídeo, então a fala dela puxa pelo "do teu bairro" e
+# pelo par completo — é o sob medida que o vídeo, que fala das cidades,
+# não tem como dar.
 CTA = [
-    "Manda o nome do teu bairro na mensagem, meu bem. Eu respondo na hora.",
-    "Me escreve o teu bairro numa mensagem, meu amor. A tia diz o tempo daí.",
-    "Manda mensagem com o nome do teu bairro. Aí a previsão é sua, viu?",
-    "Quer saber do teu bairro? Me manda o nome numa mensagem, meu bem.",
-    "Escreve o teu bairro na mensagem, meu amor. Eu já te devolvo certinho.",
-    "Manda o bairro numa mensagem pra tia. Respondo rapidinho, prometo.",
-    "Me diz onde você mora numa mensagem. É só o nome do bairro, meu bem.",
-    "Manda mensagem com o teu bairro e recebe a previsão do teu canto.",
-    "Teu bairro numa mensagem, meu amor. A tia cuida do resto.",
-    "Escreve o nome do bairro na mensagem. Assim eu falo direto com você.",
-    "Manda o teu bairro pra mim numa mensagem. Nem precisa dizer oi.",
-    "Me manda o bairro numa mensagem, viu? Eu respondo até tarde.",
-    "Manda o nome do teu bairro. Uma mensagem só, meu bem, e pronto.",
-    "Escreve o teu bairro numa mensagem e compartilha com a vizinhança.",
-    "Manda mensagem com o bairro, meu amor. A tia não te deixa na chuva.",
-    "Teu bairro, numa mensagem. Aí a previsão sai sob medida pra você.",
+    "Manda o nome do teu bairro na mensagem, meu bem. Te digo como fica hoje e amanhã.",
+    "Me escreve o teu bairro numa mensagem, meu amor. A tia diz o tempo daí até amanhã.",
+    "Manda mensagem com o nome do teu bairro. Vai a de hoje e a de amanhã, viu?",
+    "Quer saber de amanhã no teu bairro? Me manda o nome numa mensagem, meu bem.",
+    "Escreve o teu bairro na mensagem, meu amor. Devolvo hoje e amanhã, certinho.",
+    "Manda o bairro numa mensagem pra tia. Vai com a previsão de amanhã junto, prometo.",
+    "Me diz onde você mora numa mensagem. Volta a previsão de hoje e a de amanhã, meu bem.",
+    "Manda mensagem com o teu bairro e recebe a previsão de amanhã do teu canto.",
+    "Teu bairro numa mensagem, meu amor. A tia manda hoje e amanhã, tudo junto.",
+    "Escreve o nome do bairro na mensagem. Assim você já se programa pra amanhã.",
+    "Manda o teu bairro pra mim numa mensagem. Vai a de hoje e a de amanhã, nem precisa pedir.",
+    "Me manda o bairro numa mensagem, viu? Te conto como fica amanhã por aí.",
+    "Manda o nome do teu bairro. Uma mensagem só, meu bem, e volta hoje e amanhã.",
+    "Escreve o teu bairro numa mensagem e já fica sabendo do dia de amanhã.",
+    "Manda mensagem com o bairro, meu amor. A tia não te deixa na chuva nem amanhã.",
+    "Teu bairro, numa mensagem. A previsão de hoje e de amanhã, sob medida pra você.",
 ]
 
 
@@ -356,7 +361,7 @@ def montar_roteiro(d):
         "Amanhã cedo o velho confirma.",
         tipo="fecho", texto="AMANHÃ VOCÊ JÁ SABE")
     add(rnd.choice(CTA), tipo="cta", chamada="TEU BAIRRO NA DM",
-        sub="manda o nome e eu respondo a previsão daí")
+        sub="manda o nome e recebe hoje + amanhã")
     return batidas
 
 
