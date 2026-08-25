@@ -241,6 +241,30 @@ def publicar_com_retentativa(ig_user, cid, token, tentativas=4, espera=15):
             time.sleep(espera)
 
 
+def texto_primeiro_comentario(dia: dict, voz: str = "ranzinza") -> str:
+    """Pergunta curta publicada pela própria conta depois do Reel."""
+    cidades = dia.get("cidades") or []
+    cidade = (dia.get("destaque") or
+              (cidades[0].get("nome") if cidades else "sua cidade"))
+    if voz == "maria":
+        return f"📌 Você vai sair cedo amanhã em {cidade}? Salva o Reel e conta aqui."
+    return f"📍 Como está o tempo agora em {cidade}? Conta aqui em uma palavra."
+
+
+def publicar_primeiro_comentario(media_id: str, token: str, texto: str) -> None:
+    """Comenta no post publicado; falha aqui nunca apaga nem derruba o Reel."""
+    if not media_id or not texto:
+        return
+    try:
+        r = _post(f"{media_id}/comments", {
+            "message": texto,
+            "access_token": token,
+        })
+        print(f"primeiro comentário publicado: {r.get('id')}")
+    except SystemExit as exc:
+        print(f"AVISO: Reel publicado, mas o primeiro comentário falhou: {exc}")
+
+
 def cota(ig_user, token):
     """A conta tem limite de ~50 publicações por 24h. Vale conferir antes."""
     try:
@@ -323,7 +347,13 @@ def main():
 
     print("[3/3] publicando")
     pub = publicar_com_retentativa(ig_user, cid, token)
-    print(f"publicado: media id {pub.get('id')}")
+    media_id = pub.get("id")
+    print(f"publicado: media id {media_id}")
+    if a.legenda_arquivo:
+        comentario = "🌦️ Qual cidade do Sul Fluminense você quer ver no próximo vídeo?"
+    else:
+        comentario = texto_primeiro_comentario(dia, voz=a.voz)
+    publicar_primeiro_comentario(media_id, token, comentario)
     if not a.sem_stories:
         try:
             print("[4/5] criando o container do Story")
