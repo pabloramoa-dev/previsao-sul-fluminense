@@ -137,6 +137,7 @@ def _coletar() -> dict[str, dict]:
             "tmax_amanha": _dia(d, "temperature_2m_max", 1),
             "prob_chuva_amanha": _dia(d, "precipitation_probability_max", 1),
             "rajada_kmh_amanha": _dia(d, "wind_gusts_10m_max", 1),
+            "_fonte": "open_meteo",
         }
     return saida
 
@@ -197,6 +198,7 @@ def _coletar_met_no() -> dict[str, dict]:
             "rajada_kmh": h[3], "tmin_amanha": a[0],
             "tmax_amanha": a[1], "prob_chuva_amanha": a[2],
             "rajada_kmh_amanha": a[3],
+            "_fonte": "met_no",
         }
 
     with ThreadPoolExecutor(max_workers=4) as executor:

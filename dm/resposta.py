@@ -78,15 +78,21 @@ def montar_resposta(texto: str, previsao_por_cidade: dict,
         return (f"Ainda não tenho a previsão de {dado} agora. "
                 "Tenta de novo daqui a pouco 🙏", False)
 
+    fallback = p.get("_fonte") == "met_no"
+    rotulo_hoje = "Restante de hoje" if fallback else "Hoje"
     linha_roupa = ""
     if recomendar_roupa:
         linha_roupa = recomendar_roupa(
-            p["tmin"], p["tmax"], p["prob_chuva"], p.get("rajada_kmh", 0)) + "\n"
+            p["tmin"], p["tmax"], p["prob_chuva"], p.get("rajada_kmh", 0))
+        if fallback:
+            linha_roupa = linha_roupa.replace(
+                "Hoje pede:", "Restante do dia pede:")
+        linha_roupa += "\n"
 
     fecho = _FECHO_SEGUIDOR if segue is not False else _FECHO_CORTESIA
 
     return (f"📍 {rotulo}\n"
-            f"🌡️ Hoje: {p['tmin']:.0f}° / {p['tmax']:.0f}°  "
+            f"🌡️ {rotulo_hoje}: {p['tmin']:.0f}° / {p['tmax']:.0f}°  "
             f"☔ chuva {p['prob_chuva']:.0f}%\n"
             f"🌅 Amanhã: {p.get('tmin_amanha', p['tmin']):.0f}° / "
             f"{p.get('tmax_amanha', p['tmax']):.0f}°  "
