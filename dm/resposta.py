@@ -92,4 +92,5 @@ def montar_resposta(texto: str, previsao_por_cidade: dict,
             f"{p.get('tmax_amanha', p['tmax']):.0f}°  "
             f"☔ chuva {p.get('prob_chuva_amanha', p['prob_chuva']):.0f}%\n"
             f"{linha_roupa}\n"
+            "Dados: Open-Meteo / MET Norway (CC BY 4.0).\n"
             f"{fecho}", True)
