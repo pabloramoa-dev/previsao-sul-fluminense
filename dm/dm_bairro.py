@@ -125,7 +125,7 @@ def resolver(texto: str) -> tuple[str, object, object]:
     #    reduzir "bairro, cidade" apenas ao nome da cidade e perder o bairro.
     for cn, cidade in _CIDADES_NORM.items():
         if cn in chave:
-            sobra = chave.replace(cn, " ").replace(" de ", " ").strip()
+            sobra = chave.replace(cn, " ").replace(" de ", " ").strip(" ,;:-")
             mb = _achar(sobra, list(_INDICE), LIMIAR_BAIRRO)
             if mb and cidade in _INDICE[mb]:
                 return ("cidade", cidade, f"{_ROTULO[mb]} ({cidade})")
