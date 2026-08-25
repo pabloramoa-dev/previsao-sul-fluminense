@@ -120,14 +120,9 @@ def resolver(texto: str) -> tuple[str, object, object]:
     if not chave:
         return ("nao_achou", None, None)
 
-    # 1) A mensagem ja e o nome de uma cidade? (cobre a resposta a pergunta
-    #    "qual cidade?", entao o fluxo funciona sem guardar estado nenhum)
-    mc = _achar(chave, list(_CIDADES_NORM), LIMIAR_CIDADE)
-    if mc:
-        c = _CIDADES_NORM[mc]
-        return ("cidade", c, c)
-
-    # 2) A mensagem traz bairro E cidade juntos? ("centro de resende")
+    # 1) A mensagem traz bairro E cidade juntos? ("centro de resende").
+    #    Esta checagem vem antes da aproximacao de cidade: o WRatio poderia
+    #    reduzir "bairro, cidade" apenas ao nome da cidade e perder o bairro.
     for cn, cidade in _CIDADES_NORM.items():
         if cn in chave:
             sobra = chave.replace(cn, " ").replace(" de ", " ").strip()
@@ -146,6 +141,13 @@ def resolver(texto: str) -> tuple[str, object, object]:
                 bairro_livre = " ".join(partes)
                 return ("cidade", cidade, f"{bairro_livre} ({cidade})")
             return ("cidade", cidade, cidade)
+
+    # 2) A mensagem e apenas o nome de uma cidade? Aceita pequenos erros de
+    #    digitacao na resposta a pergunta "qual cidade?".
+    mc = _achar(chave, list(_CIDADES_NORM), LIMIAR_CIDADE)
+    if mc:
+        c = _CIDADES_NORM[mc]
+        return ("cidade", c, c)
 
     # 3) E um bairro conhecido?
     mb = _achar(chave, list(_INDICE), LIMIAR_BAIRRO)
