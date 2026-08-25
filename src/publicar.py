@@ -120,6 +120,31 @@ def _post(endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
     return resp.json()
 
 
+def _texto_primeiro_comentario(caption: str) -> str:
+    """Escolhe uma pergunta curta a partir do tipo de publicação."""
+    texto = (caption or "").casefold()
+    if "alerta" in texto or "tempestade" in texto or "chuva forte" in texto:
+        return "⚠️ Como está o tempo aí no seu bairro agora? Conta aqui."
+    if "noite" in texto or "amanhã" in texto:
+        return "📌 Qual cidade você quer conferir primeiro amanhã?"
+    if "mito ou verdade" in texto:
+        return "🌦️ Você já sabia disso? Responde SIM ou NÃO."
+    return "📍 De qual cidade do Sul Fluminense você está acompanhando?"
+
+
+def _publicar_primeiro_comentario(media_id: str, caption: str) -> None:
+    """Comenta depois do publish; erro não invalida o post já publicado."""
+    if not media_id:
+        return
+    try:
+        r = _post(f"{media_id}/comments", {
+            "message": _texto_primeiro_comentario(caption),
+        })
+        print("[OK] Primeiro comentario publicado:", r.get("id"))
+    except PublicacaoError as exc:
+        print("[AVISO] Midia publicada, mas o primeiro comentario falhou:", exc)
+
+
 def _criar_item_carrossel(url_imagem: str) -> str:
     r = _post(f"{IG_USER_ID}/media", {
         "image_url": url_imagem,
@@ -159,6 +184,7 @@ def _publicar_carrossel_real(caminhos: list[str], caption: str) -> dict[str, Any
         "creation_id": container["id"],
     })
     print("[OK] Carrossel publicado:", resultado)
+    _publicar_primeiro_comentario(resultado.get("id", ""), caption)
     return resultado
 
 
@@ -168,6 +194,7 @@ def _publicar_imagem_real(caminho: str, caption: str) -> dict[str, Any]:
     _aguardar_pronto(container["id"])
     resultado = _post(f"{IG_USER_ID}/media_publish", {"creation_id": container["id"]})
     print("[OK] Imagem publicada:", resultado)
+    _publicar_primeiro_comentario(resultado.get("id", ""), caption)
     return resultado
 
 
