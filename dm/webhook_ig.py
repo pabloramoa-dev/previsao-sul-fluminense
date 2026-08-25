@@ -14,7 +14,7 @@ from flask import Flask, jsonify, request
 import dados
 import radar
 from dm_bairro import resolver
-from interacao import comando, relato
+from interacao import comando, condicao_simples, relato
 from recomendar_roupa import recomendar_roupa
 from resposta import MSG_SIGA, montar_resposta
 
@@ -123,6 +123,19 @@ def _processar(corpo: dict) -> None:
                 _enviar(destino, erro or radar.resumo(cidade))
                 continue
 
+            condicao_curta = condicao_simples(texto)
+            contexto = radar.obter_contexto(destino) if condicao_curta else None
+            if condicao_curta and contexto:
+                cidade, bairro = contexto
+                novo = radar.registrar(
+                    mid, destino, cidade, bairro, condicao_curta)
+                if novo:
+                    _enviar(
+                        destino,
+                        "✅ Obrigado! Seu relato entrou no radar colaborativo "
+                        f"de {cidade}.\n" + radar.resumo(cidade))
+                continue
+
             extraido = relato(texto)
             if extraido:
                 situacao, cidade, rotulo, condicao = extraido
@@ -153,6 +166,14 @@ def _processar(corpo: dict) -> None:
 
             resposta, deu_previsao = montar_resposta(
                 texto_previsao, previsao, segue, recomendar_roupa)
+            if deu_previsao:
+                situacao, cidade, rotulo = resolver(texto_previsao)
+                if situacao == "cidade":
+                    bairro = str(rotulo).split(" (", 1)[0]
+                    radar.guardar_contexto(destino, cidade, bairro)
+                    resposta += (
+                        f"\n\nE como está o tempo em {bairro} agora? "
+                        "Responda apenas: CHUVA, GAROA, NUBLADO, SOL ou VENTO.")
             _enviar(destino, resposta)
             if segue is False and deu_previsao:
                 _cortesia_gasta.add(destino)

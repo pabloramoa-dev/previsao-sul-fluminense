@@ -10,6 +10,7 @@ import threading
 
 _MEMORIA = deque(maxlen=1000)
 _EVENTOS = set()
+_CONTEXTOS: dict[str, tuple[datetime, str, str]] = {}
 _LOCK = threading.Lock()
 _URL = os.environ.get("DATABASE_URL", "")
 _DB_OK = False
@@ -43,6 +44,12 @@ def inicializar() -> bool:
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )""")
             con.execute("CREATE INDEX IF NOT EXISTS relatos_cidade_data ON relatos (cidade, created_at DESC)")
+            con.execute("""CREATE TABLE IF NOT EXISTS contextos_dm (
+                user_hash TEXT PRIMARY KEY,
+                cidade TEXT NOT NULL,
+                bairro TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL
+            )""")
         _DB_OK = True
     except Exception as exc:
         _DB_OK = False
@@ -73,6 +80,48 @@ def registrar(message_id: str, uid: str, cidade: str, bairro: str, condicao: str
             "created_at": datetime.now(timezone.utc), "user_hash": _hash(uid),
         })
         return True
+
+
+def guardar_contexto(uid: str, cidade: str, bairro: str,
+                    minutos: int = 10) -> None:
+    """Lembra o bairro para interpretar a proxima resposta curta."""
+    expira = datetime.now(timezone.utc) + timedelta(minutes=minutos)
+    if _DB_OK or inicializar():
+        try:
+            with _conectar() as con:
+                con.execute(
+                    """INSERT INTO contextos_dm(user_hash,cidade,bairro,expires_at)
+                       VALUES (%s,%s,%s,%s)
+                       ON CONFLICT(user_hash) DO UPDATE SET
+                       cidade=EXCLUDED.cidade, bairro=EXCLUDED.bairro,
+                       expires_at=EXCLUDED.expires_at""",
+                    (_hash(uid), cidade, bairro, expira))
+                return
+        except Exception as exc:
+            print(f"[radar] falha ao guardar contexto; usando memoria: {exc}")
+    with _LOCK:
+        _CONTEXTOS[_hash(uid)] = (expira, cidade, bairro)
+
+
+def obter_contexto(uid: str) -> tuple[str, str] | None:
+    """Retorna (cidade, bairro) se o contexto ainda estiver valido."""
+    agora = datetime.now(timezone.utc)
+    if _DB_OK or inicializar():
+        try:
+            with _conectar() as con:
+                linha = con.execute(
+                    """SELECT cidade,bairro FROM contextos_dm
+                       WHERE user_hash=%s AND expires_at>%s""",
+                    (_hash(uid), agora)).fetchone()
+                if linha:
+                    return linha[0], linha[1]
+        except Exception as exc:
+            print(f"[radar] falha ao ler contexto; usando memoria: {exc}")
+    with _LOCK:
+        item = _CONTEXTOS.get(_hash(uid))
+        if item and item[0] > agora:
+            return item[1], item[2]
+    return None
 
 
 def resumo(cidade: str | None = None, horas: int = 3) -> str:

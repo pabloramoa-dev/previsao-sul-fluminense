@@ -29,6 +29,20 @@ def comando(texto: str) -> tuple[str | None, str]:
     return None, ""
 
 
+def condicao_simples(texto: str) -> str | None:
+    """Aceita somente uma condicao, com pequenas variacoes naturais."""
+    normal = _norm(texto)
+    if normal in {"nao", "sem chuva", "nao esta chovendo", "nao ta chovendo"}:
+        return "sem chuva"
+    tokens = re.findall(r"[a-z0-9]+", normal)
+    relevantes = [CONDICOES[t] for t in tokens if t in CONDICOES]
+    extras = [t for t in tokens if t not in CONDICOES
+              and t not in {"esta", "ta", "aqui", "agora", "sim", "nao"}]
+    if len(relevantes) == 1 and not extras:
+        return relevantes[0]
+    return None
+
+
 def relato(texto: str) -> tuple[str, object, object, str] | None:
     """Extrai local e condicao: 'Retiro chuva' ou 'chuva no Retiro'."""
     normal = _norm(texto)
