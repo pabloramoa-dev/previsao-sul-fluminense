@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-dm_bairro.py - Resolve o bairro que a pessoa mandou na DM para uma das 10
+dm_bairro.py - Resolve o bairro que a pessoa mandou na DM para uma das 14
 cidades cobertas pelo @previsaosulflu.
 
 Fonte dos bairros: base dos Correios (cepbrasil.org / ruacep.com.br), consultada
@@ -8,7 +8,7 @@ em 21/08/2026. Rio Claro entra por distritos, porque o municipio nao tem bairros
 separados na base postal.
 
 CUIDADO COM NOMES REPETIDOS. 23 nomes existem em mais de uma cidade, e "Centro"
-existe nas 10. Por isso o indice mapeia bairro -> LISTA de cidades, e nao
+existe nas cidades cobertas. Por isso o indice mapeia bairro -> LISTA de cidades, e nao
 bairro -> cidade. Um dicionario simples faria o ultimo nome sobrescrever os
 outros, e a pessoa de Resende que mandasse "Centro" receberia a previsao de
 outra cidade sem ninguem perceber.
@@ -23,6 +23,7 @@ from rapidfuzz import process, fuzz
 CIDADES = [
     "Volta Redonda", "Barra Mansa", "Porto Real", "Resende",
     "Barra do Piraí", "Piraí", "Itatiaia", "Quatis", "Pinheiral", "Rio Claro",
+    "Angra dos Reis", "Paraty", "Valença", "Rio das Flores",
 ]
 
 # Bairros por cidade
@@ -37,6 +38,10 @@ BAIRROS = {
 "Quatis": """Alto Paraíso|Barrinha|Bela Vista|Centro|Falcão|Jardim Independência|Jardim Polastri|Loteamento Bondarovshy|Mirandópolis|Nossa Senhora do Rosário|Pilotos|Ribeirão de São Joaquim|Santa Bárbara|São Benedito|São Francisco de Assis|Vila Santo Antônio""",
 "Pinheiral": """Centro""",
 "Rio Claro": """Centro|Lídice|Passa Três|São João Marcos|Getulândia|Pouso Seco|Fazenda da Grama""",
+"Angra dos Reis": """Centro|Balneário|Parque das Palmeiras|Japuíba|Frade|Bracuí|Jacuecanga|Monsuaba|Camorim|Praia da Chácara|Belém|Areal|Nova Angra|Verolme|Garatucaia|Mambucaba|Parque Mambucaba|Perequê|Vila do Abraão|Provetá|Araçatiba|Bonfim|Marinas|Morro da Cruz|Sapinhatuba|Encruzo da Enseada""",
+"Paraty": """Centro Histórico|Centro|Jabaquara|Caborê|Portal das Artes|Parque Imperial|Ilha das Cobras|Mangueira|Patitiba|Chácara da Saudade|Pantanal|Corumbê|Penha|Trindade|Tarituba|Paraty-Mirim|Laranjeiras|Graúna|São Gonçalo""",
+"Valença": """Centro|Barroso|Benfica|Biquinha|Cambota|Carambita|Canteiro|Esplanada do Cruzeiro|Jardim Valença|Monte D'Ouro|Osório|Parque Pentagna|Ponte Funda|Santa Cruz|São Francisco|São José das Palmeiras|Varginha|Conservatória|Barão de Juparanã|Pentagna|Parapeúna|Santa Isabel do Rio Preto""",
+"Rio das Flores": """Centro|Taboas|Abarracamento|Manuel Duarte|Três Ilhas|Fazenda União|Formoso""",
 }
 
 BAIRROS = {c: [b.strip() for b in s.split("|") if b.strip()]
@@ -52,8 +57,8 @@ BAIRROS = {c: [b.strip() for b in s.split("|") if b.strip()]
 #
 # Por isso ele se recusa a carregar se os dados nao baterem. Falhar no deploy
 # e barato; responder errado para o seguidor nao e.
-BAIRROS_ESPERADOS = 325
-CHECKSUM_ESPERADO = "22b533bd295d"
+BAIRROS_ESPERADOS = 399
+CHECKSUM_ESPERADO = "1884781fd7b6"
 
 
 def _conferir_integridade() -> None:
@@ -129,6 +134,17 @@ def resolver(texto: str) -> tuple[str, object, object]:
             mb = _achar(sobra, list(_INDICE), LIMIAR_BAIRRO)
             if mb and cidade in _INDICE[mb]:
                 return ("cidade", cidade, f"{_ROTULO[mb]} ({cidade})")
+            # Quando a cidade vem explicita, aceite tambem localidades menores
+            # que ainda nao estejam na lista postal. Isso amplia a cobertura sem
+            # arriscar associar um bairro desconhecido a cidade errada.
+            if sobra:
+                conectores = {"de", "da", "do", "das", "dos", "e"}
+                partes = [
+                    p if p in conectores else p.capitalize()
+                    for p in sobra.split()
+                ]
+                bairro_livre = " ".join(partes)
+                return ("cidade", cidade, f"{bairro_livre} ({cidade})")
             return ("cidade", cidade, cidade)
 
     # 3) E um bairro conhecido?
