@@ -1,93 +1,74 @@
 # -*- coding: utf-8 -*-
-"""
-webhook_ig.py - Recebe a DM do Instagram e responde com a previsao do bairro.
+"""Webhook de DM: previsao por bairro e radar meteorologico colaborativo."""
+from __future__ import annotations
 
-Roda no Render (plano Free). Variaveis de ambiente necessarias:
-  IG_VERIFY_TOKEN  - qualquer frase que voce inventa; tem que ser a mesma que
-                     voce digitar no painel do Meta ao configurar o webhook
-  IG_ACCESS_TOKEN  - o mesmo token que o bot ja usa para publicar
-
-O endpoint /ping existe para um servico de keep-alive (cron-job.org) manter o
-Render acordado no horario das previsoes. No plano Free o servico dorme depois
-de ~15 min sem uso, e a primeira mensagem depois disso demora 30-60s.
-
-FOLLOW-GATE (desde 2026-08-23)
-------------------------------
-Antes de responder, o robo consulta o perfil de quem mandou a mensagem
-(GET /{IGSID}?fields=is_user_follow_business — mesma API, mesmo token, custo
-zero) e descobre se a pessoa segue o @previsaosulflu.
-
-  - Segue           -> responde normal, fecho de agradecimento.
-  - Nao segue, 1a   -> responde a previsao MAIS o aviso de que a proxima so
-    vem seguindo (a cortesia mostra que o robo funciona de verdade; pedir
-    follow antes de provar valor faz muita gente desistir).
-  - Nao segue, 2a+  -> nao entrega previsao; pede o follow e convida a mandar
-    o bairro de novo.
-  - API falhou      -> trata como seguidor. Nunca bloquear por erro nosso.
-
-A memoria da cortesia (_cortesia_gasta) vive no processo. No plano Free do
-Render ela zera quando o servico dorme ou reimplanta — ou seja, de tempos em
-tempos um nao-seguidor ganha outra resposta gratis. Aceitavel: o custo e zero
-e o comportamento continua empurrando para o follow. Se um dia precisar de
-memoria de verdade, um Redis gratis resolve; nao complique antes disso.
-"""
-
+import hashlib
+import hmac
 import os
 import threading
 import time
 
 import requests
-from flask import Flask, request
+from flask import Flask, jsonify, request
 
-from resposta import montar_resposta, MSG_SIGA
+import dados
+import radar
+from dm_bairro import resolver
+from interacao import comando, relato
 from recomendar_roupa import recomendar_roupa
-import dados  # expoe previsao_hoje() -> {cidade: {tmin,tmax,...,tmin_amanha,...}}
+from resposta import MSG_SIGA, montar_resposta
 
 app = Flask(__name__)
 
 VERIFY = os.environ["IG_VERIFY_TOKEN"]
 TOKEN = os.environ["IG_ACCESS_TOKEN"]
+APP_SECRET = os.environ.get("META_APP_SECRET", "")
 GRAPH = "https://graph.instagram.com/v22.0/me/messages"
 GRAPH_PERFIL = "https://graph.instagram.com/v22.0"
+INICIO = time.time()
 
-# IGSIDs de nao-seguidores que ja receberam a resposta de cortesia.
 _cortesia_gasta: set[str] = set()
-
-# Cache curto do status de follow, para nao consultar a API duas vezes na
-# mesma conversa (ex.: pessoa manda "Centro", robo pergunta a cidade, pessoa
-# responde "Resende" — duas mensagens em um minuto).
 _follow_cache: dict[str, tuple[float, bool]] = {}
 _FOLLOW_TTL = 10 * 60
 
 
 @app.get("/ping")
 def ping():
-    return "ok", 200
+    return jsonify({
+        "status": "ok",
+        "uptime_s": int(time.time() - INICIO),
+        "radar": radar.status(),
+        "assinatura_meta": bool(APP_SECRET),
+    }), 200
 
 
 @app.get("/webhook")
 def verificar():
-    """O Meta chama isso uma vez, na hora de cadastrar o webhook."""
     if request.args.get("hub.verify_token") == VERIFY:
         return request.args.get("hub.challenge", ""), 200
     return "token invalido", 403
 
 
+def _assinatura_valida(corpo: bytes) -> bool:
+    if not APP_SECRET:
+        return True
+    recebida = request.headers.get("X-Hub-Signature-256", "")
+    esperada = "sha256=" + hmac.new(
+        APP_SECRET.encode(), corpo, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(recebida, esperada)
+
+
 @app.post("/webhook")
 def receber():
-    """O Meta reenvia a mensagem se demorarmos a responder, entao devolvemos
-    200 na hora e processamos numa thread separada."""
+    bruto = request.get_data(cache=True)
+    if not _assinatura_valida(bruto):
+        return "assinatura invalida", 403
     corpo = request.get_json(silent=True) or {}
     threading.Thread(target=_processar, args=(corpo,), daemon=True).start()
     return "ok", 200
 
 
 def _segue_perfil(uid: str):
-    """True/False se deu para saber; None se a API nao respondeu.
-
-    O campo is_user_follow_business so existe depois que a pessoa mandou
-    mensagem para a conta — que e exatamente o nosso caso aqui.
-    """
     agora = time.time()
     em_cache = _follow_cache.get(uid)
     if em_cache and agora - em_cache[0] < _FOLLOW_TTL:
@@ -95,53 +76,84 @@ def _segue_perfil(uid: str):
     try:
         r = requests.get(
             f"{GRAPH_PERFIL}/{uid}",
-            params={"fields": "is_user_follow_business",
-                    "access_token": TOKEN},
+            params={"fields": "is_user_follow_business", "access_token": TOKEN},
             timeout=10,
         )
         if r.status_code >= 400:
-            print(f"[webhook] perfil {uid} indisponivel "
-                  f"({r.status_code}): {r.text[:200]}")
+            print(f"[webhook] perfil indisponivel ({r.status_code}): {r.text[:200]}")
             return None
         segue = bool(r.json().get("is_user_follow_business"))
         _follow_cache[uid] = (agora, segue)
         return segue
     except requests.RequestException as exc:
-        print(f"[webhook] erro de rede ao checar follow: {exc}")
+        print(f"[webhook] erro ao checar follow: {exc}")
         return None
 
 
-def _processar(corpo: dict) -> None:
-    try:
-        previsao = dados.previsao_hoje()
-    except Exception as exc:                      # nao derruba o servico
-        print(f"[webhook] falha ao coletar previsao: {exc}")
-        return
+def _cidade_do_argumento(argumento: str):
+    if not argumento:
+        return None, None
+    situacao, dado, rotulo = resolver(argumento)
+    if situacao == "cidade":
+        return dado, None
+    if situacao == "ambiguo":
+        return None, f"Qual cidade? {', '.join(dado)}."
+    return None, "Não reconheci a cidade. Envie RADAR + nome da cidade."
 
+
+def _processar(corpo: dict) -> None:
+    previsao = None
     for entrada in corpo.get("entry", []):
         for evento in entrada.get("messaging", []):
-            # Ignora o eco das nossas proprias mensagens, senao o bot
-            # conversa sozinho em loop.
-            if evento.get("message", {}).get("is_echo"):
+            mensagem = evento.get("message", {})
+            if mensagem.get("is_echo"):
                 continue
-            texto = evento.get("message", {}).get("text", "")
+            texto = mensagem.get("text", "").strip()
             destino = evento.get("sender", {}).get("id")
+            mid = mensagem.get("mid") or f"{destino}:{evento.get('timestamp')}:{texto}"
             if not texto or not destino:
                 continue
 
-            segue = _segue_perfil(destino)
+            cmd, argumento = comando(texto)
+            if cmd == "ajuda":
+                _enviar(destino, "Envie um BAIRRO para a previsão; BAIRRO + CHUVA/SOL/VENTO/NUBLADO para relatar; ou RADAR + CIDADE.")
+                continue
+            if cmd == "radar":
+                cidade, erro = _cidade_do_argumento(argumento)
+                _enviar(destino, erro or radar.resumo(cidade))
+                continue
 
-            # Nao segue e ja gastou a cortesia: pede o follow e para por ai.
+            extraido = relato(texto)
+            if extraido:
+                situacao, cidade, rotulo, condicao = extraido
+                if situacao == "ambiguo":
+                    _enviar(destino, f"Esse bairro existe em mais de uma cidade. Informe também a cidade: {', '.join(cidade)}.")
+                elif situacao == "nao_achou":
+                    _enviar(destino, "Não reconheci o bairro do relato. Envie BAIRRO + CIDADE + condição.")
+                else:
+                    bairro = str(rotulo).split(" (", 1)[0]
+                    novo = radar.registrar(mid, destino, cidade, bairro, condicao)
+                    if novo:
+                        _enviar(destino, "✅ Relato recebido, obrigado!\n" + radar.resumo(cidade))
+                continue
+
+            texto_previsao = argumento if cmd in {"hoje", "amanha"} and argumento else texto
+            segue = _segue_perfil(destino)
             if segue is False and destino in _cortesia_gasta:
                 _enviar(destino, MSG_SIGA)
                 continue
 
-            resposta, deu_previsao = montar_resposta(
-                texto, previsao, segue, recomendar_roupa)
-            _enviar(destino, resposta)
+            if previsao is None:
+                try:
+                    previsao = dados.previsao_hoje()
+                except Exception as exc:
+                    print(f"[webhook] falha ao coletar previsao: {exc}")
+                    _enviar(destino, "A previsão está temporariamente indisponível. Tente novamente em alguns minutos.")
+                    continue
 
-            # A cortesia so conta quando a previsao foi entregue de verdade —
-            # pergunta de desambiguacao ("qual cidade?") nao gasta a vez.
+            resposta, deu_previsao = montar_resposta(
+                texto_previsao, previsao, segue, recomendar_roupa)
+            _enviar(destino, resposta)
             if segue is False and deu_previsao:
                 _cortesia_gasta.add(destino)
 
@@ -157,8 +169,9 @@ def _enviar(uid: str, texto: str) -> None:
         if r.status_code >= 400:
             print(f"[webhook] Instagram recusou ({r.status_code}): {r.text[:300]}")
     except requests.RequestException as exc:
-        print(f"[webhook] erro de rede ao responder: {exc}")
+        print(f"[webhook] erro ao responder: {exc}")
 
 
 if __name__ == "__main__":
+    radar.inicializar()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
