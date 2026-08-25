@@ -124,9 +124,12 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
     assinatura = ASSINATURA.get(voz, "")
     if assinatura:
         linhas += ["", assinatura]
-    # Em 2026-08-22 a pergunta fechada deu lugar à chamada do bairro. A função
-    # pergunta() continua no engajamento.py, pronta pra voltar se a DM cansar.
-    linhas += ["", engajamento.chamada_bairro(slot)]
+    # CTA por intenção: de manhã abre conversa no bairro; à noite pede
+    # salvamento, porque a utilidade é consultar a previsão no dia seguinte.
+    if slot == "noite":
+        linhas += ["", "📌 Salva esta previsão para conferir amanhã de manhã."]
+    else:
+        linhas += ["", engajamento.chamada_bairro(slot)]
     # a cidade da vez vai na frente das hashtags: o vídeo pode ser inteiro
     # sobre Quatis enquanto o conjunto do dia só cita Volta Redonda
     linhas += ["", engajamento.hashtags(
@@ -139,6 +142,40 @@ def _dia_br(data_iso):
     if not data_iso or len(data_iso) < 10:
         return ""
     return f"{data_iso[8:10]}/{data_iso[5:7]}"
+
+
+def validar_legenda(cap: str, quando: str = "hoje") -> None:
+    """Bloqueia identidade antiga e incoerência hoje/amanhã antes da API."""
+    texto = (cap or "").strip()
+    baixo = texto.casefold()
+    if not texto:
+        raise SystemExit("legenda vazia: publicação bloqueada")
+    if "@previsaovr" in baixo:
+        raise SystemExit("legenda contém @previsaovr: publicação bloqueada")
+    if quando == "amanha" and "amanhã" not in baixo:
+        raise SystemExit("Reel noturno sem indicação de AMANHÃ: publicação bloqueada")
+    if len(texto) > 2200:
+        raise SystemExit(f"legenda excede 2200 caracteres ({len(texto)})")
+
+
+def ja_publicado(ig_user: str, token: str, cap: str) -> bool:
+    """Evita republicar a mesma legenda entre reexecuções do workflow."""
+    try:
+        r = _get(f"{ig_user}/media", {
+            "fields": "id,caption,timestamp",
+            "limit": "25",
+            "access_token": token,
+        })
+    except SystemExit as exc:
+        print(f"  AVISO: não foi possível conferir duplicidade: {exc}")
+        return False
+    alvo = " ".join((cap or "").split()).casefold()
+    for item in r.get("data") or []:
+        existente = " ".join((item.get("caption") or "").split()).casefold()
+        if existente and existente == alvo:
+            print(f"  duplicata encontrada: media id {item.get('id')}")
+            return True
+    return False
 
 
 # ---------------------------------------------------------------- HTTP
@@ -248,6 +285,9 @@ def main():
         dia = json.load(open(a.dados))
         cap = legenda(dia, voz=a.voz, quando=a.quando)
 
+    # As mesmas travas rodam no dry-run e na publicação real.
+    validar_legenda(cap, quando=a.quando if not a.legenda_arquivo else "hoje")
+
     if a.dry_run:
         print(cap)
         return
@@ -258,6 +298,8 @@ def main():
         sys.exit("faltam as variáveis IG_USER_ID e IG_TOKEN")
 
     cota(ig_user, token)
+    if ja_publicado(ig_user, token, cap):
+        raise SystemExit("publicação cancelada: esta legenda já existe entre as 25 mídias recentes")
 
     print("[1/3] criando o container do Reel")
     if a.capa_ms:
