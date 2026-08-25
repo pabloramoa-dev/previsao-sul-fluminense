@@ -7,7 +7,7 @@ modulo NAO reaproveita src/clima.py: aquele modulo faz 20 requisicoes em serie
 com pausa de 1,5s entre cidades (~20s por chamada), o que e certo para o post
 diario e errado para responder uma DM.
 
-Aqui a coleta e uma unica requisicao ao Open-Meteo com as 10 cidades de uma vez,
+Aqui a coleta e uma unica requisicao ao Open-Meteo com as 14 cidades de uma vez,
 guardada em memoria por TTL_SEGUNDOS. Em um dia normal o robo bate na API poucas
 vezes por hora, nao uma vez por seguidor.
 
@@ -60,6 +60,10 @@ COORDENADAS = {
     "Quatis": (-22.4064, -44.2578),
     "Pinheiral": (-22.5136, -44.0022),
     "Rio Claro": (-22.7203, -44.1400),
+    "Angra dos Reis": (-23.0067, -44.3181),
+    "Paraty": (-23.2178, -44.7131),
+    "Valença": (-22.2456, -43.7003),
+    "Rio das Flores": (-22.1692, -43.5856),
 }
 
 if set(COORDENADAS) != set(CIDADES_BAIRRO):
@@ -86,7 +90,7 @@ def _numero(valor, padrao: float = 0.0) -> float:
 
 
 def _coletar() -> dict[str, dict]:
-    """Uma requisicao, as 10 cidades, DOIS dias. Devolve {cidade: {...}}."""
+    """Uma requisicao, as 14 cidades, DOIS dias. Devolve {cidade: {...}}."""
     parametros = {
         "latitude": ",".join(str(COORDENADAS[n][0]) for n in _NOMES),
         "longitude": ",".join(str(COORDENADAS[n][1]) for n in _NOMES),
@@ -206,7 +210,7 @@ def _coletar_met_no() -> dict[str, dict]:
 
 
 def previsao_hoje() -> dict[str, dict]:
-    """Previsao de hoje E de amanha das 10 cidades, com cache.
+    """Previsao de hoje E de amanha das 14 cidades, com cache.
 
     {"Resende": {"tmin": 14.2, "tmax": 27.9, "prob_chuva": 10.0,
                  "rajada_kmh": 23.4, "tmin_amanha": 15.0, ...}, ...}
