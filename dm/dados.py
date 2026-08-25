@@ -24,7 +24,10 @@ carregar, na mesma logica da trava do dm_bairro.py.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
 import threading
+from zoneinfo import ZoneInfo
 import time
 
 import requests
@@ -32,6 +35,8 @@ import requests
 from dm_bairro import CIDADES as CIDADES_BAIRRO
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+MET_NO_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
+MET_NO_UA = "previsaosulflu/1.0 github.com/pabloramoa-dev/previsao-sul-fluminense"
 TIMEZONE = "America/Sao_Paulo"
 TIMEOUT = 20
 TENTATIVAS_429 = 3
@@ -136,6 +141,68 @@ def _coletar() -> dict[str, dict]:
     return saida
 
 
+def _coletar_met_no() -> dict[str, dict]:
+    """Fallback gratuito do MET Norway, agregado em hoje e amanha."""
+
+    fuso = ZoneInfo(TIMEZONE)
+    hoje = datetime.now(fuso).date()
+    datas = [hoje, hoje + timedelta(days=1)]
+
+    def _cidade(item):
+        nome, (lat, lon) = item
+        resposta = requests.get(
+            MET_NO_URL,
+            params={"lat": f"{lat:.4f}", "lon": f"{lon:.4f}"},
+            headers={"User-Agent": MET_NO_UA},
+            timeout=TIMEOUT,
+        )
+        resposta.raise_for_status()
+        series = resposta.json().get("properties", {}).get("timeseries", [])
+        por_dia = {d: {"temp": [], "chuva": [], "vento": []} for d in datas}
+        for ponto in series:
+            instante = datetime.fromisoformat(
+                ponto["time"].replace("Z", "+00:00")).astimezone(fuso)
+            if instante.date() not in por_dia:
+                continue
+            dados_ponto = ponto.get("data", {})
+            detalhes = dados_ponto.get("instant", {}).get("details", {})
+            bucket = por_dia[instante.date()]
+            if detalhes.get("air_temperature") is not None:
+                bucket["temp"].append(_numero(detalhes["air_temperature"]))
+            vento = detalhes.get("wind_speed_of_gust",
+                                  detalhes.get("wind_speed"))
+            if vento is not None:
+                bucket["vento"].append(_numero(vento) * 3.6)
+            periodo = (dados_ponto.get("next_1_hours")
+                       or dados_ponto.get("next_6_hours") or {})
+            pdet = periodo.get("details", {})
+            prob = pdet.get("probability_of_precipitation")
+            if prob is None and pdet.get("precipitation_amount") is not None:
+                prob = 100.0 if _numero(pdet["precipitation_amount"]) > 0.1 else 0.0
+            if prob is not None:
+                bucket["chuva"].append(_numero(prob))
+
+        if any(not por_dia[d]["temp"] for d in datas):
+            raise RuntimeError(f"MET Norway sem dois dias completos para {nome}")
+
+        def resumo(d):
+            b = por_dia[d]
+            return (min(b["temp"]), max(b["temp"]),
+                    max(b["chuva"] or [0.0]), max(b["vento"] or [0.0]))
+
+        h = resumo(datas[0])
+        a = resumo(datas[1])
+        return nome, {
+            "tmin": h[0], "tmax": h[1], "prob_chuva": h[2],
+            "rajada_kmh": h[3], "tmin_amanha": a[0],
+            "tmax_amanha": a[1], "prob_chuva_amanha": a[2],
+            "rajada_kmh_amanha": a[3],
+        }
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        return dict(executor.map(_cidade, COORDENADAS.items()))
+
+
 def previsao_hoje() -> dict[str, dict]:
     """Previsao de hoje E de amanha das 10 cidades, com cache.
 
@@ -167,6 +234,13 @@ def previsao_hoje() -> dict[str, dict]:
                     and exc.response is not None
                     and exc.response.status_code == 429):
                 _bloqueado_ate = time.time() + COOLDOWN_429
+                try:
+                    print("[dados] Open-Meteo em 429; usando fallback MET Norway.")
+                    _cache = _coletar_met_no()
+                    _cache_em = time.time()
+                    return _cache
+                except Exception as fallback_exc:
+                    print(f"[dados] fallback MET Norway falhou: {fallback_exc}")
             if _cache is not None and agora - _cache_em < TTL_EMERGENCIA:
                 idade = int((agora - _cache_em) / 60)
                 print(f"[dados] Open-Meteo falhou ({exc}); "
