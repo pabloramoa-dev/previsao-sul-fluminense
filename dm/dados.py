@@ -34,6 +34,9 @@ from dm_bairro import CIDADES as CIDADES_BAIRRO
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 TIMEZONE = "America/Sao_Paulo"
 TIMEOUT = 20
+TENTATIVAS_429 = 3
+ESPERA_429_PADRAO = 2
+COOLDOWN_429 = 60
 
 # Quanto tempo a previsao serve sem ir buscar de novo.
 TTL_SEGUNDOS = 20 * 60
@@ -65,6 +68,7 @@ _NOMES = list(COORDENADAS)
 
 _cache: dict[str, dict] | None = None
 _cache_em: float = 0.0
+_bloqueado_ate: float = 0.0
 _trava = threading.Lock()
 
 
@@ -78,18 +82,29 @@ def _numero(valor, padrao: float = 0.0) -> float:
 
 def _coletar() -> dict[str, dict]:
     """Uma requisicao, as 10 cidades, DOIS dias. Devolve {cidade: {...}}."""
-    resposta = requests.get(
-        FORECAST_URL,
-        params={
-            "latitude": ",".join(str(COORDENADAS[n][0]) for n in _NOMES),
-            "longitude": ",".join(str(COORDENADAS[n][1]) for n in _NOMES),
-            "daily": ("temperature_2m_min,temperature_2m_max,"
-                      "precipitation_probability_max,wind_gusts_10m_max"),
-            "timezone": TIMEZONE,
-            "forecast_days": 2,
-        },
-        timeout=TIMEOUT,
-    )
+    parametros = {
+        "latitude": ",".join(str(COORDENADAS[n][0]) for n in _NOMES),
+        "longitude": ",".join(str(COORDENADAS[n][1]) for n in _NOMES),
+        "daily": ("temperature_2m_min,temperature_2m_max,"
+                  "precipitation_probability_max,wind_gusts_10m_max"),
+        "timezone": TIMEZONE,
+        "forecast_days": 2,
+    }
+    for tentativa in range(1, TENTATIVAS_429 + 1):
+        resposta = requests.get(
+            FORECAST_URL, params=parametros, timeout=TIMEOUT)
+        if resposta.status_code != 429 or tentativa == TENTATIVAS_429:
+            break
+        cabecalho = resposta.headers.get("Retry-After")
+        try:
+            espera = float(cabecalho) if cabecalho else (
+                ESPERA_429_PADRAO * tentativa)
+        except ValueError:
+            espera = ESPERA_429_PADRAO * tentativa
+        espera = min(max(espera, 1), 15)
+        print(f"[dados] Open-Meteo limitou a chamada (429); "
+              f"nova tentativa em {espera:.0f}s.")
+        time.sleep(espera)
     resposta.raise_for_status()
     bruto = resposta.json()
     # Com varias coordenadas a API devolve uma lista; com uma so, um objeto.
@@ -130,7 +145,7 @@ def previsao_hoje() -> dict[str, dict]:
     Se a API falhar mas houver cache recente, devolve o cache e segue. So
     levanta excecao quando nao ha nada util para responder.
     """
-    global _cache, _cache_em
+    global _cache, _cache_em, _bloqueado_ate
     agora = time.time()
     if _cache is not None and agora - _cache_em < TTL_SEGUNDOS:
         return _cache
@@ -140,10 +155,18 @@ def previsao_hoje() -> dict[str, dict]:
         agora = time.time()
         if _cache is not None and agora - _cache_em < TTL_SEGUNDOS:
             return _cache
+        if agora < _bloqueado_ate:
+            espera = int(_bloqueado_ate - agora)
+            raise RuntimeError(
+                f"Open-Meteo em cooldown por limite de chamadas ({espera}s)")
         try:
             _cache = _coletar()
             _cache_em = time.time()
         except Exception as exc:
+            if (isinstance(exc, requests.HTTPError)
+                    and exc.response is not None
+                    and exc.response.status_code == 429):
+                _bloqueado_ate = time.time() + COOLDOWN_429
             if _cache is not None and agora - _cache_em < TTL_EMERGENCIA:
                 idade = int((agora - _cache_em) / 60)
                 print(f"[dados] Open-Meteo falhou ({exc}); "
