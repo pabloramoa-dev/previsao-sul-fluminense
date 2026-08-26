@@ -1,0 +1,4 @@
+manim==0.21.0
+numpy>=2.0,<3
+pydub>=0.25.1
+soundfile>=0.13.1
