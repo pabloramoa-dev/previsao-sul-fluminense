@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
+import re
 import threading
 import time
 
@@ -25,20 +26,25 @@ TOKEN = os.environ["IG_ACCESS_TOKEN"]
 APP_SECRET = os.environ.get("META_APP_SECRET", "")
 GRAPH = "https://graph.instagram.com/v22.0/me/messages"
 GRAPH_PERFIL = "https://graph.instagram.com/v22.0"
+USUARIO_PERFIL = os.environ.get("IG_USERNAME", "previsaosulflu").casefold()
 INICIO = time.time()
 
 _cortesia_gasta: set[str] = set()
 _follow_cache: dict[str, tuple[float, bool]] = {}
 _FOLLOW_TTL = 10 * 60
+_assinatura_comentarios_feita = False
+_trava_assinatura = threading.Lock()
 
 
 @app.get("/ping")
 def ping():
+    _assinar_comentarios()
     return jsonify({
         "status": "ok",
         "uptime_s": int(time.time() - INICIO),
         "radar": radar.status(),
         "assinatura_meta": bool(APP_SECRET),
+        "comentarios": "habilitados" if _assinatura_comentarios_feita else "pendente",
     }), 200
 
 
@@ -58,12 +64,40 @@ def _assinatura_valida(corpo: bytes) -> bool:
     return hmac.compare_digest(recebida, esperada)
 
 
+def _assinar_comentarios() -> None:
+    """Garante que a conta envie eventos de comentarios para este webhook."""
+    global _assinatura_comentarios_feita
+    if _assinatura_comentarios_feita:
+        return
+    with _trava_assinatura:
+        if _assinatura_comentarios_feita:
+            return
+        try:
+            r = requests.post(
+                f"{GRAPH_PERFIL}/me/subscribed_apps",
+                params={
+                    "subscribed_fields": "comments,messages",
+                    "access_token": TOKEN,
+                },
+                timeout=15,
+            )
+            if r.status_code >= 400:
+                print(f"[webhook] assinatura de comentarios recusada "
+                      f"({r.status_code}): {r.text[:300]}")
+                return
+            _assinatura_comentarios_feita = bool(r.json().get("success", True))
+            print("[webhook] comentarios assinados na Meta")
+        except requests.RequestException as exc:
+            print(f"[webhook] erro ao assinar comentarios: {exc}")
+
+
 @app.post("/webhook")
 def receber():
     bruto = request.get_data(cache=True)
     if not _assinatura_valida(bruto):
         return "assinatura invalida", 403
     corpo = request.get_json(silent=True) or {}
+    _assinar_comentarios()
     threading.Thread(target=_processar, args=(corpo,), daemon=True).start()
     return "ok", 200
 
@@ -104,6 +138,11 @@ def _cidade_do_argumento(argumento: str):
 def _processar(corpo: dict) -> None:
     previsao = None
     for entrada in corpo.get("entry", []):
+        for alteracao in entrada.get("changes", []):
+            if alteracao.get("field") != "comments":
+                continue
+            valor = alteracao.get("value") or {}
+            _processar_comentario(valor, str(entrada.get("id", "")))
         for evento in entrada.get("messaging", []):
             mensagem = evento.get("message", {})
             if mensagem.get("is_echo"):
@@ -177,6 +216,58 @@ def _processar(corpo: dict) -> None:
             _enviar(destino, resposta)
             if segue is False and deu_previsao:
                 _cortesia_gasta.add(destino)
+
+
+def _limpar_pedido_comentario(texto: str) -> str:
+    texto = re.sub(r"@previsaosulflu\b", " ", texto, flags=re.IGNORECASE)
+    texto = re.sub(
+        r"^\s*(?:previs[aã]o|tempo|clima)(?:\s+(?:para|de|do|da|em))?\s*[:\-]?\s*",
+        "", texto, flags=re.IGNORECASE)
+    return texto.strip()
+
+
+def _processar_comentario(valor: dict, id_perfil: str) -> None:
+    """Responde previsao em comentarios no formato BAIRRO, CIDADE."""
+    comentario_id = str(valor.get("id") or "")
+    texto = _limpar_pedido_comentario(str(valor.get("text") or ""))
+    autor = valor.get("from") or {}
+    autor_id = str(autor.get("id") or "")
+    username = str(autor.get("username") or "").casefold()
+    if (not comentario_id or not texto or autor_id == id_perfil
+            or username == USUARIO_PERFIL):
+        return
+
+    situacao, _, _ = resolver(texto)
+    if situacao not in {"cidade", "ambiguo"}:
+        return
+    if not radar.marcar_evento(f"comentario:{comentario_id}"):
+        return
+
+    try:
+        previsao = dados.previsao_hoje()
+        resposta, _ = montar_resposta(
+            texto, previsao, True, recomendar_roupa)
+    except Exception as exc:
+        print(f"[webhook] falha na previsao do comentario: {exc}")
+        resposta = "A previsão está temporariamente indisponível. Tente novamente em alguns minutos."
+    _responder_comentario(comentario_id, resposta)
+
+
+def _responder_comentario(comentario_id: str, texto: str) -> None:
+    try:
+        r = requests.post(
+            f"{GRAPH_PERFIL}/{comentario_id}/replies",
+            params={"access_token": TOKEN},
+            data={"message": texto[:2200]},
+            timeout=15,
+        )
+        if r.status_code >= 400:
+            print(f"[webhook] resposta ao comentario recusada "
+                  f"({r.status_code}): {r.text[:300]}")
+        else:
+            print(f"[webhook] comentario respondido: {comentario_id}")
+    except requests.RequestException as exc:
+        print(f"[webhook] erro ao responder comentario: {exc}")
 
 
 def _enviar(uid: str, texto: str) -> None:
