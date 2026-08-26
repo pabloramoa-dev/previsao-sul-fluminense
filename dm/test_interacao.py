@@ -61,7 +61,10 @@ class InteracaoTest(unittest.TestCase):
         post.return_value = Mock(status_code=200)
         self.assertTrue(_enviar_previsao_privada("c123", "previsão"))
         url = post.call_args.args[0]
-        self.assertTrue(url.endswith("/c123/private_replies"))
+        self.assertTrue(url.endswith("/me/messages"))
+        self.assertEqual(
+            post.call_args.kwargs["json"]["recipient"],
+            {"comment_id": "c123"})
 
     @patch("webhook_ig.requests.post")
     def test_private_reply_falhou(self, post):
