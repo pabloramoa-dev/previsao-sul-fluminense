@@ -1,0 +1,44 @@
+name: Pablo Guru V2 — render manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      quality:
+        description: "Qualidade Manim"
+        type: choice
+        options: [l, m, h]
+        default: m
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pablo_guru
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pablo-guru-v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependencias de sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg libcairo2-dev libpango1.0-dev pkg-config
+      - name: Dependencias Python
+        run: pip install -r requirements.txt
+      - name: Renderizar A Estacao
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: manim -q${{ inputs.quality }} --fps 30 scenes/station.py EstacaoV2
+      - name: Guardar MP4 de teste
+        uses: actions/upload-artifact@v4
+        with:
+          name: pablo-guru-v2-estacao
+          path: pablo_guru/media/videos/station/**/EstacaoV2.mp4
+          retention-days: 7
