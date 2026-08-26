@@ -1,0 +1,82 @@
+name: Publicar campanha DM regional
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/output/card_dm_regional_*.jpg"
+      - ".github/workflows/publicar_campanha_dm_regional.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publicar-campanha-dm-regional
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Aguardar propagacao das imagens publicas
+        run: sleep 45
+
+      - name: Publicar carrossel no Instagram
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          python - <<'PY'
+          from src.publicar import publicar_carrossel
+
+          slides = [
+              "assets/output/card_dm_regional_01.jpg",
+              "assets/output/card_dm_regional_02.jpg",
+              "assets/output/card_dm_regional_03.jpg",
+              "assets/output/card_dm_regional_04.jpg",
+          ]
+          legenda = """🌦️ Quer receber a previsão do seu bairro direto na DM?
+
+É simples:
+1️⃣ Envie BAIRRO + CIDADE por mensagem.
+2️⃣ Receba a previsão de hoje e amanhã.
+3️⃣ Conte como está o tempo aí: CHUVA, GAROA, NUBLADO, SOL, VENTO ou SEM CHUVA.
+
+Exemplo: Parque Mambucaba, Angra dos Reis.
+
+Os relatos ajudam a formar o nosso radar colaborativo do Sul Fluminense. Compartilhe este post com a vizinhança e teste agora pela DM. 📍
+
+Dados meteorológicos: Open-Meteo / MET Norway (CC BY 4.0).
+
+#SulFluminense #PrevisaoDoTempo #TempoRJ #VoltaRedonda #BarraMansa #Resende #AngraDosReis #Paraty #Valenca #RioDasFlores"""
+
+          publicar_carrossel(slides, legenda)
+          PY
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: campanha DM regional"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            A campanha de DM regional falhou e nao foi publicada.
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
