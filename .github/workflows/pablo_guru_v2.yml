@@ -1,4 +1,4 @@
-name: Pablo Guru V2 — render manual
+name: Pablo Guru V2 — render isolado
 
 on:
   workflow_dispatch:
@@ -8,6 +8,11 @@ on:
         type: choice
         options: [l, m, h]
         default: m
+  push:
+    branches: [pablo-guru-v2]
+    paths:
+      - "pablo_guru/**"
+      - ".github/workflows/pablo_guru_v2.yml"
 
 permissions:
   contents: read
@@ -35,7 +40,7 @@ jobs:
       - name: Renderizar A Estacao
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: manim -q${{ inputs.quality }} --fps 30 scenes/station.py EstacaoV2
+        run: manim -qm --fps 30 scenes/station.py EstacaoV2
       - name: Guardar MP4 de teste
         uses: actions/upload-artifact@v4
         with:
