@@ -44,6 +44,10 @@ def inicializar() -> bool:
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )""")
             con.execute("CREATE INDEX IF NOT EXISTS relatos_cidade_data ON relatos (cidade, created_at DESC)")
+            con.execute("""CREATE TABLE IF NOT EXISTS webhook_eventos (
+                event_id TEXT PRIMARY KEY,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )""")
             con.execute("""CREATE TABLE IF NOT EXISTS contextos_dm (
                 user_hash TEXT PRIMARY KEY,
                 cidade TEXT NOT NULL,
@@ -55,6 +59,24 @@ def inicializar() -> bool:
         _DB_OK = False
         print(f"[radar] Postgres indisponivel; usando memoria: {exc}")
     return _DB_OK
+
+
+def marcar_evento(event_id: str) -> bool:
+    """Marca um webhook uma unica vez. True significa que deve ser processado."""
+    if _DB_OK or inicializar():
+        try:
+            with _conectar() as con:
+                cur = con.execute(
+                    """INSERT INTO webhook_eventos(event_id) VALUES (%s)
+                       ON CONFLICT(event_id) DO NOTHING""", (event_id,))
+                return cur.rowcount == 1
+        except Exception as exc:
+            print(f"[radar] falha ao deduplicar webhook; usando memoria: {exc}")
+    with _LOCK:
+        if event_id in _EVENTOS:
+            return False
+        _EVENTOS.add(event_id)
+        return True
 
 
 def registrar(message_id: str, uid: str, cidade: str, bairro: str, condicao: str) -> bool:
