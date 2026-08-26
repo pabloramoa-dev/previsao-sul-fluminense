@@ -138,10 +138,7 @@ def _cidade_do_argumento(argumento: str):
 def _processar(corpo: dict) -> None:
     previsao = None
     for entrada in corpo.get("entry", []):
-        for alteracao in entrada.get("changes", []):
-            if alteracao.get("field") != "comments":
-                continue
-            valor = alteracao.get("value") or {}
+        for valor in _comentarios_da_entrada(entrada):
             _processar_comentario(valor, str(entrada.get("id", "")))
         for evento in entrada.get("messaging", []):
             mensagem = evento.get("message", {})
@@ -216,6 +213,24 @@ def _processar(corpo: dict) -> None:
             _enviar(destino, resposta)
             if segue is False and deu_previsao:
                 _cortesia_gasta.add(destino)
+
+
+def _comentarios_da_entrada(entrada: dict):
+    """Aceita os dois formatos de webhook usados pela Meta.
+
+    Instagram Login envia field/value diretamente em entry. Integracoes mais
+    antigas do Graph API encapsulam o mesmo conteudo dentro de changes[].
+    """
+    if entrada.get("field") in {"comments", "live_comments"}:
+        valor = entrada.get("value")
+        if isinstance(valor, dict):
+            yield valor
+    for alteracao in entrada.get("changes", []):
+        if alteracao.get("field") not in {"comments", "live_comments"}:
+            continue
+        valor = alteracao.get("value")
+        if isinstance(valor, dict):
+            yield valor
 
 
 def _limpar_pedido_comentario(texto: str) -> str:
