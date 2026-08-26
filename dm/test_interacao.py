@@ -13,6 +13,7 @@ from webhook_ig import (
     _comentarios_da_entrada,
     _enviar_previsao_privada,
     _limpar_pedido_comentario,
+    _resposta_publica,
 )
 import radar
 
@@ -78,6 +79,11 @@ class InteracaoTest(unittest.TestCase):
     def test_webhook_antigo_com_changes(self):
         entrada = {"changes": [{"field": "comments", "value": {"id": "c2"}}]}
         self.assertEqual(list(_comentarios_da_entrada(entrada))[0]["id"], "c2")
+
+    def test_alterna_cinco_respostas_publicas(self):
+        respostas = {_resposta_publica(str(i)) for i in range(100)}
+        self.assertEqual(len(respostas), 5)
+        self.assertTrue(all("DM" in resposta for resposta in respostas))
 
 
 if __name__ == "__main__":
