@@ -34,6 +34,23 @@ _follow_cache: dict[str, tuple[float, bool]] = {}
 _FOLLOW_TTL = 10 * 60
 _assinatura_comentarios_feita = False
 _trava_assinatura = threading.Lock()
+_diag_lock = threading.Lock()
+_diag = {
+    "webhooks": 0,
+    "eventos_comentario": 0,
+    "pedidos_reconhecidos": 0,
+    "dm_enviadas": 0,
+    "respostas_publicas": 0,
+    "ultimo_estagio": "aguardando_evento",
+    "ultimo_http_meta": None,
+}
+
+
+def _diagnosticar(estagio: str, **valores) -> None:
+    with _diag_lock:
+        _diag["ultimo_estagio"] = estagio
+        for chave, valor in valores.items():
+            _diag[chave] = valor
 
 
 @app.get("/ping")
@@ -46,6 +63,15 @@ def ping():
         "assinatura_meta": bool(APP_SECRET),
         "comentarios": "habilitados" if _assinatura_comentarios_feita else "pendente",
     }), 200
+
+
+@app.get("/diagnostico-comentarios")
+def diagnostico_comentarios():
+    """Telemetria sem textos, IDs de usuarios ou credenciais."""
+    with _diag_lock:
+        estado = dict(_diag)
+    estado["assinatura_comments"] = _assinatura_comentarios_feita
+    return jsonify(estado), 200
 
 
 @app.get("/webhook")
@@ -97,6 +123,9 @@ def receber():
     if not _assinatura_valida(bruto):
         return "assinatura invalida", 403
     corpo = request.get_json(silent=True) or {}
+    with _diag_lock:
+        _diag["webhooks"] += 1
+        _diag["ultimo_estagio"] = "webhook_recebido"
     _assinar_comentarios()
     threading.Thread(target=_processar, args=(corpo,), daemon=True).start()
     return "ok", 200
@@ -244,6 +273,9 @@ def _limpar_pedido_comentario(texto: str) -> str:
 def _processar_comentario(valor: dict, id_perfil: str) -> None:
     """Envia a previsao por DM e confirma de forma curta no comentario."""
     comentario_id = str(valor.get("id") or "")
+    with _diag_lock:
+        _diag["eventos_comentario"] += 1
+        _diag["ultimo_estagio"] = "comentario_recebido"
     texto = _limpar_pedido_comentario(str(valor.get("text") or ""))
     autor = valor.get("from") or {}
     autor_id = str(autor.get("id") or "")
@@ -254,9 +286,14 @@ def _processar_comentario(valor: dict, id_perfil: str) -> None:
 
     situacao, _, _ = resolver(texto)
     if situacao not in {"cidade", "ambiguo"}:
+        _diagnosticar("localidade_nao_reconhecida")
         return
     if not radar.marcar_evento(f"comentario:{comentario_id}"):
+        _diagnosticar("comentario_duplicado")
         return
+    with _diag_lock:
+        _diag["pedidos_reconhecidos"] += 1
+        _diag["ultimo_estagio"] = "pedido_reconhecido"
 
     try:
         previsao = dados.previsao_hoje()
@@ -281,17 +318,23 @@ def _enviar_previsao_privada(comentario_id: str, texto: str) -> bool:
             timeout=15,
         )
         if r.status_code >= 400:
+            _diagnosticar("dm_recusada", ultimo_http_meta=r.status_code)
             print(f"[webhook] DM privada recusada ({r.status_code}): "
                   f"{r.text[:300]}")
             return False
         print(f"[webhook] previsao enviada por DM: {comentario_id}")
+        with _diag_lock:
+            _diag["dm_enviadas"] += 1
+            _diag["ultimo_estagio"] = "dm_enviada"
+            _diag["ultimo_http_meta"] = r.status_code
         return True
     except requests.RequestException as exc:
+        _diagnosticar("erro_rede_dm", ultimo_http_meta=None)
         print(f"[webhook] erro ao enviar DM privada: {exc}")
         return False
 
 
-def _responder_comentario(comentario_id: str, texto: str) -> None:
+def _responder_comentario(comentario_id: str, texto: str) -> bool:
     try:
         r = requests.post(
             f"{GRAPH_PERFIL}/{comentario_id}/replies",
@@ -300,12 +343,20 @@ def _responder_comentario(comentario_id: str, texto: str) -> None:
             timeout=15,
         )
         if r.status_code >= 400:
+            _diagnosticar("comentario_publico_recusado", ultimo_http_meta=r.status_code)
             print(f"[webhook] resposta ao comentario recusada "
                   f"({r.status_code}): {r.text[:300]}")
-        else:
-            print(f"[webhook] comentario respondido: {comentario_id}")
+            return False
+        print(f"[webhook] comentario respondido: {comentario_id}")
+        with _diag_lock:
+            _diag["respostas_publicas"] += 1
+            _diag["ultimo_estagio"] = "fluxo_concluido"
+            _diag["ultimo_http_meta"] = r.status_code
+        return True
     except requests.RequestException as exc:
+        _diagnosticar("erro_rede_comentario", ultimo_http_meta=None)
         print(f"[webhook] erro ao responder comentario: {exc}")
+        return False
 
 
 def _enviar(uid: str, texto: str) -> None:
