@@ -3,9 +3,12 @@ import os
 import unittest
 
 os.environ.pop("DATABASE_URL", None)
+os.environ.setdefault("IG_VERIFY_TOKEN", "teste")
+os.environ.setdefault("IG_ACCESS_TOKEN", "teste")
 
 from interacao import comando, relato
 from dm_bairro import resolver
+from webhook_ig import _limpar_pedido_comentario
 import radar
 
 
@@ -35,6 +38,18 @@ class InteracaoTest(unittest.TestCase):
     def test_deduplicacao(self):
         self.assertTrue(radar.registrar("mid-teste", "u1", "Resende", "Centro", "sol"))
         self.assertFalse(radar.registrar("mid-teste", "u1", "Resende", "Centro", "sol"))
+
+    def test_limpar_pedido_de_comentario(self):
+        self.assertEqual(
+            _limpar_pedido_comentario("Previsão para Retiro, Volta Redonda"),
+            "Retiro, Volta Redonda")
+        self.assertEqual(
+            _limpar_pedido_comentario("@previsaosulflu Centro, Valença"),
+            "Centro, Valença")
+
+    def test_deduplicacao_de_webhook(self):
+        self.assertTrue(radar.marcar_evento("comentario:123"))
+        self.assertFalse(radar.marcar_evento("comentario:123"))
 
 
 if __name__ == "__main__":
