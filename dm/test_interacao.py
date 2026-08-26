@@ -9,7 +9,11 @@ os.environ.setdefault("IG_ACCESS_TOKEN", "teste")
 
 from interacao import comando, relato
 from dm_bairro import resolver
-from webhook_ig import _enviar_previsao_privada, _limpar_pedido_comentario
+from webhook_ig import (
+    _comentarios_da_entrada,
+    _enviar_previsao_privada,
+    _limpar_pedido_comentario,
+)
 import radar
 
 
@@ -63,6 +67,14 @@ class InteracaoTest(unittest.TestCase):
     def test_private_reply_falhou(self, post):
         post.return_value = Mock(status_code=400, text="erro")
         self.assertFalse(_enviar_previsao_privada("c123", "previsão"))
+
+    def test_webhook_novo_com_field_direto(self):
+        entrada = {"field": "comments", "value": {"id": "c1", "text": "Retiro"}}
+        self.assertEqual(list(_comentarios_da_entrada(entrada))[0]["id"], "c1")
+
+    def test_webhook_antigo_com_changes(self):
+        entrada = {"changes": [{"field": "comments", "value": {"id": "c2"}}]}
+        self.assertEqual(list(_comentarios_da_entrada(entrada))[0]["id"], "c2")
 
 
 if __name__ == "__main__":
