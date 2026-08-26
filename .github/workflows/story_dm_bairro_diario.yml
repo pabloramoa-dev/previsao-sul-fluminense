@@ -1,0 +1,56 @@
+name: Story diario - previsao por bairro
+
+on:
+  schedule:
+    - cron: "30 15 * * *"  # 12h30 BRT
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: story-dm-bairro-diario
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Publicar Story de lembrete
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          python - <<'PY'
+          from src.publicar import publicar_story
+
+          publicar_story("assets/output/story_dm_bairro_diario.jpg")
+          PY
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: Story DM diario"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O Story diario de previsao por bairro falhou.
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
