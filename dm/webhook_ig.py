@@ -309,12 +309,15 @@ def _processar_comentario(valor: dict, id_perfil: str) -> None:
 
 
 def _enviar_previsao_privada(comentario_id: str, texto: str) -> bool:
-    """Usa a Private Replies API; o destinatario e inferido pelo comentario."""
+    """Usa Private Reply da Instagram Login API via /me/messages."""
     try:
         r = requests.post(
-            f"{GRAPH_PERFIL}/{comentario_id}/private_replies",
+            GRAPH,
             params={"access_token": TOKEN},
-            data={"message": texto[:1000]},
+            json={
+                "recipient": {"comment_id": comentario_id},
+                "message": {"text": texto[:1000]},
+            },
             timeout=15,
         )
         if r.status_code >= 400:
