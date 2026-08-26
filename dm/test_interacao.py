@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import unittest
+from unittest.mock import Mock, patch
 
 os.environ.pop("DATABASE_URL", None)
 os.environ.setdefault("IG_VERIFY_TOKEN", "teste")
@@ -8,7 +9,7 @@ os.environ.setdefault("IG_ACCESS_TOKEN", "teste")
 
 from interacao import comando, relato
 from dm_bairro import resolver
-from webhook_ig import _limpar_pedido_comentario
+from webhook_ig import _enviar_previsao_privada, _limpar_pedido_comentario
 import radar
 
 
@@ -50,6 +51,18 @@ class InteracaoTest(unittest.TestCase):
     def test_deduplicacao_de_webhook(self):
         self.assertTrue(radar.marcar_evento("comentario:123"))
         self.assertFalse(radar.marcar_evento("comentario:123"))
+
+    @patch("webhook_ig.requests.post")
+    def test_private_reply_para_comentario(self, post):
+        post.return_value = Mock(status_code=200)
+        self.assertTrue(_enviar_previsao_privada("c123", "previsão"))
+        url = post.call_args.args[0]
+        self.assertTrue(url.endswith("/c123/private_replies"))
+
+    @patch("webhook_ig.requests.post")
+    def test_private_reply_falhou(self, post):
+        post.return_value = Mock(status_code=400, text="erro")
+        self.assertFalse(_enviar_previsao_privada("c123", "previsão"))
 
 
 if __name__ == "__main__":
