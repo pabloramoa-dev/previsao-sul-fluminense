@@ -227,7 +227,7 @@ def _limpar_pedido_comentario(texto: str) -> str:
 
 
 def _processar_comentario(valor: dict, id_perfil: str) -> None:
-    """Responde previsao em comentarios no formato BAIRRO, CIDADE."""
+    """Envia a previsao por DM e confirma de forma curta no comentario."""
     comentario_id = str(valor.get("id") or "")
     texto = _limpar_pedido_comentario(str(valor.get("text") or ""))
     autor = valor.get("from") or {}
@@ -250,7 +250,30 @@ def _processar_comentario(valor: dict, id_perfil: str) -> None:
     except Exception as exc:
         print(f"[webhook] falha na previsao do comentario: {exc}")
         resposta = "A previsão está temporariamente indisponível. Tente novamente em alguns minutos."
-    _responder_comentario(comentario_id, resposta)
+    if _enviar_previsao_privada(comentario_id, resposta):
+        _responder_comentario(
+            comentario_id,
+            "📩 Te enviei a previsão na DM. Dá uma olhadinha! 🌦️")
+
+
+def _enviar_previsao_privada(comentario_id: str, texto: str) -> bool:
+    """Usa a Private Replies API; o destinatario e inferido pelo comentario."""
+    try:
+        r = requests.post(
+            f"{GRAPH_PERFIL}/{comentario_id}/private_replies",
+            params={"access_token": TOKEN},
+            data={"message": texto[:1000]},
+            timeout=15,
+        )
+        if r.status_code >= 400:
+            print(f"[webhook] DM privada recusada ({r.status_code}): "
+                  f"{r.text[:300]}")
+            return False
+        print(f"[webhook] previsao enviada por DM: {comentario_id}")
+        return True
+    except requests.RequestException as exc:
+        print(f"[webhook] erro ao enviar DM privada: {exc}")
+        return False
 
 
 def _responder_comentario(comentario_id: str, texto: str) -> None:
