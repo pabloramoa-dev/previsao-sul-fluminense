@@ -1,0 +1,41 @@
+name: Pablo Guru V2 - isolated render trigger
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  render:
+    if: github.event.issue.title == '[PABLO-RENDER] A ESTACAO V2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pablo-guru-v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg libcairo2-dev libpango1.0-dev pkg-config
+      - name: Install Pablo dependencies
+        run: pip install -r pablo_guru/requirements.txt
+      - name: Render A Estacao V2
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          cd pablo_guru
+          manim -qm --fps 30 scenes/station.py EstacaoV2
+      - name: Upload MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: pablo-guru-v2-estacao
+          path: pablo_guru/media/videos/station/**/EstacaoV2.mp4
+          if-no-files-found: error
+          retention-days: 7
