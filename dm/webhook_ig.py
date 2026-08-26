@@ -45,6 +45,14 @@ _diag = {
     "ultimo_http_meta": None,
 }
 
+_RESPOSTAS_PUBLICAS = (
+    "📩 Prontinho! Sua previsão já está na DM. 🌦️",
+    "🌤️ Acabei de enviar a previsão na sua DM. Confira lá!",
+    "📍 A previsão do seu bairro chegou na DM. Dá uma olhada!",
+    "☔ Mensagem enviada! Veja a previsão completa na sua DM.",
+    "✅ Tudo certo! Enviei a previsão de hoje e amanhã na sua DM.",
+)
+
 
 def _diagnosticar(estagio: str, **valores) -> None:
     with _diag_lock:
@@ -305,7 +313,13 @@ def _processar_comentario(valor: dict, id_perfil: str) -> None:
     if _enviar_previsao_privada(comentario_id, resposta):
         _responder_comentario(
             comentario_id,
-            "📩 Te enviei a previsão na DM. Dá uma olhadinha! 🌦️")
+            _resposta_publica(comentario_id))
+
+
+def _resposta_publica(comentario_id: str) -> str:
+    """Distribui as frases sem depender de estado ou repetir ao reprocessar."""
+    indice = hashlib.sha256(comentario_id.encode()).digest()[0]
+    return _RESPOSTAS_PUBLICAS[indice % len(_RESPOSTAS_PUBLICAS)]
 
 
 def _enviar_previsao_privada(comentario_id: str, texto: str) -> bool:
