@@ -49,18 +49,18 @@ jobs:
           ]
           legenda = """🌦️ Quer receber a previsão do seu bairro direto na DM?
 
-É simples:
-1️⃣ Envie BAIRRO + CIDADE por mensagem.
-2️⃣ Receba a previsão de hoje e amanhã.
-3️⃣ Conte como está o tempo aí: CHUVA, GAROA, NUBLADO, SOL, VENTO ou SEM CHUVA.
+          É simples:
+          1️⃣ Envie BAIRRO + CIDADE por mensagem.
+          2️⃣ Receba a previsão de hoje e amanhã.
+          3️⃣ Conte como está o tempo aí: CHUVA, GAROA, NUBLADO, SOL, VENTO ou SEM CHUVA.
 
-Exemplo: Parque Mambucaba, Angra dos Reis.
+          Exemplo: Parque Mambucaba, Angra dos Reis.
 
-Os relatos ajudam a formar o nosso radar colaborativo do Sul Fluminense. Compartilhe este post com a vizinhança e teste agora pela DM. 📍
+          Os relatos ajudam a formar o nosso radar colaborativo do Sul Fluminense. Compartilhe este post com a vizinhança e teste agora pela DM. 📍
 
-Dados meteorológicos: Open-Meteo / MET Norway (CC BY 4.0).
+          Dados meteorológicos: Open-Meteo / MET Norway (CC BY 4.0).
 
-#SulFluminense #PrevisaoDoTempo #TempoRJ #VoltaRedonda #BarraMansa #Resende #AngraDosReis #Paraty #Valenca #RioDasFlores"""
+          #SulFluminense #PrevisaoDoTempo #TempoRJ #VoltaRedonda #BarraMansa #Resende #AngraDosReis #Paraty #Valenca #RioDasFlores"""
 
           publicar_carrossel(slides, legenda)
           PY
