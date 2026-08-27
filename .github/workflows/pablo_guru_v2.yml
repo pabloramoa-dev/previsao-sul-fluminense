@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pablo-guru-v2-render
+  cancel-in-progress: false
+
 jobs:
   render:
     runs-on: ubuntu-latest
@@ -28,22 +32,43 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: pablo-guru-v2
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pablo_guru/requirements.txt
+
       - name: Dependencias de sistema
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg libcairo2-dev libpango1.0-dev pkg-config
+          sudo apt-get install -y -q ffmpeg libcairo2-dev libpango1.0-dev pkg-config fonts-dejavu-core
+
       - name: Dependencias Python
         run: pip install -r requirements.txt
+
       - name: Renderizar A Estacao
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: manim -qm --fps 30 scenes/station.py EstacaoV2
+          QUALITY: ${{ inputs.quality || 'm' }}
+        run: manim "-q${QUALITY}" --fps 30 scenes/station.py EstacaoV2
+
+      - name: Validar MP4 vertical
+        run: |
+          VIDEO="$(find media/videos/station -name EstacaoV2.mp4 -type f -print -quit)"
+          test -n "$VIDEO"
+          ffprobe -v error -show_entries stream=codec_type,width,height -show_entries format=duration,size -of json "$VIDEO"
+          WIDTH="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$VIDEO")"
+          HEIGHT="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$VIDEO")"
+          DURATION="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$VIDEO")"
+          test "$WIDTH" -eq 1080
+          test "$HEIGHT" -eq 1920
+          awk "BEGIN { exit !($DURATION >= 10) }"
+
       - name: Guardar MP4 de teste
         uses: actions/upload-artifact@v4
         with:
-          name: pablo-guru-v2-estacao
+          name: pablo-guru-v2-estacao-${{ github.run_number }}
           path: pablo_guru/media/videos/station/**/EstacaoV2.mp4
+          if-no-files-found: error
           retention-days: 7
