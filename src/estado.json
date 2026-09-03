@@ -1,14 +1,15 @@
 {
   "indice_pergunta_frio_chuva": 9,
   "ultima_leitura": {
-    "Volta Redonda": 25.2,
-    "Barra Mansa": 26.1,
-    "Porto Real": 27.2,
-    "Resende": 24.1,
-    "Piraí": 24.2,
-    "Itatiaia": 24.2,
-    "Quatis": 26.6,
-    "Pinheiral": 24.6
+    "Volta Redonda": 20.8,
+    "Barra Mansa": 20.5,
+    "Porto Real": 20.6,
+    "Resende": 19.8,
+    "Barra do Piraí": 20.8,
+    "Piraí": 20.2,
+    "Itatiaia": 20.5,
+    "Pinheiral": 20.6,
+    "Rio Claro": 20.0
   },
   "indice_curiosidade": 7,
   "indice_pergunta_calor_sol": 1,
@@ -59,6 +60,10 @@
       {
         "tipo": "subida_temperatura",
         "hora": "2026-09-03T16:14:22.829570"
+      },
+      {
+        "tipo": "queda_temperatura",
+        "hora": "2026-09-03T19:27:00.341386"
       }
     ]
   }
