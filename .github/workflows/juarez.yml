@@ -15,11 +15,22 @@ name: Reel diario — Juarez Plantao (06h)
 # O modo do Reel (rotina ou alerta) NAO se decide aqui: quem decide e o
 # modo_do_dia() do limiares.py, lendo o dia.json que o passo anterior baixou.
 
+# >>> LEMBRETE: DESCOMENTE O CRON ABAIXO ANTES DO DIA 08/09 <<<
+#
+# O cron esta comentado de proposito, e SO ate o primeiro MP4 do Juarez ser
+# conferido. Enquanto ele estiver assim, este workflow so roda pelo botao
+# "Run workflow" — e o perfil nao publica Reel nenhum, porque os outros dois
+# tambem estao desligados. Isso e seguro HOJE e desastroso no dia 08: o
+# experimento comecaria sem post.
+#
+# Depois de assistir ao artifact e aprovar, tire o "#  " das duas linhas do
+# schedule. E uma edicao de dois caracteres.
+
 on:
-  schedule:
-    # dispara cedo e o job espera ate a hora certa — mesma tecnica do
-    # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
-    - cron: "0 5 * * *"       # espera ate 09:00 UTC (06:00 BRT)
+  # schedule:
+  #   # dispara cedo e o job espera ate a hora certa — mesma tecnica do
+  #   # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
+  #   - cron: "0 5 * * *"       # espera ate 09:00 UTC (06:00 BRT)
   workflow_dispatch:
     inputs:
       publicar:
