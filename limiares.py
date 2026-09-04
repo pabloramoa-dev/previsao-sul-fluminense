@@ -54,6 +54,19 @@ MANCHETE_CALOR_C = 33.0
 MANCHETE_FRIO_C = 14.0
 MANCHETE_SECO_PCT = 30.0
 
+# GANCHO do vídeo — qual número abre o Reel nos primeiros 1,5s. É uma pergunta
+# DIFERENTE das duas de cima ("o dia é de alerta?", "o que a manchete diz?"):
+# aqui a resposta é só "qual dos quatro números choca mais quem mora aqui".
+# Subiram pra cá em 2026-09-04 porque estavam escritos QUATRO vezes — uma no
+# escolher_gancho() do gerar_dia.py, outra no do gerar_tarde.py, e o docstring
+# do segundo prometia que os dois consideravam "extremo" a mesma coisa sem
+# nada no código garantir isso. Bastava alguém mexer num pra o Ranzinza das
+# 06h abrir com o frio e a Dona Maria das 18h abrir com a chuva do mesmo dado.
+GANCHO_FRIO_C = 11.0
+GANCHO_CALOR_C = 32.0
+GANCHO_CHUVA_MM = 10.0
+GANCHO_SECO_PCT = 30.0
+
 # =====================================================================
 #  INTRADIÁRIOS — monitor de alertas, janela de 3h (src/alertas.py)
 # =====================================================================
@@ -110,26 +123,84 @@ def extremos(dia):
 
 
 # =====================================================================
+#  É DIA DE CHUVA? — a pergunta que o vídeo E a legenda fazem
+# =====================================================================
+def chove_de_verdade(cidade):
+    """O dia é de chuva NESTA cidade? Código WMO e acumulado têm que concordar.
+
+    Morava no `gerar_dia.py`, com uma cópia própria do `LIMIAR_CHUVA_MM`, até
+    2026-09-04. Subiu pra cá junto com o número que ela lê: enquanto os dois
+    viviam lá embaixo, este arquivo era a fonte única só pro `src/alertas.py`
+    — o caminho dos Reels (`gerar_dia` -> `gerar_tarde` -> `postar_reel`)
+    tinha o seu próprio 1.0, e mudar a régua aqui em cima não mudava nem o
+    vídeo nem a legenda. Era a mesma divergência de agosto montada de novo,
+    só que armada e ainda não disparada.
+
+    Quem importava do `gerar_dia` continua importando de lá: o nome segue
+    exportado por ele. O que mudou é de ONDE ele vem.
+    """
+    return (cidade.get("cond") in ("chuva", "tempestade")
+            and _num(cidade.get("chuva_mm")) >= LIMIAR_CHUVA_MM)
+
+
+def conferir_gancho(cidades, cor):
+    """Aborta se o GANCHO do vídeo promete chuva e o dado não sustenta.
+
+    Irmã da `validar_coerencia()` do `postar_reel.py`, do lado do roteiro. A
+    legenda ganhou a trava dela no PR #18; o vídeo ficou sem nenhuma — e o
+    gancho é a única batida que decide por acumulado PURO (>= GANCHO_CHUVA_MM)
+    sem olhar o código WMO.
+
+    Basta uma previsão de 12 mm codificada como neve ou granizo (WMO 71-77,
+    que `condicao()` traduz como "frio", não como "chuva") pra que o Reel abra
+    com "Vem chuva, doze milímetros" e feche, seis batidas depois, com "Chuva
+    nenhuma" — porque a batida final lê `chove_de_verdade()` e o gancho não
+    lia. É a contradição de 07/08 e 12/08 outra vez, agora dentro do MP4, onde
+    a trava da legenda não alcança.
+    """
+    if cor != "chuva":
+        return
+    if not any(chove_de_verdade(c) for c in (cidades or [])):
+        pico = max([_num(c.get("chuva_mm")) for c in (cidades or [])] or [0.0])
+        raise SystemExit(
+            f"INCOERÊNCIA: o gancho do vídeo promete chuva e nenhuma cidade "
+            f"tem código de chuva com {LIMIAR_CHUVA_MM}mm ou mais "
+            f"(pico: {pico}mm). Renderização abortada.")
+
+
+# =====================================================================
 #  MODO DO REEL — seção 3
 # =====================================================================
-def motivo_do_alerta(dia):
-    """O motivo do alerta, ou None se nenhum limiar foi cruzado.
+def alerta_do_dia(dia):
+    """(chave, texto, cidade) do alerta, ou (None, None, None).
 
-    Devolve o texto curto que vai na manchete depois de "ALERTA — ". A ordem
-    é por gravidade: o que manda alguém mudar o dia vem antes do desconforto.
+    A CASCATA MORA SÓ AQUI. A ordem é por gravidade: o que manda alguém mudar
+    o dia vem antes do desconforto.
+
+    Devolve a `chave` além do texto porque quem monta o Reel precisa saber QUE
+    TIPO de alerta é pra escolher o cartaz e a instrução ("feche as janelas" não
+    serve pra onda de calor). Sem isso o roteiro teria que reavaliar os mesmos
+    cinco limiares por conta própria — e uma segunda cascata, escrita à mão em
+    outro arquivo, é exatamente a doença que este arquivo existe pra curar.
     """
     e = extremos(dia)
     if e["chuva"] >= ALERTA_CHUVA_MM:
-        return f"CHUVA DE {round(e['chuva'])}MM"
+        return "chuva", f"CHUVA DE {round(e['chuva'])}MM", e["cidade_chuva"]
     if e["rajada"] >= ALERTA_RAJADA_KMH:
-        return f"VENTO DE {round(e['rajada'])}KM/H"
+        return "rajada", f"VENTO DE {round(e['rajada'])}KM/H", None
     if e["max"] >= ALERTA_TEMP_MAX_C:
-        return f"CALOR DE {round(e['max'])} GRAUS"
+        return "calor", f"CALOR DE {round(e['max'])} GRAUS", e["cidade_max"]
     if e["min"] <= ALERTA_TEMP_MIN_C:
-        return f"FRIO DE {round(e['min'])} GRAUS"
+        return "frio", f"FRIO DE {round(e['min'])} GRAUS", e["cidade_min"]
     if e["umidade"] is not None and e["umidade"] <= ALERTA_UMIDADE_PCT:
-        return f"AR A {round(e['umidade'])}% DE UMIDADE"
-    return None
+        return "umidade", f"AR A {round(e['umidade'])}% DE UMIDADE", None
+    return None, None, None
+
+
+def motivo_do_alerta(dia):
+    """Só o texto do alerta, ou None. É o que entra na manchete depois de
+    "ALERTA — ". Fina por cima de `alerta_do_dia()`, que tem a cascata."""
+    return alerta_do_dia(dia)[1]
 
 
 def modo_do_dia(dia):
