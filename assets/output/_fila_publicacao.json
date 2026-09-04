@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "tipo": "imagem",
+    "caminhos": [
+      "/home/runner/work/previsao-sul-fluminense/previsao-sul-fluminense/assets/output/card_alerta_queda_temperatura.jpg"
+    ],
+    "caption": "ALERTA: QUEDA BRUSCA DE TEMPERATURA\n\nQueda brusca de temperatura nas próximas horas\n\nCidades afetadas: Volta Redonda, Barra Mansa, Porto Real, Barra do Piraí, Piraí, Itatiaia, Pinheiral, Rio Claro\n\nSepara o casaco e se agasalha bem!\n\nCOMPARTILHA agora com quem mora ou trabalha na região.\n\nAtiva as notificações do @previsaosulflu.\n\n#voltaredonda #barramansa #resende #portoreal #barradopirai #pirai #sulfluminense #previsaodotempo #climarj #tempoagora #alertadetempo"
+  }
+]
