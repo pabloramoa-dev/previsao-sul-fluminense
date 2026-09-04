@@ -22,16 +22,28 @@ permissions:
 
 on:
   # ---------------------------------------------------------------------------
-  # AGENDAMENTO LIGADO. Os dois Reels saem sozinhos e publicam no Instagram.
+  # AGENDAMENTO DESLIGADO em 2026-09-04, para o experimento de 14 dias
+  # (08/09 a 21/09, decisao em 22/09).
+  #
+  # O motivo nao e falha nem custo: e formato. O plano v3 troca os DOIS Reels
+  # diarios daqui - Seu Ranzinza as 06h10 e Dona Maria as 18h00 - por UM SO, o
+  # do Juarez Plantao as 06h, e mede o skip rate contra a linha de base de
+  # 04/09. Com os tres no ar, o feed nao e o do experimento.
+  #
+  # Nada foi apagado: gerar_dia.py e gerar_tarde.py continuam inteiros, testados
+  # e disparaveis pelo botao "Run workflow" a qualquer momento.
+  #
+  # PARA RELIGAR depois de 22/09: descomente as tres linhas do schedule abaixo
+  # e comente o cron do .github/workflows/juarez.yml.
   #
   # PARA DESLIGAR sem mexer em mais nada: comente as duas linhas de cron abaixo
   # (coloque "# " na frente). Com elas comentadas o workflow so roda pelo botao
   # "Run workflow", e la o "publicar" vem desmarcado por padrao — o video sai
   # como artifact e nada vai pro perfil.
   # ---------------------------------------------------------------------------
-  schedule:
-    - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
-    - cron: "0 17 * * *"      # dispara cedo; o job espera ate 21:00 UTC (18:00 BRT) — Dona Maria
+  #  schedule:
+  #    - cron: "10 5 * * *"      # dispara cedo; o job espera ate 09:10 UTC (06:10 BRT) — Ranzinza
+  #    - cron: "0 17 * * *"      # dispara cedo; o job espera ate 21:00 UTC (18:00 BRT) — Dona Maria
   workflow_dispatch:
     inputs:
       personagem:

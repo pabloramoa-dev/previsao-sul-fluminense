@@ -1,0 +1,151 @@
+name: Reel diario — Juarez Plantao (06h)
+
+# O UNICO Reel do dia, a partir de 2026-09-08 (plano v3).
+#
+# Substitui os dois do ranzinza.yml — Seu Ranzinza as 06h10 e Dona Maria as
+# 18h00 —, cujos crons ficaram comentados na mesma mudanca. O experimento de 14
+# dias (08/09 a 21/09, decisao em 22/09) mede o skip rate de UM Reel por dia
+# contra a linha de base de 04/09; com tres Reels no ar o numero medido nao
+# responderia pela mudanca de formato.
+#
+# PARA VOLTAR ATRAS depois de 22/09: comente o cron daqui e descomente os dois
+# do ranzinza.yml. Nenhum codigo foi apagado — gerar_dia.py e gerar_tarde.py
+# continuam inteiros e testados.
+#
+# O modo do Reel (rotina ou alerta) NAO se decide aqui: quem decide e o
+# modo_do_dia() do limiares.py, lendo o dia.json que o passo anterior baixou.
+
+on:
+  schedule:
+    # dispara cedo e o job espera ate a hora certa — mesma tecnica do
+    # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
+    - cron: "0 5 * * *"       # espera ate 09:00 UTC (06:00 BRT)
+  workflow_dispatch:
+    inputs:
+      publicar:
+        description: "Publicar no Instagram? (desmarcado = so gera o video como artifact)"
+        type: boolean
+        default: false
+
+jobs:
+  juarez:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    defaults:
+      run:
+        working-directory: reels
+
+    steps:
+      - name: Aguardar o horario alvo (06:00 BRT)
+        if: github.event_name == 'schedule'
+        working-directory: .
+        run: |
+          ALVO=$(date -u -d "today 09:00" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min ate 09:00 UTC."
+            sleep $((ALVO - AGORA))
+          else
+            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Seguindo imediatamente."
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache do modelo Kokoro (~350MB)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
+
+      - name: Cache do pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('reels/requirements.txt') }}
+
+      - name: Dependencias de sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng \
+            libpango1.0-dev libcairo2-dev pkg-config
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+
+      - name: Dependencias Python
+        run: pip install -r requirements.txt
+
+      - name: Baixar previsao do Open-Meteo
+        run: python coletar_tempo.py --saida dia.json
+
+      # Roda ANTES de gastar os ~4 minutos de Kokoro e render. Imprime o
+      # roteiro, o modo do dia e a duracao estimada no log — e as travas de
+      # coerencia (conferir_manchete, conferir_gancho) abortam aqui se o
+      # roteiro prometer o que o dado nao sustenta.
+      - name: Conferir o roteiro e o modo do dia
+        run: python gerar_juarez.py --dados dia.json --so-roteiro
+
+      - name: Gerar o Reel (Juarez Plantao)
+        run: python gerar_juarez.py --dados dia.json --saida REEL.mp4 --quality m
+
+      # A duracao real, medida no MP4 — nao a estimativa do roteiro. E por este
+      # numero que se calibra o PALAVRAS_POR_SEGUNDO do gerar_juarez.py.
+      - name: Medir a duracao do video
+        run: |
+          DUR=$(ffprobe -v error -show_entries format=duration \
+                -of default=noprint_wrappers=1:nokey=1 REEL.mp4)
+          echo "duracao real: ${DUR}s (alvo do plano v3: 18-22s)"
+          echo "### Reel do Juarez — ${DUR}s" >> $GITHUB_STEP_SUMMARY
+
+      - name: Guardar o video como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-juarez
+          path: reels/REEL.mp4
+          retention-days: 7
+
+      - name: Publicar o MP4 num Release
+        id: upload
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="reel-$(date +%Y-%m-%d)"
+          gh release create "$TAG" REEL.mp4 --title "$TAG" --notes "Reel automatico" || \
+            gh release upload "$TAG" REEL.mp4 --clobber
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/REEL.mp4" >> $GITHUB_OUTPUT
+
+      - name: Postar como Reels
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          VIDEO_URL: ${{ steps.upload.outputs.url }}
+        run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json --voz juarez
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: Reel do Juarez"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O Reel das 06h (Juarez Plantao) falhou e NAO foi publicado.
+            Durante o experimento de 14 dias, este e o unico Reel do dia:
+            uma falha aqui e um dia sem post.
+
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

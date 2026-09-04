@@ -30,3 +30,19 @@ jobs:
       - name: Coerencia entre a legenda e o dado de chuva
         working-directory: reels
         run: python teste_coerencia_legenda.py
+
+      # O terceiro lado: o ROTEIRO do video. Prova que os dois geradores leem
+      # os limiares da raiz em vez de reescrever o numero (era o que estava
+      # acontecendo em quatro arquivos) e que o gancho nao promete chuva que o
+      # acumulado nao sustenta. Le o piloto.py pelo AST, entao nao precisa de
+      # manim instalado.
+      - name: Travas do roteiro do Reel
+        working-directory: reels
+        run: python teste_roteiro.py
+
+      # O Reel unico das 06h: os dois modos, a duracao alvo, o CTA por paridade
+      # e a legenda do personagem novo. Nao renderiza - o video so se confere
+      # olhando, pelo botao "Run workflow" do juarez.yml.
+      - name: Reel do Juarez (dois modos)
+        working-directory: reels
+        run: python teste_juarez.py
