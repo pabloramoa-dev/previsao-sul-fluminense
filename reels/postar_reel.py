@@ -75,6 +75,20 @@ GANCHOS = {
         "tempestade": "Amanhã vem temporal. Guarda o que voa antes de dormir.",
         "frio": "Amanhã amanhece frio. Separa o casaco hoje, meu bem.",
     },
+    # O Juarez fala como quem lê um boletim: frase curta, sem opinião e sem
+    # carinho. Os ganchos DELE não podem repetir os do velho, porque a primeira
+    # linha da legenda é o que aparece no feed antes do "ver mais" — e o perfil
+    # inteiro passa a ser dele durante o experimento.
+    #
+    # A regra estrutural continua valendo: quem promete chuva aqui é conferido
+    # contra o acumulado pela validar_coerencia(), como os outros dois.
+    "juarez": {
+        "sol": "Boletim das seis: sol firme na região. Sem novidade.",
+        "nublado": "Boletim das seis: céu encoberto na região o dia todo.",
+        "chuva": "Plantão: chuva confirmada para a região hoje.",
+        "tempestade": "Plantão: temporal previsto para a região hoje.",
+        "frio": "Plantão: frio na região. Agasalho para quem sai cedo.",
+    },
 }
 
 # O convite ao comentário vem de engajamento.pergunta(): fechada, com o nome de
@@ -84,6 +98,7 @@ GANCHOS = {
 ASSINATURA = {
     "ranzinza": "",
     "maria": "Amanhã cedo o ranzinza confirma — do jeito mal-humorado dele.",
+    "juarez": "",
 }
 
 # As hashtags saíam idênticas em todo Reel, todo dia. Agora rodam em 5
@@ -348,8 +363,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="mostra a legenda e sai")
     ap.add_argument("--sem-feed", action="store_true", help="não espelhar o Reel no feed")
     ap.add_argument("--sem-stories", action="store_true", help="nao publicar tambem no Stories")
-    ap.add_argument("--voz", choices=["ranzinza", "maria"], default="ranzinza",
-                    help="de quem é a legenda")
+    ap.add_argument("--voz", choices=["ranzinza", "maria", "juarez"],
+                    default="ranzinza", help="de quem é a legenda")
     ap.add_argument("--quando", choices=["hoje", "amanha"], default="hoje",
                     help="de que dia são os números (o Reel das 18h é 'amanha')")
     ap.add_argument("--capa-ms", type=int, default=0,

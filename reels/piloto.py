@@ -39,6 +39,7 @@ sys.path.insert(0, AQUI)
 # da máquina de desenvolvimento.
 
 import previsao_lib as P
+import juarez_lib as J
 import dvh_lib as L
 import dvh_lip as LIP
 
@@ -54,8 +55,12 @@ CENARIO = CONT.get("cenario", "sol")
 PERSONAGEM = CONT.get("personagem", "ranzinza")
 CENARIO_TIPO = CONT.get("cenario_tipo", "varanda")
 CALOR = CONT.get("calor", False)
+# O Juarez fala de dentro do estúdio improvisado dele — interior, sem varanda e
+# sem tempo caindo em cima. Tudo que é adereço de rua (guarda-chuva, cachecol,
+# copo) e toda a animação de céu ficam de fora quando é ele que está no ar.
+EH_JUAREZ = PERSONAGEM == "juarez"
 # só o Ranzinza abre guarda-chuva: ele fala do tempo que está caindo hoje.
-COM_GUARDA_CHUVA = PERSONAGEM != "maria"
+COM_GUARDA_CHUVA = PERSONAGEM not in ("maria", "juarez")
 FIM = SEGS[-1]["fim"]
 
 Y_PAINEL = 4.5
@@ -92,8 +97,12 @@ def janelas(acao):
 # =====================================================================
 #  PAINÉIS — um construtor por tipo de batida
 # =====================================================================
+# "alerta" não é uma condição do tempo como as outras: é o que `modo_do_dia()`
+# devolve quando algum limiar do limiares.py foi cruzado, e chega aqui pelo
+# mesmo campo `cor` do gancho. Vermelho porque é a cor que o perfil já usa pra
+# fecho e pro X de "chuva nenhuma" — não é uma paleta nova.
 CORES_GANCHO = {"frio": "#7ec8f0", "calor": "#ff8a3d", "chuva": "#5aa9e6",
-                "seco": P.AMAR, "normal": P.AMAR}
+                "seco": P.AMAR, "normal": P.AMAR, "alerta": P.VERM}
 
 
 def _duplo(a, b):
@@ -191,6 +200,12 @@ def painel(tipo, d):
     if tipo == "sensacao":
         return _duplo(_card_valor("Termômetro", d["real"]),
                       _card_valor("Você sente", d["sente"]))
+    if tipo == "alerta":
+        # O painel de alerta do Juarez, vindo do juarez_lib: vermelho com
+        # triângulo amarelo, e não a faixa comum. É o único painel do repo que
+        # `modo_do_dia()` autoriza — nenhum roteiro pode desenhar este cartaz
+        # num dia em que nenhum limiar foi cruzado (ver limiares.modo_do_dia).
+        return J.painel_alerta(d.get("titulo", "ALERTA"), d.get("detalhe", ""))
     if tipo == "cta":
         return P.cta_seguir(
             chamada=d.get("chamada", "TEU BAIRRO NA DM"),
@@ -206,19 +221,48 @@ def painel(tipo, d):
 class Piloto(MovingCameraScene):
     def construct(self):
         # ---------------- cenário com movimento ----------------
-        if CENARIO_TIPO == "quintal":
+        if EH_JUAREZ:
+            # Interior. Sem sol pra girar, sem nuvem pra deslizar e sem chuva
+            # pra cair — `animar_cenario()` leria `cen["nuvens"]`, que o estúdio
+            # não tem. O movimento aqui vem do respirar() do personagem e do
+            # push-in da câmera, que continuam valendo: nada congela.
+            cen = J.estudio_juarez()
+            self.add(cen["grupo"])
+        elif CENARIO_TIPO == "quintal":
             cen = P.quintal_varal(CENARIO)
             # brisa constante: o varal é cenário, não é mais o assunto dela
             P.roupas_balancando(cen["roupas"], vento=CONT.get("vento_visual", 0.7))
+            self.add(cen["grupo"])
+            P.animar_cenario(self, cen, CENARIO, calor=CALOR, duracao=FIM)
         else:
             cen = P.varanda(CENARIO)
-        self.add(cen["grupo"])
-        P.animar_cenario(self, cen, CENARIO, calor=CALOR, duracao=FIM)
+            self.add(cen["grupo"])
+            P.animar_cenario(self, cen, CENARIO, calor=CALOR, duracao=FIM)
 
         # ---------------- personagem ----------------
-        v = P.dona_maria() if PERSONAGEM == "maria" else P.ranzinza()
+        if EH_JUAREZ:
+            v = J.juarez()
+        elif PERSONAGEM == "maria":
+            v = P.dona_maria()
+        else:
+            v = P.ranzinza()
         G = v["grupo"]
-        G.scale(1.3).move_to([0, -2.4 if PERSONAGEM == "maria" else -1.2, 0])
+        if EH_JUAREZ:
+            # Enquadramento VALIDADO na skill: escala 1.55, os pés ancorados no
+            # piso do estúdio e um deslocamento de 0.3 pra direita, que abre o
+            # lado esquerdo pro mapa do tempo colado na parede. Ancorar (e não
+            # fixar um y) é o que faz o personagem pisar no chão mesmo se o
+            # cenário mudar de altura.
+            G.scale(1.55)
+            G.shift(UP * (cen["piso_y"] - G.get_bottom()[1]) + RIGHT * 0.3)
+            # rede de segurança: o microfone erguido e o cabelo somam altura
+            # acima da cabeça. Medir e abaixar o excesso sobrevive a qualquer
+            # retoque futuro no desenho; um número fixo aqui, não.
+            excesso = G.get_top()[1] - TETO_CENA
+            if excesso > 0:
+                G.shift(DOWN * excesso)
+        else:
+            G.scale(1.3).move_to([0, -2.4 if PERSONAGEM == "maria" else -1.2, 0])
 
         # Em dia de chuva o guarda-chuva soma altura ao personagem e o domo
         # invade a faixa do painel de dados. Mede o conjunto ANTES de montar a
@@ -242,11 +286,14 @@ class Piloto(MovingCameraScene):
             jw = janelas("apontar")
             if jw:
                 P.apontar(v, jw)
-        extras = P.vestir(self, v, CENARIO,
-                          janelas_frio=janelas("tremer") or None,
-                          janelas_calor=janelas("abanar") or None,
-                          janelas_beber=janelas("beber") or None,
-                          com_guarda_chuva=COM_GUARDA_CHUVA)
+        if EH_JUAREZ:
+            extras = {}          # nada de cachecol nem guarda-chuva no estúdio
+        else:
+            extras = P.vestir(self, v, CENARIO,
+                              janelas_frio=janelas("tremer") or None,
+                              janelas_calor=janelas("abanar") or None,
+                              janelas_beber=janelas("beber") or None,
+                              com_guarda_chuva=COM_GUARDA_CHUVA)
 
         self.add(P.marca_dagua().move_to([0, 6.35, 0]))
 

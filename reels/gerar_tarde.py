@@ -33,7 +33,14 @@ import argparse, json, os, random, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 from gerar_dia import (produzir, num_extenso, LIMIAR_CHUVA_MM,
-                       chove_de_verdade, fala_do_resumo)
+                       maiusculizar_frase,
+                       chove_de_verdade, fala_do_resumo,
+                       # os quatro limiares do gancho e as travas do roteiro
+                       # vêm do limiares.py, na raiz, e passam por aqui só
+                       # porque o gerar_dia já os reexporta — ver o topo dele
+                       conferir_gancho, conferir_manchete, manchete,
+                       modo_do_dia, GANCHO_FRIO_C, GANCHO_CALOR_C,
+                       GANCHO_CHUVA_MM, GANCHO_SECO_PCT)
 from coletar_tempo import resumo_cinco
 
 # Entradas do resumo na voz DELA. O velho manda anotar; ela oferece.
@@ -62,18 +69,9 @@ def aviso_uv(uv):
     return "sol forte"
 
 
-def maiusculizar(t):
-    """Primeira letra da frase E depois de cada ponto."""
-    if not t:
-        return t
-    saida, novo = [], True
-    for ch in t:
-        saida.append(ch.upper() if novo and ch.isalpha() else ch)
-        if ch.isalpha():
-            novo = False
-        elif ch in ".!?":
-            novo = True
-    return "".join(saida)
+# a mesma função do gerar_dia.py, importada em vez de recopiada (ver o import
+# no topo): eram duas cópias idênticas, e o gerador do Juarez seria a terceira
+maiusculizar = maiusculizar_frase
 
 
 # =====================================================================
@@ -102,6 +100,10 @@ def o_que_separar(cidades, uv, umidade):
     if uv and uv >= 8:
         return ("PROTETOR SOLAR",
                 "Deixa o protetor solar na bolsa. O sol de amanhã não perdoa.")
+    # 30% aqui NÃO é o GANCHO_SECO_PCT do limiares.py, ainda que hoje valham o
+    # mesmo: aquele decide qual número abre o Reel, este decide se vale mandar
+    # encher a garrafa. Fundir os dois faria mudar a régua do gancho mexer no
+    # conselho da noite. Mesma lógica dos "dois relógios" do limiares.py.
     if umidade and umidade <= 30:
         return ("GARRAFA DE ÁGUA",
                 "Enche a garrafa de água hoje. O ar de amanhã vem seco demais.")
@@ -265,25 +267,30 @@ PASSAGEM = [
 def escolher_gancho(cid, umidade):
     """(fala, numero, subtitulo, cor). Mesma prioridade do velho — frio
     extremo > calor extremo > chuva forte > ar seco — pra que os dois vídeos
-    considerem "extremo" a mesma coisa."""
+    considerem "extremo" a mesma coisa.
+
+    Até 2026-09-04 essa frase era só uma promessa: os quatro números estavam
+    escritos aqui E no escolher_gancho() do gerar_dia.py, e nada no código
+    impedia que divergissem. Agora os dois leem GANCHO_* do limiares.py.
+    """
     mais_frio = min(cid, key=lambda c: c["min"])
     mais_quente = max(cid, key=lambda c: c["max"])
     mais_chuva = max(cid, key=lambda c: c.get("chuva_mm", 0) or 0)
 
-    if mais_frio["min"] <= 11:
+    if mais_frio["min"] <= GANCHO_FRIO_C:
         t = mais_frio["min"]
         return (f"Amanhã, {num_extenso(t)} graus em {mais_frio['nome']}.",
                 f"{t}°", "AMANHÃ", "frio")
-    if mais_quente["max"] >= 32:
+    if mais_quente["max"] >= GANCHO_CALOR_C:
         t = mais_quente["max"]
         return (f"Amanhã, {num_extenso(t)} graus em {mais_quente['nome']}.",
                 f"{t}°", "AMANHÃ", "calor")
-    if (mais_chuva.get("chuva_mm", 0) or 0) >= 10:
+    if (mais_chuva.get("chuva_mm", 0) or 0) >= GANCHO_CHUVA_MM:
         v = round(mais_chuva["chuva_mm"])
         return (f"Amanhã vem chuva. {num_extenso(v)} milímetros em "
                 f"{mais_chuva['nome']}.",
                 f"{v}mm", "AMANHÃ", "chuva")
-    if umidade and umidade <= 30:
+    if umidade and umidade <= GANCHO_SECO_PCT:
         return (f"Amanhã o ar seca. Umidade em {num_extenso(umidade)} por cento.",
                 f"{umidade}%", "AMANHÃ", "seco")
     c = cid[0]
@@ -304,8 +311,21 @@ def montar_roteiro(d):
                         "tipo": tipo, "dados": dd})
 
     # --- 1. GANCHO: o número mais forte de amanhã, nos primeiros 1,5s ---
+    # as MESMAS travas do Reel das 06h (ver gerar_dia.montar_roteiro): o
+    # limiar decide o modo, a manchete é conferida contra o dado e o gancho
+    # não pode prometer chuva que o acumulado não sustenta
+    modo = modo_do_dia(d)
+    # a manchete é conferida contra o dado, mas NÃO viaja na batida como
+    # acontece no vídeo das 06h: os textos de manchete() começam todos com
+    # "HOJE" ("HOJE CHOVE", "HOJE ESFRIA") e este Reel fala de AMANHÃ. Enquanto
+    # não existir a variante do dia seguinte, guardar a frase aqui seria deixar
+    # uma palavra errada esperando a hora de aparecer na tela.
+    conferir_manchete(d, manchete(d)[0])
+
     fala_g, num_g, sub_g, cor_g = escolher_gancho(cid, d.get("umidade_min"))
-    add(fala_g, num_g, tipo="gancho", numero=num_g, sub=sub_g, cor=cor_g)
+    conferir_gancho(cid, cor_g)
+    add(fala_g, num_g, tipo="gancho", numero=num_g,
+        sub=sub_g, cor="alerta" if modo == "alerta" else cor_g, modo=modo)
 
     add(rnd.choice(ABERTURAS))
     add(rnd.choice(CITA_VELHO))

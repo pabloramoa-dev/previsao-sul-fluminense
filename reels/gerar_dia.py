@@ -31,7 +31,17 @@ seguinte é dela, feita 12 horas depois e com dados mais novos.
 import argparse, json, os, random, subprocess, sys, datetime
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+RAIZ = os.path.dirname(AQUI)
 sys.path.insert(0, AQUI)
+# A raiz do repositório entra no path por causa do `limiares.py`, que mora lá
+# de propósito: é o mesmo arquivo lido pelo bot de imagens (`src/`) e pelos
+# Reels (`reels/`), que rodam de diretórios diferentes. É o que o docstring do
+# limiares.py já prometia desde que ele nasceu — daqui em diante é verdade.
+sys.path.insert(0, RAIZ)
+from limiares import (LIMIAR_CHUVA_MM, chove_de_verdade, conferir_gancho,
+                      conferir_manchete, manchete, modo_do_dia,
+                      GANCHO_FRIO_C, GANCHO_CALOR_C, GANCHO_CHUVA_MM,
+                      GANCHO_SECO_PCT)
 # resumo_cinco mora junto da lista de cidades, em coletar_tempo: é lá que está
 # escrito quais são as maiores audiências. O import é seguro (coletar_tempo só
 # usa a biblioteca padrão e não executa nada fora do __main__).
@@ -509,19 +519,12 @@ SEM_CHUVA = [
 ]
 
 
-# refina a condição bruta usando os números do dia. Limiares COMPARTILHADOS
-# com gerar_tarde.py: se mudar aqui, mude lá, senão os personagens divergem.
-# Um dia só é "de chuva" acima deste acumulado. O código WMO marca "chuva" até
-# numa garoa de 0,2 mm — e era daí que vinha a contradição do roteiro: a batida
-# do resmungo olhava só o código (prometia chuva) e a batida final olhava só o
-# acumulado (negava a chuva). Agora as duas leem o MESMO limiar.
-LIMIAR_CHUVA_MM = 1.0
-
-
-def chove_de_verdade(cidade):
-    """O dia é de chuva nesta cidade? Código WMO e acumulado precisam concordar."""
-    return (cidade.get("cond") in ("chuva", "tempestade")
-            and (cidade.get("chuva_mm", 0) or 0) >= LIMIAR_CHUVA_MM)
+# `LIMIAR_CHUVA_MM` e `chove_de_verdade` vêm do limiares.py, na raiz (import no
+# topo do arquivo). Moravam aqui, com número próprio, até 2026-09-04: o
+# gerar_tarde.py e o postar_reel.py os importam DESTE módulo, então enquanto o
+# 1.0 estava escrito aqui embaixo, mexer no limiares.py mudava a manchete e não
+# mudava nem o roteiro, nem a legenda, nem o cenário. Os dois nomes continuam
+# exportados por este módulo — quem importa de cá não precisou mudar nada.
 
 
 def cenario_do_dia(cidade):
@@ -572,19 +575,19 @@ def escolher_gancho(cid, umidade, rnd):
     mais_quente = max(cid, key=lambda c: c["max"])
     mais_chuva = max(cid, key=lambda c: c.get("chuva_mm", 0))
 
-    if mais_frio["min"] <= 11:
+    if mais_frio["min"] <= GANCHO_FRIO_C:
         t = mais_frio["min"]
         return (rnd.choice(GANCHO_FRIO).format(t=num_extenso(t), c=mais_frio["nome"]),
                 f"{t}°", mais_frio["nome"].upper(), "frio")
-    if mais_quente["max"] >= 32:
+    if mais_quente["max"] >= GANCHO_CALOR_C:
         t = mais_quente["max"]
         return (rnd.choice(GANCHO_CALOR).format(t=num_extenso(t), c=mais_quente["nome"]),
                 f"{t}°", mais_quente["nome"].upper(), "calor")
-    if mais_chuva.get("chuva_mm", 0) >= 10:
+    if (mais_chuva.get("chuva_mm", 0) or 0) >= GANCHO_CHUVA_MM:
         v = round(mais_chuva["chuva_mm"])
         return (rnd.choice(GANCHO_CHUVA).format(v=num_extenso(v)),
                 f"{v}mm", mais_chuva["nome"].upper(), "chuva")
-    if umidade and umidade <= 30:
+    if umidade and umidade <= GANCHO_SECO_PCT:
         return (rnd.choice(GANCHO_SECO).format(u=num_extenso(umidade)),
                 f"{umidade}%", "UMIDADE", "seco")
     c = cid[0]
@@ -642,6 +645,26 @@ def num_extenso(n):
     return base if resto == 0 else f"{base} e {u[resto]}"
 
 
+def maiusculizar_frase(t):
+    """Primeira letra da frase E depois de cada ponto.
+
+    Existe porque os templates repetem o número ('{t} graus. {t}!') e a 2ª
+    ocorrência vinha minúscula. Estava escrita duas vezes — aninhada aqui no
+    montar_roteiro e de novo no gerar_tarde.py — até 2026-09-04; o terceiro
+    gerador (Juarez) seria a terceira cópia.
+    """
+    if not t:
+        return t
+    saida, novo = [], True
+    for ch in t:
+        saida.append(ch.upper() if novo and ch.isalpha() else ch)
+        if ch.isalpha():
+            novo = False
+        elif ch in ".!?":
+            novo = True
+    return "".join(saida)
+
+
 def montar_roteiro(dados):
     """Devolve a lista de BATIDAS do vídeo.
 
@@ -660,28 +683,30 @@ def montar_roteiro(dados):
     principal = cid[0]
     batidas = []
 
-    def maiusculizar(t):
-        """Primeira letra da frase E depois de cada ponto — os templates
-        repetem o número ('{t} graus. {t}!') e a 2ª ocorrência vinha minúscula."""
-        if not t:
-            return t
-        saida, novo = [], True
-        for ch in t:
-            saida.append(ch.upper() if novo and ch.isalpha() else ch)
-            if ch.isalpha():
-                novo = False
-            elif ch in ".!?":
-                novo = True
-        return "".join(saida)
-
     def add(fala, legenda=None, tipo="nenhum", **dd):
-        fala = maiusculizar(fala)
+        fala = maiusculizar_frase(fala)
         batidas.append({"fala": fala,
                         "legenda": legenda if legenda is not None else fala,
                         "tipo": tipo, "dados": dd})
 
+    # --- O GANCHO E AS DUAS TRAVAS QUE ELE TEM QUE PASSAR ---------------
+    #
+    # `modo_do_dia()` é a ÚNICA porta para o modo alerta: quem quiser um Reel
+    # vermelho num dia comum tem que mexer nos limiares.py, onde a mudança fica
+    # no diff — e não aqui, na hora de montar o roteiro. Nenhuma batida nova
+    # entra por causa disso: o modo pinta o gancho que já existia e não custa
+    # um segundo a mais de vídeo.
+    modo = modo_do_dia(dados)
+    texto_manchete, _ = manchete(dados)
+    conferir_manchete(dados, texto_manchete)
+
     fala_g, num_g, sub_g, cor_g = escolher_gancho(cid, dados.get("umidade_min"), rnd)
-    add(fala_g, num_g, tipo="gancho", numero=num_g, sub=sub_g, cor=cor_g)
+    # a trava do lado do vídeo: o gancho é a única batida que decide por
+    # acumulado puro, sem olhar o código WMO (ver conferir_gancho)
+    conferir_gancho(cid, cor_g)
+    add(fala_g, num_g, tipo="gancho", numero=num_g,
+        sub=sub_g, cor="alerta" if modo == "alerta" else cor_g,
+        modo=modo, manchete=texto_manchete)
 
     add(rnd.choice(ABERTURAS))
 
@@ -752,9 +777,25 @@ def rodar(cmd, **kw):
     subprocess.run(cmd, check=True, **kw)
 
 
+# A cadeia de áudio dos dois VELHOS: baixa o tom, devolve o andamento e põe um
+# vibrato leve — é o que envelhece a voz do Kokoro sem deixá-la rouca.
+FILTRO_VELHO = ("asetrate=44100*{pitch},aresample=44100,atempo={inv:.5f},"
+                "vibrato=f=5.5:d=0.09,highpass=f=90,"
+                "acompressor=threshold=-18dB:ratio=3:attack=8:release=180,"
+                "volume=1.15")
+
+# A do JUAREZ é outra coisa: ele não é idoso, é locutor. Sem pitch e sem
+# vibrato — no lugar deles, um realce em 3,2 kHz (a banda da inteligibilidade
+# da fala, o que dá o "corte" de rádio) e compressão mais curta. Vem da skill
+# `juarez-plantao`, onde a voz dele já foi ao ar.
+FILTRO_LOCUTOR = ("highpass=f=100,equalizer=f=3200:width_type=o:width=1.5:g=5,"
+                  "acompressor=threshold=-16dB:ratio=3:attack=5:release=120,"
+                  "volume=1.15")
+
+
 def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
              cenario_tipo="varanda", quality="m", fps=30, voz="pm_alex",
-             pitch=0.88, extra=None):
+             pitch=0.88, extra=None, speed=0.95, gap=0.30, filtro=None):
     """Do roteiro ao MP4. Compartilhado pelos dois vídeos do dia.
 
     `batidas` já vem pronta de quem chamou (previsão do tempo ou bloco da
@@ -774,15 +815,14 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
     bruta = os.path.join(trab, "voz_bruta.wav")
     segs = os.path.join(trab, "segs.json")
     rodar([sys.executable, os.path.join(AQUI, "gerar_voz_kokoro.py"),
-           rot, "--voz", voz, "--speed", "0.95", "--gap", "0.30",
+           rot, "--voz", voz, "--speed", f"{speed}", "--gap", f"{gap}",
            "--out", bruta, "--seg-json", segs])
 
-    print(f"[3/5] ajustando o timbre (pitch {int((pitch-1)*100)}%)")
+    af = filtro or FILTRO_VELHO.format(pitch=pitch, inv=1 / pitch)
+    print("[3/5] masterizando a voz"
+          + (f" (pitch {int((pitch - 1) * 100)}%)" if filtro is None else " (locutor)"))
     narr = os.path.join(trab, "narracao.wav")
-    rodar(["ffmpeg", "-y", "-v", "error", "-i", bruta, "-af",
-           f"asetrate=44100*{pitch},aresample=44100,atempo={1/pitch:.5f},"
-           "vibrato=f=5.5:d=0.09,highpass=f=90,"
-           "acompressor=threshold=-18dB:ratio=3:attack=8:release=180,volume=1.15",
+    rodar(["ffmpeg", "-y", "-v", "error", "-i", bruta, "-af", af,
            "-ar", "44100", "-ac", "1", narr])
 
     print("[4/5] lip sync por amplitude")
