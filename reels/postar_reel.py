@@ -42,6 +42,9 @@ import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import engajamento
+# O limiar de chuva mora no gerar_dia.py e é o MESMO que o vídeo usa. Importar
+# em vez de recopiar é o que impede a legenda de voltar a divergir do roteiro.
+from gerar_dia import chove_de_verdade, LIMIAR_CHUVA_MM
 
 # ATENÇÃO — este host precisa bater com o tipo de token.
 # A conta @previsaosulflu usa "Instagram API com login do Instagram",
@@ -87,6 +90,20 @@ ASSINATURA = {
 # conjuntos (engajamento.py), com manhã e noite nunca coincidindo no mesmo dia.
 
 
+def cond_do_post(cidade):
+    """A condição da cidade pela MESMA regra do vídeo.
+
+    O código WMO marca "chuva" numa garoa de 0,2 mm. O `gerar_dia.py` refina
+    isso com `chove_de_verdade()` (exige `LIMIAR_CHUVA_MM`), mas a legenda lia o
+    código cru — e era daí que saía o post que prometia chuva no gancho e
+    dizia "Chuva: nenhuma" seis linhas abaixo (07/08 e 12/08 de 2026).
+    """
+    cond = cidade.get("cond", "sol")
+    if cond in ("chuva", "tempestade") and not chove_de_verdade(cidade):
+        return "nublado"
+    return cond
+
+
 def legenda(dia, voz="ranzinza", quando="hoje"):
     """Monta a legenda do post.
 
@@ -97,13 +114,13 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
     ganchos = GANCHOS.get(voz, GANCHOS["ranzinza"])
     amanha = quando == "amanha"
     cid = dia["cidades"]
-    cond = cid[0].get("cond", "sol")
+    cond = cond_do_post(cid[0])
     linhas = [ganchos.get(cond, ganchos["sol"]), ""]
     if amanha:
         dma = _dia_br(dia.get("data"))
         linhas += ["🗓️ PREVISÃO PARA AMANHÃ" + (f" — {dma}" if dma else ""), ""]
     for c in cid[:6]:
-        linhas.append(f"{EMOJI.get(c.get('cond','sol'),'🌡️')} {c['nome']}: "
+        linhas.append(f"{EMOJI.get(cond_do_post(c), '🌡️')} {c['nome']}: "
                       f"{c['min']}° / {c['max']}°")
     u = dia.get("umidade_min")
     if u and u <= 40:
@@ -156,6 +173,49 @@ def validar_legenda(cap: str, quando: str = "hoje") -> None:
         raise SystemExit("Reel noturno sem indicação de AMANHÃ: publicação bloqueada")
     if len(texto) > 2200:
         raise SystemExit(f"legenda excede 2200 caracteres ({len(texto)})")
+
+
+def _condicao_do_gancho(gancho: str):
+    """De volta da frase para a condição que a gerou, ou None.
+
+    Casar contra o dicionário GANCHOS em vez de procurar a palavra "chuva" no
+    texto: o gancho de nublado é "Nem chove, nem faz sol" — busca por substring
+    leria isso como promessa de chuva e barraria um post correto.
+    """
+    alvo = (gancho or "").strip()
+    for mapa in GANCHOS.values():
+        for chave, texto in mapa.items():
+            if texto.strip() == alvo:
+                return chave
+    return None
+
+
+def validar_coerencia(dia: dict, cap: str) -> None:
+    """Aborta a publicação quando a legenda e o dado se contradizem.
+
+    Trava estrutural, não cosmética: mesmo que alguém volte a ler o código WMO
+    cru em algum ponto, o post não sai. O gancho é a PRIMEIRA linha da legenda
+    — é ela que aparece no feed antes do "ver mais", e é ela que precisa bater
+    com o acumulado de chuva.
+    """
+    cidades = (dia or {}).get("cidades") or []
+    if not cidades:
+        return          # Reel sem dia.json (Mito ou Verdade): nada a conferir
+    texto = (cap or "").strip()
+    if not texto:
+        return          # legenda vazia já é barrada em validar_legenda()
+    condicao = _condicao_do_gancho(texto.splitlines()[0])
+    promete = condicao in ("chuva", "tempestade")
+    chove = any(chove_de_verdade(c) for c in cidades)
+    pico = max((c.get("chuva_mm", 0) or 0) for c in cidades)
+    if promete and not chove:
+        raise SystemExit(
+            f"INCOERÊNCIA: o gancho promete chuva e nenhuma cidade atinge "
+            f"{LIMIAR_CHUVA_MM}mm (pico: {pico}mm). Publicação bloqueada.")
+    if chove and "chuva: nenhuma" in texto.casefold():
+        raise SystemExit(
+            f"INCOERÊNCIA: a legenda nega chuva e o pico previsto é {pico}mm. "
+            f"Publicação bloqueada.")
 
 
 def ja_publicado(ig_user: str, token: str, cap: str) -> bool:
@@ -311,6 +371,7 @@ def main():
 
     # As mesmas travas rodam no dry-run e na publicação real.
     validar_legenda(cap, quando=a.quando if not a.legenda_arquivo else "hoje")
+    validar_coerencia(dia, cap)
 
     if a.dry_run:
         print(cap)
