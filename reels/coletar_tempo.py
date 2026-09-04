@@ -155,9 +155,14 @@ def buscar(cidades, dias=2, timeout=30):
         # os quatro últimos campos diários existem pro bloco da Dona Maria:
         # UV e sensação térmica viram batida no roteiro dela, vento e horas de
         # sol entram na leitura do dia
+        # wind_gusts_10m_max entrou em 2026-09-04: o gatilho de alerta do plano
+        # v3 é RAJADA >= 50 km/h, e wind_speed_10m_max é a velocidade média
+        # máxima — numa frente de vento a média fica em 30 e a rajada passa de
+        # 60. Sem este campo o alerta de vento simplesmente nunca dispararia.
         "daily": ("temperature_2m_max,temperature_2m_min,precipitation_sum,"
                   "weather_code,uv_index_max,sunshine_duration,"
-                  "wind_speed_10m_max,apparent_temperature_max"),
+                  "wind_speed_10m_max,wind_gusts_10m_max,"
+                  "apparent_temperature_max"),
         # precipitation por HORA revela a virada do tempo à tarde; continua
         # sendo coletada porque diz A QUE HORAS o tempo vira
         "hourly": "relative_humidity_2m,precipitation",
@@ -198,12 +203,17 @@ def montar(cidades, respostas, indice_dia):
         tmin = d["temperature_2m_min"][indice_dia]
         chuva = d["precipitation_sum"][indice_dia] or 0.0
         code = d["weather_code"][indice_dia]
+        # rajada POR CIDADE: o alerta de vento é regional (basta uma cidade
+        # cruzar), e o campo do dia só trazia a cidade principal
+        rajadas = d.get("wind_gusts_10m_max") or []
+        rajada = rajadas[indice_dia] if indice_dia < len(rajadas) else None
         saida.append({
             "nome": nome,
             "min": round(tmin),
             "max": round(tmax),
             "cond": condicao(code, tmin),
             "chuva_mm": round(float(chuva), 1),
+            "rajada_kmh": round(float(rajada)) if rajada is not None else None,
             "wmo": code,
         })
         # umidade mínima do dia: 24 horas a partir do dia escolhido
@@ -232,6 +242,9 @@ def montar(cidades, respostas, indice_dia):
         "umidade_min": round(min(umidades)) if umidades else None,
         # --- usados pelo bloco da Dona Maria ---
         "vento_kmh": round(diario("wind_speed_10m_max") or 0),
+        # a maior rajada da região — é ela que o limiar de alerta lê
+        "rajada_max": max([c["rajada_kmh"] for c in saida
+                           if c.get("rajada_kmh") is not None] or [0]),
         "sol_h": round((sol_seg or 0) / 3600, 1),
         "uv_max": round(diario("uv_index_max") or 0, 1),
         "sensacao_max": round(diario("apparent_temperature_max")
