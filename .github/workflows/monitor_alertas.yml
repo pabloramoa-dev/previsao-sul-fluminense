@@ -1,8 +1,21 @@
 name: Monitor de Alertas (a cada 2h, 7h-19h BRT)
 
 on:
-  schedule:
-    - cron: "0 10-22/2 * * *"   # 07h-19h BRT, de 2 em 2 horas
+  # DESLIGADO em 2026-09-04, para o experimento de 14 dias (08/09 a 21/09).
+  #
+  # O motivo nao e o custo nem falha: e medicao. O experimento compara o skip
+  # rate de UM Reel por dia contra a linha de base de 04/09, e este monitor
+  # publica cards de alerta em imagem de 2 em 2 horas no mesmo perfil. Com os
+  # dois no ar, o feed nao e o do experimento e o numero medido nao responde
+  # pela mudanca de formato.
+  #
+  # No periodo, o alerta sai pelo Reel do Juarez (Modo Alerta), pelos limiares
+  # de limiares.py (na raiz do repo).
+  #
+  # PARA RELIGAR depois de 22/09: descomente as duas linhas abaixo.
+  # O botao "Run workflow" continua funcionando o tempo todo, inclusive agora.
+  #   schedule:
+  #     - cron: "0 10-22/2 * * *"   # 07h-19h BRT, de 2 em 2 horas
   workflow_dispatch:
     inputs:
       dry_run:
