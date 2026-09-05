@@ -20,7 +20,11 @@ Quem decide não é este arquivo: é o `modo_do_dia()` do `limiares.py`, na raiz
   ROTINA — o dia comum, que é a esmagadora maioria deles. Abre pelo número mais
            extremo do dia, lê as três maiores e diz se chove.
   ALERTA  — só quando um dos cinco limiares diários foi cruzado. Abre pelo
-           cartaz vermelho, diz onde, e fecha com uma instrução do que fazer.
+           cartaz vermelho, diz onde, e traz uma instrução do que fazer.
+
+Os dois terminam igual: o CTA do dia (alternado por paridade) e, depois dele, o
+FECHO_CANAL — "Siga o canal para não ser pego de surpresa" —, que é a última
+fala de todo Reel e nunca muda.
 
 A meta declarada no plano é no máximo 2 alertas em 14 dias
 (`ALERTAS_ESPERADOS_EM_14_DIAS`). Se sair mais que isso, o problema são os
@@ -72,9 +76,15 @@ N_RESUMO_JUAREZ = 3
 # não aborta, porque um dia com nome de cidade comprido não é um bug.
 DUR_MIN, DUR_MAX = 18.0, 22.0
 
-# Ritmo do Kokoro com pm_santa a --speed 1.05, medido pelos vídeos da skill.
-# É estimativa, não relógio: o número real sai do segs.json depois da narração.
-PALAVRAS_POR_SEGUNDO = 2.9
+# Ritmo do Kokoro com pm_santa a --speed 1.05. Começou em 2,9 (medido pelos
+# vídeos da skill) e desceu pra 2,82 em 2026-09-05, depois do primeiro render
+# de verdade: o `ffprobe` do workflow mediu 19,2s num roteiro que a conta dizia
+# 18,6s — a narração real gasta ~3% a mais que a estimativa.
+#
+# Baixar o número faz a conta ERRAR PRA CIMA, e é assim que ela tem que errar:
+# o teste do repositório trava a faixa de 18-22s, e é melhor ele reclamar de um
+# roteiro que caberia do que deixar passar um que estoura no ar.
+PALAVRAS_POR_SEGUNDO = 2.82
 GAP_ENTRE_BATIDAS = 0.25
 
 
@@ -93,10 +103,10 @@ ABERTURAS = [
 # O que ele diz DEPOIS do gancho, em dia comum. Curtas: o gancho já gastou o
 # tempo da abertura, e o resumo é a batida longa.
 CONFIRMACOES = [
-    "É o quadro do dia. Anotem.",
-    "Números confirmados. Sem discussão.",
-    "É o que está previsto. Anotem.",
-    "Assim ficam as próximas horas.",
+    "É o quadro do dia.",
+    "Números confirmados.",
+    "É o que está previsto.",
+    "Anotem.",
 ]
 
 INTRO_RESUMO_JUAREZ = [
@@ -114,12 +124,17 @@ SEM_CHUVA = [
 # Instrução do modo alerta, por tipo. É a única batida do Reel que pede uma
 # AÇÃO — em dia comum ela não existe, e é essa diferença que faz o modo alerta
 # valer alguma coisa quando aparece.
+#
+# Encurtadas em 2026-09-05, quando o FECHO_CANAL entrou: com seis batidas o
+# orçamento ficou apertado, e a instrução é onde cabia cortar sem perder o que
+# a pessoa precisa FAZER. "Fundo de vale alaga" continua lá; o que saiu foi a
+# explicação de por que alaga.
 INSTRUCAO = {
-    "chuva": "Quem puder, saia mais cedo. Fundo de vale alaga.",
-    "rajada": "Recolham o que está solto no quintal. Rajada assim derruba galho.",
-    "calor": "Bebam água antes de ter sede. Evitem o sol do meio-dia.",
-    "frio": "Separem agasalho para quem sai cedo. Atenção com os idosos.",
-    "umidade": "Bebam água. Evitem exercício ao ar livre no meio do dia.",
+    "chuva": "Saiam mais cedo. Fundo de vale alaga.",
+    "rajada": "Recolham o que está solto no quintal.",
+    "calor": "Bebam água antes de ter sede. Evitem o sol.",
+    "frio": "Separem agasalho para quem sai cedo.",
+    "umidade": "Bebam água. Evitem exercício ao ar livre.",
 }
 
 CARTAZ = {
@@ -133,10 +148,23 @@ CARTAZ = {
 # CTA ALTERNADO POR PARIDADE DO DIA (plano v3). Não é sorteio: alternar por
 # paridade garante que os dois CTAs saem o mesmo número de vezes nos 14 dias do
 # experimento. Com sorteio, uma sequência azarada mediria um CTA só.
-CTA_PAR = ("Teu bairro, na mensagem. Eu devolvo a previsão daí.",
+CTA_PAR = ("Teu bairro, na mensagem.",
            "TEU BAIRRO NA DM", "manda o nome e recebe a previsão do teu canto")
-CTA_IMPAR = ("Salva aí, para conferir mais tarde.",
+CTA_IMPAR = ("Salva aí, pra conferir depois.",
              "SALVA PRA CONFERIR", "o dia inteiro cabe em vinte segundos")
+
+# O FECHO FIXO — a última fala de TODO Reel, nos dois modos.
+#
+# É a única linha do roteiro que não muda nunca: o CTA de cima alterna por
+# paridade porque é a variável que o experimento mede, e este aqui é constante
+# justamente pra não ser variável nenhuma. Pedir pra seguir uma vez, no fim de
+# um vídeo, todo dia, é o que constrói o hábito — alternar isso mediria ruído.
+#
+# "não ser pego de surpresa" fecha o argumento do canal inteiro: o Juarez é um
+# plantão, e a razão de seguir um plantão é não ser pego de surpresa. Por isso
+# ele vem DEPOIS do pedido do dia, e não no lugar dele.
+FECHO_CANAL = ("Siga o canal para não ser pego de surpresa.",
+               "SEGUE O CANAL", "pra não ser pego de surpresa")
 
 
 def estimar_segundos(batidas):
@@ -184,7 +212,7 @@ def montar_roteiro(dados):
         # 1. O CARTAZ. É ele o gancho: em dia de alerta o número não precisa
         #    competir com nada, e o vermelho na tela é mais rápido de ler que
         #    qualquer algarismo.
-        add(f"Atenção. {CARTAZ[chave].capitalize()} para a região.",
+        add(f"Atenção. {CARTAZ[chave].capitalize()}.",
             CARTAZ[chave], tipo="alerta",
             titulo=CARTAZ[chave], detalhe=motivo.lower(),
             modo=modo, manchete=texto_manchete)
@@ -229,6 +257,10 @@ def montar_roteiro(dados):
     # --- 5. CTA, alternado por paridade --------------------------------
     fala_cta, chamada, sub = cta_do_dia(dados.get("data"))
     add(fala_cta, chamada, tipo="cta", chamada=chamada, sub=sub)
+
+    # --- 6. O FECHO: a última coisa dita, todo dia, nos dois modos --------
+    fala_f, chamada_f, sub_f = FECHO_CANAL
+    add(fala_f, chamada_f, tipo="cta", chamada=chamada_f, sub=sub_f)
     return batidas
 
 
@@ -241,10 +273,12 @@ def _fala_do_motivo(chave, dados, cidade):
     if chave == "rajada":
         return (f"Rajadas de {num_extenso(round(e['rajada']))} "
                 f"quilômetros por hora.")
+    # sem "máxima de" / "mínima de": o cartaz na tela ja diz CALOR ou FRIO e o
+    # numero grande esta do lado dele. A fala repetiria o que os olhos leem.
     if chave == "calor":
-        return f"Máxima de {num_extenso(round(e['max']))} graus{onde}."
+        return f"{num_extenso(round(e['max']))} graus{onde}."
     if chave == "frio":
-        return f"Mínima de {num_extenso(round(e['min']))} graus{onde}."
+        return f"{num_extenso(round(e['min']))} graus{onde}."
     return f"Umidade em {num_extenso(round(e['umidade']))} por cento."
 
 

@@ -89,7 +89,7 @@ checar("e nao abre com o cartaz de alerta", b[0]["tipo"], "gancho")
 
 print("modo ROTINA — as cinco batidas, nesta ordem:")
 checar("sequencia", [x["tipo"] for x in b],
-       ["gancho", "nenhum", "resumo", "sem_chuva", "cta"])
+       ["gancho", "nenhum", "resumo", "sem_chuva", "cta", "cta"])
 checar("o resumo le TRES cidades, nao cinco",
        len(b[2]["dados"]["cidades"]), 3)
 checar("a cidade da vez abre o resumo",
@@ -101,7 +101,7 @@ ALERTA = dia(regiao(resende=c("Resende", 17, 24, "chuva", 27.0)), data="2026-09-
 checar("o limiar diz alerta", L.modo_do_dia(ALERTA), "alerta")
 ba = J.montar_roteiro(ALERTA)
 checar("sequencia", [x["tipo"] for x in ba],
-       ["alerta", "gancho", "resumo", "nenhum", "cta"])
+       ["alerta", "gancho", "resumo", "nenhum", "cta", "cta"])
 checar("o cartaz traz o tipo certo", ba[0]["dados"]["titulo"], "ALERTA DE CHUVA")
 checar("o detalhe traz o numero", ba[0]["dados"]["detalhe"], "chuva de 27mm")
 checar("o numero grande na tela", ba[1]["dados"]["numero"], "27mm")
@@ -131,11 +131,45 @@ print("CTA alternado por PARIDADE, nao sorteado:")
 for d_mes, esperado in [("08", "TEU BAIRRO NA DM"), ("09", "SALVA PRA CONFERIR"),
                         ("10", "TEU BAIRRO NA DM"), ("21", "SALVA PRA CONFERIR")]:
     bb = J.montar_roteiro(dia(regiao(), data=f"2026-09-{d_mes}"))
-    checar(f"dia {d_mes}", bb[-1]["dados"]["chamada"], esperado)
-saidas = [J.montar_roteiro(dia(regiao(), data=f"2026-09-{n:02d}"))[-1]["dados"]["chamada"]
+    checar(f"dia {d_mes}", bb[-2]["dados"]["chamada"], esperado)
+saidas = [J.montar_roteiro(dia(regiao(), data=f"2026-09-{n:02d}"))[-2]["dados"]["chamada"]
           for n in range(8, 22)]
 checar("nos 14 dias do experimento, 7 de cada",
        sorted({x: saidas.count(x) for x in set(saidas)}.values()), [7, 7])
+
+print("o FECHO fixo — a ultima fala de todo Reel, nos dois modos:")
+# O CTA de cima alterna porque e a variavel medida; este NAO alterna porque e o
+# contrario de uma variavel. Se um dia ele sumir de um dos modos, ou mudar com a
+# paridade, ou deixar de ser o ultimo, o habito que ele constroi some junto — e
+# isso nao aparece em lugar nenhum, so no numero de seguidores tres semanas
+# depois. Por isso esta travado aqui.
+FRASE = "Siga o canal para não ser pego de surpresa."
+checar("a frase e exatamente a pedida", J.FECHO_CANAL[0], FRASE)
+for nome, bb in [("rotina", b), ("alerta", ba)]:
+    checar(f"{nome}: a ultima fala e o fecho", bb[-1]["fala"], FRASE)
+    checar(f"{nome}: com o cartaz de seguir", bb[-1]["dados"]["chamada"], "SEGUE O CANAL")
+# nos 14 dias do experimento, nos dois modos, sem excecao
+todos = []
+for n in range(8, 22):
+    d_rot = dia(regiao(), data=f"2026-09-{n:02d}")
+    d_ale = dia(regiao(resende=c("Resende", 17, 24, "chuva", 27.0)), data=f"2026-09-{n:02d}")
+    todos += [J.montar_roteiro(d_rot)[-1]["fala"], J.montar_roteiro(d_ale)[-1]["fala"]]
+checar("28 roteiros (14 dias x 2 modos) terminam igual", set(todos), {FRASE})
+checar("e o fecho nao entra no sorteio da paridade",
+       len({J.montar_roteiro(dia(regiao(), data=f"2026-09-{n:02d}"))[-1]["dados"]["chamada"]
+            for n in range(8, 22)}), 1)
+
+print("a duracao continua na faixa com a batida a mais:")
+# A conta desceu pra 2,82 palavras/s depois do primeiro render real (19,2s
+# medidos contra 18,6s estimados). Estes sao os cenarios que mais gastam.
+PESADOS = [
+    ("rotina impar", dia(regiao(), data="2026-09-09")),
+    ("alerta chuva", dia(regiao(resende=c("Resende", 17, 24, "chuva", 27.0)))),
+    ("alerta calor", dia(regiao(resende=c("Resende", 22, 38)))),
+    ("cidade de nome comprido", dia([c("Barra do Piraí", 16, 27)] + regiao()[:3])),
+]
+for nome, d in PESADOS:
+    entre(f"duracao: {nome}", J.estimar_segundos(J.montar_roteiro(d)), J.DUR_MIN, J.DUR_MAX)
 
 print("as travas do roteiro valem aqui tambem:")
 # 12mm sem codigo de chuva: o gancho prometeria chuva que a batida final nega
