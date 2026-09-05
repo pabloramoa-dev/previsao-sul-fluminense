@@ -253,7 +253,13 @@ def crons_ativos(arquivo):
             if l.strip().startswith("- cron:")]
 
 
-checar("o juarez.yml tem exatamente um cron", len(crons_ativos("juarez.yml")), 1)
+# NO MAXIMO um, e nao exatamente um: entre a mesclagem e a aprovacao do
+# primeiro MP4 o cron do juarez.yml fica comentado de proposito, pra que o
+# merge nao publique um video que ninguem viu. Zero cron e seguro HOJE e
+# desastroso no dia 08 — o lembrete pra descomentar esta no topo do juarez.yml,
+# que e onde quem for religar vai olhar.
+checar("o juarez.yml tem no maximo um cron",
+       len(crons_ativos("juarez.yml")) <= 1, True)
 checar("e o ranzinza.yml nenhum", crons_ativos("ranzinza.yml"), [])
 checar("o monitor de alertas tambem segue desligado",
        crons_ativos("monitor_alertas.yml"), [])
@@ -263,7 +269,10 @@ publicam_reel = sorted(f for f in os.listdir(WF)
                        and "postar_reel.py" in open(os.path.join(WF, f),
                                                     encoding="utf-8").read()
                        and crons_ativos(f))
-checar("so o juarez publica Reel por agendamento", publicam_reel, ["juarez.yml"])
+# ou so o juarez, ou nenhum (cron comentado no periodo de conferencia do MP4).
+# O que NAO pode, em hipotese nenhuma, e outro workflow publicar Reel agendado.
+checar("nenhum outro workflow publica Reel por agendamento",
+       publicam_reel in ([], ["juarez.yml"]), True)
 
 print()
 if falhas:
