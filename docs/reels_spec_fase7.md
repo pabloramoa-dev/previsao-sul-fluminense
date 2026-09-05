@@ -1,5 +1,36 @@
 # Fase 7 — Reformulação dos Reels (spec executável)
 
+> ## ⚠️ SUPERADO PELO PLANO v3 EM 2026-09-04 — LEIA ANTES DE IMPLEMENTAR
+>
+> A seção **7.5** manda construir o Juarez Plantão como um **Reel da NOITE, às
+> 18h**, substituindo a Dona Maria e mantendo o Seu Ranzinza de manhã. O
+> resultado disso são **dois Reels por dia**.
+>
+> O plano v3 ("Conserto do Motor") decidiu o contrário: **um Reel só, às 06h**,
+> na voz do Juarez, em **dois modos** — rotina e alerta, escolhidos pelos
+> limiares de `limiares.py`. O Ranzinza e a Dona Maria saem do fluxo diário.
+> Quem implementar a 7.5 como está escrita coloca no ar exatamente o formato
+> que o experimento de 14 dias (08/09 a 21/09) existe para substituir, e a
+> métrica medida não responde por mudança nenhuma.
+>
+> **O que vale hoje**, e já está no repositório:
+>
+> | | 7.5 (superado) | plano v3 (em produção) |
+> |---|---|---|
+> | horário | 18h | 06h |
+> | quantos Reels/dia | 2 | 1 |
+> | pergunta | "Amanhã presta?" | previsão de hoje, rotina ou alerta |
+> | gerador | `reels/gerar_noite.py` (nunca criado) | `reels/gerar_juarez.py` |
+> | workflow | `post_noite.yml` | `.github/workflows/juarez.yml` |
+> | duração | 15–20s | 18–22s |
+>
+> As "Pendências de código" no fim deste documento também estão vencidas: os
+> itens 1 e 2 foram feitos de outra forma (`reels/juarez_lib.py`, portado da
+> skill `juarez-plantao`), e o item 3 virou o desligamento dos dois crons do
+> `ranzinza.yml`. O resto do documento — 7.1 a 7.4, 7.6 e a integração com a
+> Fase 6 — continua válido e é boa referência.
+
+
 > Documento de especificação para a Fase 7 do roteiro v2 do @previsaosulflu.
 > Faz parte do PR da Fase 6 (branch fix/conversao-e-slot-noturno). NÃO É CÓDIGO
 > DE PRODUÇÃO: descreve as mudanças a aplicar em reels/gerar_dia.py,
