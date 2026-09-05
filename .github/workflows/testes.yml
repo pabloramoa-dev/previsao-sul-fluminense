@@ -1,0 +1,48 @@
+name: Testes
+
+# Roda os testes que nao dependem de rede nem de render: os limiares que
+# decidem o modo do Reel e a coerencia entre a legenda e o dado de chuva.
+# Existe para que uma mudanca de limiar ou de manchete apareca como falha no
+# proprio Pull Request, e nao as 06h da manha no perfil.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Nenhum dos dois testes importa manim, kokoro ou faz rede: rodam com a
+      # biblioteca padrao. Sem pip install o job fecha em menos de 30 segundos.
+      - name: Limiares e cascata de manchete (secoes 3 e 5)
+        run: python teste_limiares.py
+
+      - name: Coerencia entre a legenda e o dado de chuva
+        working-directory: reels
+        run: python teste_coerencia_legenda.py
+
+      # O terceiro lado: o ROTEIRO do video. Prova que os dois geradores leem
+      # os limiares da raiz em vez de reescrever o numero (era o que estava
+      # acontecendo em quatro arquivos) e que o gancho nao promete chuva que o
+      # acumulado nao sustenta. Le o piloto.py pelo AST, entao nao precisa de
+      # manim instalado.
+      - name: Travas do roteiro do Reel
+        working-directory: reels
+        run: python teste_roteiro.py
+
+      # O Reel unico das 06h: os dois modos, a duracao alvo, o CTA por paridade
+      # e a legenda do personagem novo. Nao renderiza - o video so se confere
+      # olhando, pelo botao "Run workflow" do juarez.yml.
+      - name: Reel do Juarez (dois modos)
+        working-directory: reels
+        run: python teste_juarez.py

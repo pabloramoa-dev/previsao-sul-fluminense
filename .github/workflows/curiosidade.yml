@@ -10,12 +10,25 @@ name: Mito ou Verdade (Reel, domingo 12h BRT)
 # Com elas comentadas o workflow só roda pelo botão "Run workflow", e lá o
 # "publicar" vem desmarcado por padrão.
 
+# DESLIGADO em 2026-09-04, pelo mesmo motivo do monitor_alertas.yml e do
+# ranzinza.yml: o experimento de 14 dias (08/09 a 21/09) mede o skip rate de UM
+# Reel por dia. Este aqui sai aos domingos ao meio-dia, e dentro da janela do
+# experimento caem DOIS domingos: 13/09 e 20/09. Nesses dois dias o perfil
+# receberia dois Reels, e o numero medido nao responderia pelo formato.
+#
+# Nao e um julgamento sobre o Mito ou Verdade: ele e o formato de melhor alcance
+# mediano do perfil (106 contra 4 do carrossel, ver engajamento.py). E so que
+# nao da pra medir uma coisa e publicar outra em cima.
+#
+# PARA RELIGAR depois de 22/09: descomente as duas linhas do schedule abaixo. O
+# botao "Run workflow" continua funcionando o tempo todo, inclusive agora.
+
 permissions:
   contents: write
 
 on:
-  schedule:
-    - cron: "10 14 * * 0"  # dispara cedo; o job espera até 15:00 UTC (12:00 BRT domingo)
+  #  schedule:
+  #    - cron: "10 14 * * 0"  # dispara cedo; o job espera até 15:00 UTC (12:00 BRT domingo)
   workflow_dispatch:
     inputs:
       personagem:

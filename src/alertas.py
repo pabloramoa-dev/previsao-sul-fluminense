@@ -3,7 +3,8 @@
 """
 alertas.py - Deteccao de variacao brusca do tempo + gatilho "choveu quanto".
 
-Thresholds:
+Thresholds (os NUMEROS moram em limiares.py, na raiz do repo, desde
+2026-09-04; aqui fica so a descricao do que cada um significa):
 - Queda ou subida >= 6C em relacao a leitura anterior (estado.json)
 - Chuva forte: prob > 70% e > 10mm nas proximas 3h, ausente na previsao da manha
 - Rajadas de vento >= 50 km/h previstas
@@ -21,6 +22,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +30,18 @@ ESTADO_PATH = Path(__file__).parent / "estado.json"
 
 LIMITE_ALERTAS_DIA = 2
 INTERVALO_MIN_MESMO_TIPO_H = 6
+
+# Os numeros vem do limiares.py, na raiz: um lugar so pra mexer na regua do
+# perfil. Os nomes continuam iguais aqui embaixo pra nao mexer no corpo da
+# deteccao — o que muda e de ONDE eles vem.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from limiares import (  # noqa: E402
+    DELTA_TEMP,
+    PROB_CHUVA_FORTE,
+    MM_CHUVA_FORTE,
+    VENTO_FORTE,
+    MM_ACUMULADO_24H,
+)
 
 # Quando mais de um tipo dispara no mesmo dia, o limite acima corta os
 # excedentes. Sem uma ordem explicita o corte seguia a ordem de insercao no
@@ -40,11 +54,6 @@ SEVERIDADE = {
     "queda_temperatura": 1,
     "subida_temperatura": 1,
 }
-DELTA_TEMP = 6.0
-PROB_CHUVA_FORTE = 70.0
-MM_CHUVA_FORTE = 10.0
-VENTO_FORTE = 50.0
-MM_ACUMULADO_24H = 30.0
 
 
 def _carregar() -> dict[str, Any]:
