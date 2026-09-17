@@ -42,6 +42,7 @@ import previsao_lib as P
 import juarez_lib as J
 import dvh_lib as L
 import dvh_lip as LIP
+import vox_papel as VX
 
 config.frame_width = 8.0
 config.frame_height = 14.222
@@ -62,6 +63,13 @@ EH_JUAREZ = PERSONAGEM == "juarez"
 # só o Ranzinza abre guarda-chuva: ele fala do tempo que está caindo hoje.
 COM_GUARDA_CHUVA = PERSONAGEM not in ("maria", "juarez")
 FIM = SEGS[-1]["fim"]
+# Estilo colagem de papel (Vox) é o padrão desde 16/09/2026.
+# PREVISAO_ESTILO=classico volta ao visual anterior sem editar arquivo.
+VOX = VX.ativo()
+# Janela da "foto colada": o cenário aparece por ela. De -5.75 (mostra um
+# pedaço do chão) a 4.85 (acima do mapa do tempo colado na parede do estúdio).
+# O selo e os cartões ficam por cima da foto, como recortes colados.
+JANELA_W, JANELA_H, JANELA_Y = 6.9, 10.6, -0.45
 
 Y_PAINEL = 4.5
 # O selo da cidade fica ABAIXO da faixa do painel, e não é capricho estético:
@@ -218,6 +226,24 @@ def painel(tipo, d):
     return None
 
 
+def painel_vox(tipo, d, semente):
+    """Mesmo cartão do painel clássico, colado como recorte de papel."""
+    if tipo == "cta":
+        return VX.cartao_cta(chamada=d.get("chamada", "TEU BAIRRO NA DM"),
+                             sub=d.get("sub", "manda o nome e eu respondo a previsão daí"),
+                             largura=P.larg_segura() - 0.3)
+    m = painel(tipo, d)
+    if m is None:
+        return None
+    g = VX.colar_painel(m, semente=semente)
+    if tipo == "alerta":
+        c = VX.carimbo("ATENÇÃO", cor="amarelo", tam=34, girar=-0.2, sobre="vermelho")
+        c.scale_to_fit_width(min(2.6, g.width * 0.42))
+        c.move_to(g.get_corner(DOWN + RIGHT) + LEFT * 0.9 + DOWN * 0.15)
+        g.add(c)
+    return g
+
+
 class Piloto(MovingCameraScene):
     def construct(self):
         # ---------------- cenário com movimento ----------------
@@ -238,6 +264,12 @@ class Piloto(MovingCameraScene):
             cen = P.varanda(CENARIO)
             self.add(cen["grupo"])
             P.animar_cenario(self, cen, CENARIO, calor=CALOR, duracao=FIM)
+
+        # ---------------- colagem: a folha com a janela por cima do cenário ----
+        if VOX:
+            folha, retic = VX.janela_colada(JANELA_W, JANELA_H, centro=(0, JANELA_Y),
+                                            girar=-0.012, semente=3)
+            self.add(folha, *retic)
 
         # ---------------- personagem ----------------
         if EH_JUAREZ:
@@ -274,7 +306,10 @@ class Piloto(MovingCameraScene):
             excesso = prova.get_top()[1] - TETO_CENA
             if excesso > 0:
                 G.shift(DOWN * excesso)
-        self.add(G)
+        if VOX:
+            self.add(VX.adesivo_personagem(v), G)
+        else:
+            self.add(G)
         # período ajustado pra caber um nº inteiro de respiros no vídeo (loop)
         L.respirar(G, amp=0.045, periodo=FIM / max(1, round(FIM / 3.0)))
 
@@ -295,7 +330,7 @@ class Piloto(MovingCameraScene):
                               janelas_beber=janelas("beber") or None,
                               com_guarda_chuva=COM_GUARDA_CHUVA)
 
-        self.add(P.marca_dagua().move_to([0, 6.35, 0]))
+        self.add((VX.marca() if VOX else P.marca_dagua()).move_to([0, 6.35, 0]))
 
         # ---------------- o personagem sai de cena no resumo ---------------
         # Enquanto ele lê as cinco cidades, o quadro delas ocupa o centro da
@@ -329,7 +364,8 @@ class Piloto(MovingCameraScene):
             # TÉCNICA 2: primeiro e último frame IGUAIS (limpos) -> replay sem emenda
             ini = max(SEGS[i]["ini"], ABERTURA)
             fim = SEGS[i]["fim"] if i + 1 < len(BATIDAS) else FIM - LIMPO
-            m = painel(b["tipo"], b.get("dados") or {})
+            m = (painel_vox(b["tipo"], b.get("dados") or {}, semente=i + 1) if VOX
+                 else painel(b["tipo"], b.get("dados") or {}))
             if m is None:
                 continue
             if b["tipo"] in ("gancho", "cta"):
@@ -339,7 +375,7 @@ class Piloto(MovingCameraScene):
             else:
                 m.move_to([0, Y_PAINEL, 0])
             paineis.append((ini, fim, m))
-        self.add(P.trilha_temporal(paineis, pop=0.20))
+        self.add(VX.trilha_colada(paineis) if VOX else P.trilha_temporal(paineis, pop=0.20))
 
         # ---------------- selo da cidade da vez (o que a GRADE mostra) -----
         # ELE COMEÇA NO FRAME ZERO, e é essa a diferença que importa: o
@@ -367,8 +403,9 @@ class Piloto(MovingCameraScene):
                 if painel(b["tipo"], b.get("dados") or {}) is not None:
                     fim_selo = max(SEGS[i]["ini"], ABERTURA)
                     break
-            base_selo = P.selo_cidade(
-                destaque, CONT.get("destaque_rotulo", "HOJE EM"))
+            base_selo = (VX.selo(destaque, CONT.get("destaque_rotulo", "HOJE EM"),
+                                 largura=P.larg_segura() - 0.4) if VOX
+                         else P.selo_cidade(destaque, CONT.get("destaque_rotulo", "HOJE EM")))
             base_selo.move_to([0, Y_SELO, 0])
             # adicionado JÁ montado (e não por trilha_temporal, que só desenha
             # no primeiro tick do updater): assim ele existe no frame 0, que é
@@ -395,7 +432,11 @@ class Piloto(MovingCameraScene):
                             # de quem está procurando a linha da cidade dele
             ini = max(SEGS[i]["ini"], ABERTURA)
             fim = SEGS[i]["fim"] if i + 1 < len(BATIDAS) else FIM - LIMPO
-            legs += P.legenda_karaoke(b["legenda"], ini, fim, y=Y_LEGENDA, fs=48)
+            if VOX:
+                legs += VX.legenda_karaoke_papel(b["legenda"], ini, fim, y=Y_LEGENDA,
+                                                 fs=48, larg=P.SEGURA - 0.6)
+            else:
+                legs += P.legenda_karaoke(b["legenda"], ini, fim, y=Y_LEGENDA, fs=48)
         self.add(P.trilha_temporal(legs, pop=0.10))
 
         # ---------------- névoa nas batidas marcadas ----------------

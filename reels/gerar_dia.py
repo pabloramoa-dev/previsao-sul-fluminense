@@ -841,10 +841,28 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
            os.path.join(AQUI, "piloto.py"), "Piloto"], env=env)
 
     mp4 = f"media/videos/piloto/1920p{fps}/Piloto.mp4"
-    rodar(["ffmpeg", "-y", "-v", "error", "-i", mp4, "-i", narr,
-           "-c:v", "libx264", "-crf", "22", "-preset", "medium",
-           "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
-           "-shortest", saida])
+    if os.environ.get("PREVISAO_ESTILO", "vox").strip().lower() != "classico":
+        # Colagem (vox): grão de papel sobre o vídeo mudo, voz masterizada por
+        # ganho FIXO + limitador, e entrega H.264 Main / Level 4.0 a 30 fps.
+        import vox_papel as VX
+        mudo = VX.aplicar_textura(mp4, os.path.join(trab, "mudo_papel.mp4"))
+        master = VX.masterizar(narr, os.path.join(trab, "narracao_master.wav"))
+        rodar(["ffmpeg", "-y", "-v", "error", "-i", mudo, "-i", master,
+               "-map", "0:v", "-map", "1:a",
+               "-c:v", "libx264", "-profile:v", "main", "-level", "4.0",
+               "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p", "-r", "30",
+               "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
+               "-movflags", "+faststart", "-shortest", saida])
+        base, _ = os.path.splitext(saida)
+        rodar(["ffmpeg", "-y", "-v", "error", "-i", saida, "-vf", "scale=720:1280",
+               "-c:v", "libx264", "-profile:v", "main", "-crf", "24",
+               "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
+               "-movflags", "+faststart", base + "_preview_720p.mp4"])
+    else:
+        rodar(["ffmpeg", "-y", "-v", "error", "-i", mp4, "-i", narr,
+               "-c:v", "libx264", "-crf", "22", "-preset", "medium",
+               "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
+               "-shortest", saida])
     print(f"pronto: {saida}")
     return saida
 
