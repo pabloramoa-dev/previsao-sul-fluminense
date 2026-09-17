@@ -38,6 +38,13 @@ on:
         type: boolean
         default: false
 
+# Escrita no repositório: o passo "Publicar o MP4 num Release" cria um
+# Release, e o token padrão do Actions só lê. Sem isto, de 11/09 a 16/09/2026
+# todo Reel foi gerado e morreu em "HTTP 403: Resource not accessible by
+# integration" — nenhum chegou ao Instagram.
+permissions:
+  contents: write
+
 jobs:
   juarez:
     runs-on: ubuntu-latest
