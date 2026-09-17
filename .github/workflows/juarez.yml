@@ -45,6 +45,11 @@ jobs:
     defaults:
       run:
         working-directory: reels
+    env:
+      # Visual do Reel: colagem de papel (vox) por padrão, desde 16/09/2026.
+      # Para voltar ao visual anterior sem editar arquivo, crie a variable
+      # PREVISAO_ESTILO=classico em Settings > Variables.
+      PREVISAO_ESTILO: ${{ vars.PREVISAO_ESTILO || 'vox' }}
 
     steps:
       - name: Aguardar o horario alvo (06:00 BRT)
@@ -120,7 +125,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: reel-juarez
-          path: reels/REEL.mp4
+          path: |
+            reels/REEL.mp4
+            reels/REEL_preview_720p.mp4
           retention-days: 7
 
       - name: Publicar o MP4 num Release
