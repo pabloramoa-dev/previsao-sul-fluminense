@@ -39,10 +39,12 @@ minutos de Kokoro e render; o teste do repositório trava a faixa.
 
 VOZ
 ---
-`pm_santa`, speed 1.05, SEM pitch pra baixo — ele não é idoso como os outros
-dois, é locutor. No lugar do pitch, a cadeia de masterização de locutor
-(`FILTRO_LOCUTOR` no gerar_dia.py). Tudo isso vem da skill `juarez-plantao`,
-onde a voz dele já foi ao ar.
+Desde 23/09/2026 é a MESMA voz do Bira do Tempo, do @previsaorj: Kokoro
+`pm_alex`, speed 1.04, sem pitch, 0,22 s entre batidas e a cadeia de áudio do
+Bira (`FILTRO_BIRA` abaixo, copiado de src/previsao_rj/render/characters/
+pipeline.py do previsao-rj). Antes era `pm_santa` a 1.05 com o FILTRO_LOCUTOR.
+O ritmo medido das duas vozes é o mesmo (~2,8-3,1 palavras/s nos roteiros de
+teste), então a faixa de 18-22 s não mudou.
 
 CUIDADO COM SIGLA: o espeak-ng (fonetizador do Kokoro) soletra letra por letra
 qualquer palavra toda em maiúscula — "PIX" vira "p-i-xis". Nas FALAS, escreva
@@ -64,7 +66,7 @@ sys.path.insert(0, AQUI)
 sys.path.insert(0, RAIZ)
 
 from coletar_tempo import resumo_cinco
-from gerar_dia import (produzir, num_extenso, FILTRO_LOCUTOR,
+from gerar_dia import (produzir, num_extenso, cenario_do_dia,
                        escolher_gancho, maiusculizar_frase)
 from limiares import (alerta_do_dia, chove_de_verdade, conferir_gancho,
                       conferir_manchete, extremos, manchete, modo_do_dia)
@@ -76,7 +78,15 @@ N_RESUMO_JUAREZ = 3
 # não aborta, porque um dia com nome de cidade comprido não é um bug.
 DUR_MIN, DUR_MAX = 18.0, 22.0
 
-# Ritmo do Kokoro com pm_santa a --speed 1.05. Começou em 2,9 (medido pelos
+# A voz do Bira do Tempo (@previsaorj), preset por preset.
+VOZ_BIRA = "pm_alex"
+SPEED_BIRA = 1.04
+FILTRO_BIRA = ("highpass=f=80,"
+               "acompressor=threshold=-18dB:ratio=2:attack=8:release=180,"
+               "volume=1.1")
+
+# Ritmo do Kokoro (medido com pm_santa a 1.05; conferido de novo com a voz do
+# Bira, pm_alex a 1.04, em 23/09/2026: mesma velocidade). Começou em 2,9 (medido pelos
 # vídeos da skill) e desceu pra 2,82 em 2026-09-05, depois do primeiro render
 # de verdade: o `ffprobe` do workflow mediu 19,2s num roteiro que a conta dizia
 # 18,6s — a narração real gasta ~3% a mais que a estimativa.
@@ -85,7 +95,7 @@ DUR_MIN, DUR_MAX = 18.0, 22.0
 # o teste do repositório trava a faixa de 18-22s, e é melhor ele reclamar de um
 # roteiro que caberia do que deixar passar um que estoura no ar.
 PALAVRAS_POR_SEGUNDO = 2.82
-GAP_ENTRE_BATIDAS = 0.25
+GAP_ENTRE_BATIDAS = 0.22     # o gap do Bira
 
 
 # =====================================================================
@@ -292,6 +302,17 @@ def _numero_do_motivo(chave, dados):
             "umidade": f"{round(e['umidade'])}%"}[chave]
 
 
+def cenario_telao(dados):
+    """O céu do telão do estúdio. Se a narração vai falar de chuva em alguma
+    cidade, o telão chove; senão, vale o céu da cidade da vez."""
+    cid = dados["cidades"]
+    chuvosas = [c for c in cid if chove_de_verdade(c)]
+    if chuvosas:
+        pico = max(chuvosas, key=lambda c: c.get("chuva_mm", 0) or 0)
+        return "tempestade" if pico.get("cond") == "tempestade" else "chuva"
+    return cenario_do_dia(cid[0])
+
+
 def gerar(dados, saida, quality="m"):
     """Do dia.json ao MP4."""
     batidas = montar_roteiro(dados)
@@ -302,13 +323,12 @@ def gerar(dados, saida, quality="m"):
     print(f"     duração estimada: {dur:.1f}s{aviso}")
     return produzir(
         batidas, saida,
-        # o Juarez fala de dentro do estúdio: o cenário não muda com o tempo lá
-        # fora, e é isso que o `cenario_tipo` diz ao piloto.py
-        cenario="sol", calor=False,
+        # estúdio com telão: o céu do telão é o tempo do dia (visual v2)
+        cenario=cenario_telao(dados), calor=False,
         personagem="juarez", cenario_tipo="estudio",
-        quality=quality, voz="pm_santa",
-        speed=1.05, gap=GAP_ENTRE_BATIDAS, filtro=FILTRO_LOCUTOR,
-        extra={"data": dados["data"],
+        quality=quality, voz=VOZ_BIRA,
+        speed=SPEED_BIRA, gap=GAP_ENTRE_BATIDAS, filtro=FILTRO_BIRA,
+        extra={"data": dados["data"], "hora": "06:00",
                "destaque": dados.get("destaque") or dados["cidades"][0]["nome"],
                "destaque_rotulo": "HOJE EM"})
 
