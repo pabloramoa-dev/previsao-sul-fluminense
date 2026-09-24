@@ -87,6 +87,13 @@ Y_SELO = 3.95
 # há mais cabeça nenhuma pra desviar. Em 1.2, com até 5.6 de altura, ocupa de
 # -1.6 a 4.0: bem dentro do enquadramento fechado (|y| <= 5.83).
 Y_RESUMO = 1.2
+# Visual v2 do Juarez (23/09/2026): cabeça embaixo, cartões em cima.
+ESCALA_J = 1.25
+Y_CABECA_J = -0.95        # centro da cabeça dele
+Y_CENTRO_J = 2.15         # centro dos cartões grandes (gancho, resumo, CTA)
+ALTURA_MAX_J = 3.0        # 2.15 ± 1.5: de 0.65 a 3.65, acima do rosto
+Y_SELO_J = 4.70           # selo da cidade: acima dos cartões
+Y_TARJA_J = -4.42         # AO VIVO · PLANTÃO SUL FLU · hora, na bancada
 Y_LEGENDA = -2.2          # terço central, não o rodapé
 TETO_CENA = 3.25          # nada do personagem passa disto: acima é o painel
 LIMPO = 0.30              # frame limpo no FIM, pro loop fechar
@@ -252,8 +259,12 @@ class Piloto(MovingCameraScene):
             # pra cair — `animar_cenario()` leria `cen["nuvens"]`, que o estúdio
             # não tem. O movimento aqui vem do respirar() do personagem e do
             # push-in da câmera, que continuam valendo: nada congela.
-            cen = J.estudio_juarez()
+            # Visual v2 (23/09/2026): telejornal com telão da paisagem do Sul
+            # Fluminense. O céu do telão é o tempo do dia (CENARIO), e o
+            # movimento (nuvem, fumaça da usina, chuva, AO VIVO) fecha o loop.
+            cen = J.estudio_juarez(CENARIO, hora=CONT.get("hora", "06:00"))
             self.add(cen["grupo"])
+            J.animar_estudio(cen, FIM)
         elif CENARIO_TIPO == "quintal":
             cen = P.quintal_varal(CENARIO)
             # brisa constante: o varal é cenário, não é mais o assunto dela
@@ -285,14 +296,13 @@ class Piloto(MovingCameraScene):
             # lado esquerdo pro mapa do tempo colado na parede. Ancorar (e não
             # fixar um y) é o que faz o personagem pisar no chão mesmo se o
             # cenário mudar de altura.
-            G.scale(1.55)
-            G.shift(UP * (cen["piso_y"] - G.get_bottom()[1]) + RIGHT * 0.3)
-            # rede de segurança: o microfone erguido e o cabelo somam altura
-            # acima da cabeça. Medir e abaixar o excesso sobrevive a qualquer
-            # retoque futuro no desenho; um número fixo aqui, não.
-            excesso = G.get_top()[1] - TETO_CENA
-            if excesso > 0:
-                G.shift(DOWN * excesso)
+            # Visual v2: atrás da bancada, do peito pra cima, centralizado.
+            # Ancora pelo CENTRO DA CABEÇA (e não pelos pés): é o rosto que
+            # não pode ficar embaixo de cartão nenhum. Os cartões moram de
+            # Y_CENTRO_J pra cima; a cabeça, abaixo deles.
+            G.scale(ESCALA_J)
+            G.shift(UP * (Y_CABECA_J - v["cab"].get_center()[1])
+                    + RIGHT * (0 - v["cab"].get_center()[0]))
         else:
             G.scale(1.3).move_to([0, -2.4 if PERSONAGEM == "maria" else -1.2, 0])
 
@@ -310,6 +320,9 @@ class Piloto(MovingCameraScene):
             self.add(VX.adesivo_personagem(v), G)
         else:
             self.add(G)
+        if EH_JUAREZ:
+            # a bancada entra DEPOIS do personagem: fica na frente dele
+            self.add(cen["bancada"])
         # período ajustado pra caber um nº inteiro de respiros no vídeo (loop)
         L.respirar(G, amp=0.045, periodo=FIM / max(1, round(FIM / 3.0)))
 
@@ -331,6 +344,9 @@ class Piloto(MovingCameraScene):
                               com_guarda_chuva=COM_GUARDA_CHUVA)
 
         self.add((VX.marca() if VOX else P.marca_dagua()).move_to([0, 6.35, 0]))
+        if EH_JUAREZ:
+            # AO VIVO · PLANTÃO SUL FLU · hora — tarja de telejornal
+            self.add(cen["tarja"].move_to([0, Y_TARJA_J, 0]))
 
         # ---------------- o personagem sai de cena no resumo ---------------
         # Enquanto ele lê as cinco cidades, o quadro delas ocupa o centro da
@@ -344,7 +360,7 @@ class Piloto(MovingCameraScene):
         janela_resumo = [(SEGS[i]["ini"], SEGS[i]["fim"])
                          for i, b in enumerate(BATIDAS)
                          if i < len(SEGS) and b["tipo"] == "resumo"]
-        if janela_resumo:
+        if janela_resumo and not EH_JUAREZ:     # o Juarez é o âncora: fica
             r_ini, r_fim = janela_resumo[0]
             juntos = [G] + [extras[k] for k in ("guarda_chuva", "cachecol")
                             if k in extras]
@@ -368,7 +384,12 @@ class Piloto(MovingCameraScene):
                  else painel(b["tipo"], b.get("dados") or {}))
             if m is None:
                 continue
-            if b["tipo"] in ("gancho", "cta"):
+            if EH_JUAREZ:
+                # acima da cabeça dele — nunca em cima do rosto
+                if m.height > ALTURA_MAX_J:
+                    m.scale_to_fit_height(ALTURA_MAX_J)
+                m.move_to([0, Y_CENTRO_J, 0])
+            elif b["tipo"] in ("gancho", "cta"):
                 m.move_to([0, 1.2, 0])          # centro da tela
             elif b["tipo"] == "resumo":
                 m.move_to([0, Y_RESUMO, 0])     # tela inteira: o boneco saiu
@@ -406,7 +427,7 @@ class Piloto(MovingCameraScene):
             base_selo = (VX.selo(destaque, CONT.get("destaque_rotulo", "HOJE EM"),
                                  largura=P.larg_segura() - 0.4) if VOX
                          else P.selo_cidade(destaque, CONT.get("destaque_rotulo", "HOJE EM")))
-            base_selo.move_to([0, Y_SELO, 0])
+            base_selo.move_to([0, Y_SELO_J if EH_JUAREZ else Y_SELO, 0])
             # adicionado JÁ montado (e não por trilha_temporal, que só desenha
             # no primeiro tick do updater): assim ele existe no frame 0, que é
             # exatamente o frame que precisa dele
@@ -432,11 +453,12 @@ class Piloto(MovingCameraScene):
                             # de quem está procurando a linha da cidade dele
             ini = max(SEGS[i]["ini"], ABERTURA)
             fim = SEGS[i]["fim"] if i + 1 < len(BATIDAS) else FIM - LIMPO
+            y_leg = J.Y_LEGENDA_BANCADA if EH_JUAREZ else Y_LEGENDA
             if VOX:
-                legs += VX.legenda_karaoke_papel(b["legenda"], ini, fim, y=Y_LEGENDA,
+                legs += VX.legenda_karaoke_papel(b["legenda"], ini, fim, y=y_leg,
                                                  fs=48, larg=P.SEGURA - 0.6)
             else:
-                legs += P.legenda_karaoke(b["legenda"], ini, fim, y=Y_LEGENDA, fs=48)
+                legs += P.legenda_karaoke(b["legenda"], ini, fim, y=y_leg, fs=48)
         self.add(P.trilha_temporal(legs, pop=0.10))
 
         # ---------------- névoa nas batidas marcadas ----------------
