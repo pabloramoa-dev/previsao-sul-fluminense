@@ -19,10 +19,11 @@ existia SO la: o repositorio tinha o Juarez em documentacao — o
 codigo. Era por isso que o `ranzinza.yml` nao podia ser desligado: desligar
 deixaria o perfil com ZERO Reels por dia, nao com um.
 
-O desenho abaixo e o da skill, sem retoque, de proposito: o personagem ja foi ao
-ar e mexer no traco agora misturaria duas variaveis no experimento de 14 dias. O
-que mudou foram so os imports — o `dvh_lib` mora aqui do lado, e o
-`ranzinza_lib` que a skill importava nunca chegou a ser usado por este arquivo.
+O rosto e o figurino continuam os da skill (o experimento de 14 dias acabou
+em 22/09/2026). Em 23/09/2026 entrou o visual v2: o estudio virou um
+telejornal com telao da paisagem regional que reage ao tempo, bancada com
+AO VIVO, e o microfone ganhou canopla legivel. A voz passou a ser a do Bira
+do Tempo (@previsaorj) — ver `gerar_juarez.py`.
 
 Uma diferenca de escopo vale registrar: a skill descreve o Juarez para
 comunicados AVULSOS (vendaval, publicidade). Aqui ele e o Reel DIARIO, unico,
@@ -141,8 +142,12 @@ def juarez(humor="dramatico"):
     mic_corpo = Line(maoD_pos, maoD_pos + UP * 0.55 + RIGHT * 0.08, stroke_color="#3a3a3c", stroke_width=13)
     mic_espuma = Circle(radius=0.20, fill_color="#1c1c1e", fill_opacity=1,
                         stroke_color=PT, stroke_width=6).move_to(mic_corpo.get_end())
-    mic_logo = Text("@psf", font=FONTE, weight=BOLD, font_size=11, color=WHITE).move_to(mic_espuma).rotate(PI/2)
-    microfone = VGroup(mic_corpo, mic_espuma, mic_logo)
+    # canopla do microfone com a marca do plantão (antes: "@psf" deitado na
+    # espuma, ilegível no celular). Cubo vermelho, "SF" branco, de pé.
+    canopla = Square(0.34, fill_color="#d63a2f", fill_opacity=1, stroke_color=PT,
+                     stroke_width=5).move_to(mic_corpo.point_from_proportion(0.45))
+    mic_logo = Text("SF", font=FONTE, weight=BOLD, font_size=16, color=WHITE).move_to(canopla)
+    microfone = VGroup(mic_corpo, mic_espuma, canopla, mic_logo)
 
     q = t + DOWN * 1.55
     calca = Polygon(q + LEFT * 0.85, q + RIGHT * 0.85, q + DOWN * 0.55 + RIGHT * 0.70,
@@ -158,67 +163,277 @@ def juarez(humor="dramatico"):
 
 
 # =====================================================================
-#  ESTÚDIO IMPROVISADO — lençol de fundo, luminária como refletor,
-#  mapa do tempo desenhado à mão. Interior, à noite — o único dos três
-#  cenários que não é do lado de fora.
+#  ESTÚDIO DO PLANTÃO — telejornal de bairro (visual v2, 23/09/2026)
+#
+#  Antes era um lençol pendurado com um mapa desenhado à mão: interior,
+#  cinza, o mesmo em todo dia. O Reel perdia o que o perfil tem de mais
+#  reconhecível — o LUGAR. Agora o fundo é um TELÃO com a paisagem do Sul
+#  Fluminense (a Serra da Mantiqueira ao fundo, o Rio Paraíba do Sul
+#  cortando o vale e as chaminés da usina de Volta Redonda), e o céu desse
+#  telão É o tempo do dia: sol, nublado, chuva, tempestade ou frio.
+#
+#  Na frente, uma bancada de telejornal com o selo "AO VIVO" piscando e o
+#  relógio do plantão. O Juarez fica atrás dela, do peito pra cima — o que
+#  libera a parte de cima da tela pros cartões sem cobrir o rosto dele (no
+#  visual antigo o número do gancho tampava a cara do personagem).
+#
+#  Tudo que se mexe aqui (nuvem, fumaça, chuva, luz do AO VIVO) tem período
+#  que divide a duração do vídeo: o último frame continua igual ao primeiro,
+#  e o loop do Reel não emenda.
 # =====================================================================
-def estudio_juarez():
+CEU_TELAO = {
+    # (topo, horizonte, cor da serra ao fundo, cor da serra da frente)
+    "sol":        ("#3f95d6", "#bfe6f7", "#6f9fb5", "#4f7f62"),
+    "nublado":    ("#7f8e9c", "#cfd6dc", "#8a9aa6", "#5b7566"),
+    "chuva":      ("#4c5a6b", "#8e9aa6", "#6a7784", "#465c52"),
+    "tempestade": ("#262d3a", "#5c6474", "#4a5362", "#34463f"),
+    "frio":       ("#8fb1c9", "#e7eef3", "#a7bccb", "#6e8a80"),
+}
+
+# Geometria do telão (unidades do Manim, quadro 8 x 14.222).
+TELAO_W, TELAO_H = 7.2, 8.6
+TELAO_Y = 1.35             # centro: vai de -2.95 a 5.65
+BANCADA_TOPO = -3.05       # o Juarez aparece do peito pra cima
+Y_LEGENDA_BANCADA = -3.62  # a legenda karaokê corre na frente da bancada
+
+
+def _serra(pontos_y, x0, x1, base, cor):
+    n = len(pontos_y)
+    xs = np.linspace(x0, x1, n)
+    topo = [[x, y, 0] for x, y in zip(xs, pontos_y)]
+    return VMobject(fill_color=cor, fill_opacity=1, stroke_width=0).set_points_as_corners(
+        topo + [[x1, base, 0], [x0, base, 0], topo[0]])
+
+
+def _chamine(x, base, alt, larg=0.26):
+    corpo = Polygon([x - larg / 2, base, 0], [x + larg / 2, base, 0],
+                    [x + larg * 0.36, base + alt, 0], [x - larg * 0.36, base + alt, 0],
+                    fill_color="#5b4f4a", fill_opacity=1, stroke_color=PT, stroke_width=3)
+    faixas = VGroup(*[Rectangle(width=larg * (0.86 - 0.12 * k), height=0.11,
+                                fill_color="#c0392b", fill_opacity=1, stroke_width=0)
+                      .move_to([x, base + alt * (0.62 + 0.16 * k), 0]) for k in range(2)])
+    return VGroup(corpo, faixas)
+
+
+def _nuvem_telao(escala, cor, op):
+    n = VGroup(*[Circle(radius=r, fill_color=cor, fill_opacity=op, stroke_width=0)
+                 for r in (0.34, 0.5, 0.4)])
+    n[0].shift(LEFT * 0.48 + DOWN * 0.06)
+    n[2].shift(RIGHT * 0.5 + DOWN * 0.04)
+    base = RoundedRectangle(width=1.7, height=0.42, corner_radius=0.2, fill_color=cor,
+                            fill_opacity=op, stroke_width=0).shift(DOWN * 0.22)
+    return VGroup(n, base).scale(escala)
+
+
+def estudio_juarez(cenario="sol", hora="06:00", rotulo="PLANTÃO SUL FLU", vivo="AO VIVO"):
+    """Cenário do Juarez. Devolve dict com:
+        grupo    -> fundo (telão + paisagem), atrás do personagem
+        bancada  -> a bancada, que vai NA FRENTE do personagem
+        piso_y   -> onde os pés dele ficam (escondidos atrás da bancada)
+        vivos    -> alças do que se mexe, pra animar_estudio()
+    """
     W = config.frame_width
     H = config.frame_height
+    topo_ceu, horiz, serra_fundo, serra_frente = CEU_TELAO.get(cenario, CEU_TELAO["sol"])
     g = VGroup()
+    vivos = {"nuvens": [], "fumaca": [], "chuva": None, "luz": None, "sol": None}
+
+    # parede do estúdio: azul-marinho de telejornal, com um brilho no centro
     g.add(Rectangle(width=W + 2, height=H + 2, fill_opacity=1, stroke_width=0)
-         .set_color(["#2a2620", "#100e0c"]).set_sheen_direction(UP))
+          .set_color(["#0e1a2b", "#1d3552"]).set_sheen_direction(UP))
 
-    # lençol pendurado como fundo (com dobras)
-    lencol = Rectangle(width=W - 0.6, height=H * 0.78, fill_color="#e8e2d4",
-                       fill_opacity=1, stroke_width=0).move_to([0, H * 0.13, 0])
-    dobras = VGroup(*[
-        VMobject(stroke_color="#c9c2b0", stroke_width=3, stroke_opacity=0.6).set_points_smoothly([
-            [x, lencol.get_top()[1], 0], [x + 0.15, lencol.get_center()[1], 0],
-            [x - 0.05, lencol.get_bottom()[1], 0]])
-        for x in np.arange(-W / 2 + 1.0, W / 2 - 0.5, 0.85)
-    ])
-    g.add(lencol, dobras)
+    # ---- o telão ---------------------------------------------------------
+    x0, x1 = -TELAO_W / 2, TELAO_W / 2
+    y0, y1 = TELAO_Y - TELAO_H / 2, TELAO_Y + TELAO_H / 2
+    ceu = Rectangle(width=TELAO_W, height=TELAO_H, fill_opacity=1, stroke_width=0) \
+        .set_color([topo_ceu, horiz]).set_sheen_direction(DOWN).move_to([0, TELAO_Y, 0])
+    g.add(ceu)
 
-    # mapa do tempo desenhado à mão, colado na parede (canto superior esquerdo)
-    mapa_fundo = Rectangle(width=1.9, height=1.5, fill_color="#f5f1e6", fill_opacity=1,
-                           stroke_color=PT, stroke_width=5).move_to([-W / 2 + 1.7, H / 2 - 3.1, 0])
-    sol_desenho = VGroup(
-        Circle(radius=0.18, stroke_color="#c98f2e", stroke_width=5, fill_opacity=0).move_to(mapa_fundo.get_center() + UP * 0.3 + LEFT * 0.35),
-        *[Line(ORIGIN, RIGHT * 0.1, stroke_color="#c98f2e", stroke_width=4).rotate(a).shift(
-            mapa_fundo.get_center() + UP * 0.3 + LEFT * 0.35 + np.array([np.cos(a), np.sin(a), 0]) * 0.2)
-          for a in np.arange(0, TAU, TAU / 6)])
-    nuvem_desenho = VGroup(*[
-        Circle(radius=rr, stroke_color="#5a6a78", stroke_width=4, fill_opacity=0)
-        for rr in [0.14, 0.18, 0.14]
-    ])
-    nuvem_desenho[0].shift(LEFT * 0.18); nuvem_desenho[2].shift(RIGHT * 0.18)
-    nuvem_desenho.move_to(mapa_fundo.get_center() + DOWN * 0.15 + RIGHT * 0.3)
-    seta_desenho = Line(mapa_fundo.get_center() + LEFT * 0.55 + DOWN * 0.5,
-                        mapa_fundo.get_center() + RIGHT * 0.4 + DOWN * 0.35,
-                        stroke_color="#8a2f28", stroke_width=5)
-    fita = lambda p: Rectangle(width=0.22, height=0.12, fill_color="#e8e2d4", fill_opacity=0.75,
-                               stroke_width=0).rotate(PI / 4).move_to(p)
-    fitas = VGroup(fita(mapa_fundo.get_corner(UL)), fita(mapa_fundo.get_corner(UR)))
-    g.add(mapa_fundo, sol_desenho, nuvem_desenho, seta_desenho, fitas)
+    if cenario in ("sol", "frio"):
+        cor_sol = "#ffd34e" if cenario == "sol" else "#fff4c8"
+        halo = Circle(radius=0.95, fill_color=cor_sol, fill_opacity=0.22, stroke_width=0)
+        disco = Circle(radius=0.62, fill_color=cor_sol, fill_opacity=1,
+                       stroke_color="#e8a93a", stroke_width=5)
+        raios = VGroup(*[Line(RIGHT * 0.78, RIGHT * 1.08, stroke_color=cor_sol, stroke_width=7)
+                         .rotate(a, about_point=ORIGIN) for a in np.arange(0, TAU, TAU / 12)])
+        sol = VGroup(halo, raios, disco).move_to([2.05, y1 - 1.9, 0])
+        g.add(sol)
+        vivos["sol"] = raios
 
-    # luminária de mesa como refletor — luz dura, não ambiente
-    base_luz = [W / 2 - 1.3, -H / 2 + 2.0, 0]
-    haste = Line(base_luz, [base_luz[0] - 0.3, base_luz[1] + 1.8, 0], stroke_color="#3a3a3c", stroke_width=9)
-    cupula = Polygon(haste.get_end() + LEFT * 0.35, haste.get_end() + RIGHT * 0.35,
-                     haste.get_end() + DOWN * 0.35 + RIGHT * 0.18, haste.get_end() + DOWN * 0.35 + LEFT * 0.18,
-                     fill_color="#4a4a4c", fill_opacity=1, stroke_color=PT, stroke_width=6)
-    cone = Polygon(cupula.get_bottom() + LEFT * 0.15, cupula.get_bottom() + RIGHT * 0.15,
-                   cupula.get_bottom() + DOWN * 3.5 + RIGHT * 1.6, cupula.get_bottom() + DOWN * 3.5 + LEFT * 1.6,
-                   fill_color="#fff3c4", fill_opacity=0.22, stroke_width=0)
-    base = Rectangle(width=0.4, height=0.12, fill_color="#3a3a3c", fill_opacity=1, stroke_width=0).move_to(base_luz)
-    g.add(cone, haste, cupula, base)
+    cor_nuvem = {"sol": "#ffffff", "frio": "#f4f7fa", "nublado": "#eef1f4",
+                 "chuva": "#b7c1cb", "tempestade": "#6d7686"}[cenario] \
+        if cenario in ("sol", "frio", "nublado", "chuva", "tempestade") else "#ffffff"
+    n_nuvens = {"sol": 2, "frio": 2, "nublado": 4, "chuva": 5, "tempestade": 5}.get(cenario, 2)
+    posic = [(-2.2, y1 - 1.5, 0.95), (0.9, y1 - 2.6, 0.75), (-0.6, y1 - 0.9, 1.1),
+             (2.3, y1 - 1.2, 0.9), (-2.6, y1 - 3.0, 0.8)]
+    for k in range(n_nuvens):
+        x, y, e = posic[k]
+        n = _nuvem_telao(e, cor_nuvem, 0.95).move_to([x, y, 0])
+        g.add(n)
+        vivos["nuvens"].append((n, x, 0.18 + 0.07 * k, k))
 
-    piso_y = -H / 2 + 2.0
-    g.add(Rectangle(width=W + 2, height=2.0, fill_color="#4a4038", fill_opacity=1,
-                    stroke_width=0).move_to([0, piso_y - 1.0, 0]))
+    # a serra ao fundo (Mantiqueira) e os morros da frente
+    horizonte = y0 + 3.05
+    g.add(_serra([horizonte + v for v in (0.9, 1.6, 1.25, 2.05, 1.5, 1.85, 1.05, 1.55, 0.8)],
+                 x0, x1, y0, serra_fundo))
+    g.add(_serra([horizonte + v for v in (0.35, 0.75, 0.3, 0.55, 0.95, 0.45, 0.2, 0.6)],
+                 x0, x1, y0, serra_frente))
 
-    return dict(grupo=g, piso_y=piso_y)
+    # o Rio Paraíba do Sul atravessando o vale
+    rio = VMobject(fill_color="#6fb3d6" if cenario in ("sol", "frio") else "#7f98aa",
+                   fill_opacity=1, stroke_width=0)
+    ry = horizonte - 0.55
+    rio.set_points_smoothly([[x0, ry + 0.05, 0], [-1.6, ry - 0.22, 0], [0.4, ry + 0.12, 0],
+                             [2.2, ry - 0.15, 0], [x1, ry, 0], [x1, ry - 0.42, 0],
+                             [2.2, ry - 0.55, 0], [0.4, ry - 0.3, 0], [-1.6, ry - 0.62, 0],
+                             [x0, ry - 0.38, 0], [x0, ry + 0.05, 0]])
+    g.add(rio)
+    g.add(Rectangle(width=TELAO_W, height=ry - 0.45 - y0, fill_color="#3e5c4a", fill_opacity=1,
+                    stroke_width=0).move_to([0, (ry - 0.45 + y0) / 2, 0]))
+
+    # a usina: galpões e as chaminés listradas que o Sul Fluminense conhece
+    base_u = horizonte + 0.05
+    galpoes = VGroup(*[Rectangle(width=w, height=h, fill_color=c, fill_opacity=1,
+                                 stroke_color=PT, stroke_width=3)
+                       .move_to([x, base_u + h / 2, 0])
+                       for x, w, h, c in [(-2.55, 1.1, 0.55, "#7c6f69"), (-1.6, 0.8, 0.8, "#8b7d75"),
+                                          (-0.85, 0.7, 0.45, "#74685f")]])
+    chamines = VGroup(_chamine(-2.3, base_u, 2.0), _chamine(-1.85, base_u, 2.45),
+                      _chamine(-1.35, base_u, 1.75))
+    g.add(galpoes, chamines)
+    for k, ch in enumerate(chamines):
+        topo = ch[0].get_top()
+        for j in range(3):
+            p = Circle(radius=0.13 + 0.05 * j, fill_color="#e9e6e1", fill_opacity=0.75,
+                       stroke_width=0).move_to(topo + UP * (0.25 + 0.3 * j))
+            g.add(p)
+            vivos["fumaca"].append((p, topo.copy(), j, k))
+
+    # prédios da cidade, à direita do rio
+    for x, w, h in [(0.9, 0.5, 0.9), (1.45, 0.45, 1.35), (1.95, 0.55, 1.05),
+                    (2.5, 0.42, 1.6), (3.0, 0.5, 1.1)]:
+        pr = Rectangle(width=w, height=h, fill_color="#3a4a5c", fill_opacity=1,
+                       stroke_color=PT, stroke_width=3).move_to([x, base_u + h / 2 - 0.1, 0])
+        luzes = VGroup(*[Square(0.07, fill_color="#ffe08a", fill_opacity=0.9, stroke_width=0)
+                         .move_to([x + dx, base_u + dy, 0])
+                         for dx in (-w / 4, w / 4) for dy in np.arange(0.2, h - 0.2, 0.28)])
+        g.add(pr, luzes)
+
+    # tempo caindo DENTRO do telão
+    if cenario in ("chuva", "tempestade"):
+        rng = np.random.default_rng(11)
+        gotas = VGroup(*[Line(ORIGIN, DOWN * 0.34 + LEFT * 0.08, stroke_color="#dbe9f5",
+                              stroke_width=3, stroke_opacity=0.8)
+                         .move_to([rng.uniform(x0 + 0.2, x1 - 0.2), rng.uniform(y0 + 0.5, y1 - 0.4), 0])
+                         for _ in range(46)])
+        g.add(gotas)
+        vivos["chuva"] = (gotas, y0 + 0.5, y1 - 0.4)
+    if cenario == "frio":
+        g.add(*[Rectangle(width=TELAO_W, height=0.5, fill_color=WHITE, fill_opacity=0.18,
+                          stroke_width=0).move_to([0, horizonte + dy, 0]) for dy in (-0.2, 0.35)])
+
+    # moldura do telão e o "reflexo" de vidro
+    g.add(Rectangle(width=TELAO_W, height=TELAO_H, fill_opacity=0, stroke_color="#0a121d",
+                    stroke_width=14).move_to([0, TELAO_Y, 0]))
+    g.add(Polygon([x0 + 0.3, y1, 0], [x0 + 1.3, y1, 0], [x0 + 0.1, y1 - 2.2, 0], [x0, y1 - 2.2, 0],
+                  fill_color=WHITE, fill_opacity=0.07, stroke_width=0))
+
+    # ---- a bancada (vai NA FRENTE do personagem) ---------------------------
+    bancada = VGroup()
+    tampo = RoundedRectangle(width=W + 0.4, height=0.34, corner_radius=0.08,
+                             fill_color="#c9d3de", fill_opacity=1, stroke_color=PT,
+                             stroke_width=6).move_to([0, BANCADA_TOPO, 0])
+    frente = Polygon([-W / 2 - 0.2, BANCADA_TOPO - 0.15, 0], [W / 2 + 0.2, BANCADA_TOPO - 0.15, 0],
+                     [W / 2 + 0.2, -H / 2 - 1, 0], [-W / 2 - 0.2, -H / 2 - 1, 0],
+                     fill_color="#13243a", fill_opacity=1, stroke_width=0)
+    faixa = Rectangle(width=W + 0.4, height=0.16, fill_color="#d63a2f", fill_opacity=1,
+                      stroke_width=0).move_to([0, BANCADA_TOPO - 0.26, 0])
+    bancada.add(frente, faixa, tampo)
+
+    # AO VIVO + relógio, no canto da bancada (acima da área da interface do IG)
+    ponto = Dot(radius=0.075, color="#ff4d3d")
+    ao_vivo_txt = Text(vivo, font=FONTE, weight=BOLD, font_size=20, color=WHITE)
+    pilula_ao_vivo = VGroup(ponto, ao_vivo_txt).arrange(RIGHT, buff=0.1)
+    fundo_av = RoundedRectangle(width=pilula_ao_vivo.width + 0.3, height=0.36, corner_radius=0.18,
+                                fill_color="#d63a2f", fill_opacity=1, stroke_width=0)
+    pilula_ao_vivo.move_to(fundo_av)
+    relogio = Text(hora, font=FONTE, weight=BOLD, font_size=20, color="#13243a")
+    fundo_rel = RoundedRectangle(width=relogio.width + 0.3, height=0.36, corner_radius=0.18,
+                                 fill_color="#ffd34e", fill_opacity=1, stroke_width=0)
+    relogio.move_to(fundo_rel)
+    nome = Text(rotulo, font=FONTE, weight=BOLD, font_size=20, color=WHITE)
+    fundo_nome = RoundedRectangle(width=nome.width + 0.3, height=0.36, corner_radius=0.06,
+                                  fill_color="#13243a", fill_opacity=1, stroke_color=WHITE,
+                                  stroke_width=2)
+    nome.move_to(fundo_nome)
+    tarja = VGroup(VGroup(fundo_av, pilula_ao_vivo), VGroup(fundo_nome, nome),
+                   VGroup(fundo_rel, relogio)).arrange(RIGHT, buff=0.12)
+    vivos["luz"] = ponto
+
+    return dict(grupo=g, bancada=bancada, tarja=tarja, piso_y=BANCADA_TOPO - 1.2,
+                vivos=vivos, telao=(x0, x1, y0, y1))
+
+
+def animar_estudio(cen, duracao):
+    """Liga o movimento do telão. Todo período divide `duracao`: loop limpo."""
+    vivos = cen["vivos"]
+    def ciclos(periodo_desejado):
+        return max(1, round(duracao / periodo_desejado))
+
+    relog = {"t": 0.0}
+
+    def tique(mo, dt):
+        relog["t"] += dt
+    cen["grupo"].add_updater(tique)
+
+    for n, x, amp, k in vivos["nuvens"]:
+        c = ciclos(duracao)                # uma ida e volta por vídeo
+        base = n.get_center().copy()
+        def upd(mo, dt, base=base, amp=amp, k=k, c=c):
+            t = relog["t"]
+            mo.move_to(base + RIGHT * amp * 1.6 * np.sin(TAU * c * t / duracao + k))
+        n.add_updater(upd)
+
+    per_f = duracao / ciclos(2.4)
+    for p, topo, j, k in vivos["fumaca"]:
+        r0 = p.width / 2
+        def upd(mo, dt, topo=topo, j=j, k=k, r0=r0):
+            f = ((relog["t"] / per_f) + j / 3 + k * 0.21) % 1.0
+            mo.move_to(topo + UP * (0.2 + 1.0 * f) + RIGHT * 0.35 * f)
+            mo.set_fill(opacity=0.75 * (1 - f))
+            mo.scale_to_fit_width(2 * r0 * (1 + 0.9 * f))
+        p.add_updater(upd)
+
+    if vivos["chuva"] is not None:
+        gotas, ylo, yhi = vivos["chuva"]
+        alt = yhi - ylo
+        c = ciclos(0.9)
+        base = [m.get_center().copy() for m in gotas]
+        def upd(mo, dt):
+            desl = (relog["t"] * c / duracao) % 1.0 * alt
+            for m, b in zip(mo, base):
+                y = b[1] - desl
+                if y < ylo:
+                    y += alt
+                m.move_to([b[0] + (b[1] - y) * 0.235, y, 0])
+        gotas.add_updater(upd)
+
+    if vivos["sol"] is not None:
+        raios = vivos["sol"]
+        centro = raios.get_center().copy()
+        st = {"a": 0.0}
+        def upd(mo, dt):
+            alvo = TAU / 12 * (relog["t"] / duracao)   # gira um "dente" por vídeo
+            mo.rotate(alvo - st["a"], about_point=centro)
+            st["a"] = alvo
+        raios.add_updater(upd)
+
+    if vivos["luz"] is not None:
+        c = ciclos(1.1)
+        def upd(mo, dt):
+            on = np.cos(TAU * c * relog["t"] / duracao) > -0.2
+            mo.set_fill(opacity=1.0 if on else 0.15)
+        vivos["luz"].add_updater(upd)
 
 
 # =====================================================================
