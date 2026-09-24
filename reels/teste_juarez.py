@@ -308,6 +308,29 @@ publicam_reel = sorted(f for f in os.listdir(WF)
 # porque o numero passa a responder por dois formatos em vez de um.
 checar("so o juarez publica Reel por agendamento", publicam_reel, ["juarez.yml"])
 
+print("voz do Juarez = voz do Bira do Tempo (@previsaorj), desde 23/09/2026:")
+checar("voz", J.VOZ_BIRA, "pm_alex")
+checar("velocidade", J.SPEED_BIRA, 1.04)
+checar("gap", J.GAP_ENTRE_BATIDAS, 0.22)
+checar("cadeia de audio do Bira",
+       J.FILTRO_BIRA, "highpass=f=80,acompressor=threshold=-18dB:ratio=2:"
+                      "attack=8:release=180,volume=1.1")
+checar("telao chove quando a narracao fala de chuva",
+       J.cenario_telao(ALERTA), "chuva")
+checar("e fica no ceu da cidade da vez em dia seco", J.cenario_telao(COMUM), "sol")
+
+print("card das 18h (amanha), post de imagem:")
+import gerar_card_amanha as CA
+cap_c = CA.legenda(CA.DEMO)
+checar("a legenda diz amanha", "amanhã" in cap_c.casefold(), True)
+checar("a linha da chuva usa virgula", "6,4 mm" in cap_c, True)
+checar("dia seco nao inventa chuva",
+       CA.linha_chuva(COMUM["cidades"]), "Amanhã: sem chuva prevista.")
+checar("o card.yml tem um cron", len(crons_ativos("card_amanha.yml")), 1)
+checar("e nao publica Reel",
+       "postar_reel.py" in open(os.path.join(WF, "card_amanha.yml"), encoding="utf-8").read(),
+       False)
+
 print()
 if falhas:
     print("FALHOU:")
