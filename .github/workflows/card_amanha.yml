@@ -1,0 +1,152 @@
+name: Card das 18h — Amanha no Sul Flu (Juarez)
+
+# Post de IMAGEM (nao Reel) as 18:00 BRT com a previsao de AMANHA, no mesmo
+# visual do Reel v2 do Juarez (telao com a paisagem regional + bancada).
+# Criado em 23/09/2026: antecipa o dia seguinte e chama pro plantao das 6h.
+#
+# Nao publica Reel: o teste_juarez.py continua valendo ("so o juarez.yml
+# publica Reel por agendamento").
+#
+# PARA DESLIGAR: comente as duas linhas do schedule abaixo. O botao
+# "Run workflow" com "publicar" desmarcado gera o JPG como artifact sem postar.
+
+on:
+  schedule:
+    # dispara cedo e o job espera ate a hora certa (o cron do GitHub atrasa)
+    - cron: "0 19 * * *"      # 16:00 BRT; espera ate 21:00 UTC (18:00 BRT)
+  workflow_dispatch:
+    inputs:
+      publicar:
+        description: "Publicar no Instagram? (desmarcado = so gera o card como artifact)"
+        type: boolean
+        default: false
+
+# o passo do Release precisa de escrita (mesma licao do juarez.yml, 16/09)
+permissions:
+  contents: write
+
+jobs:
+  card:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    defaults:
+      run:
+        working-directory: reels
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache do pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('reels/requirements.txt') }}
+
+      - name: Dependencias de sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg libpango1.0-dev libcairo2-dev pkg-config
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+
+      - name: Dependencias Python
+        run: pip install -r requirements.txt
+
+      # Coleta perto da hora de publicar: a previsao de amanha mais fresca.
+      - name: Aguardar ate 17:40 BRT (preparo)
+        if: github.event_name == 'schedule'
+        working-directory: .
+        run: |
+          ALVO=$(date -u -d "today 20:40" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            echo "Aguardando $(( (ALVO-AGORA)/60 )) min ate o preparo."
+            sleep $((ALVO - AGORA))
+          fi
+
+      - name: Baixar a previsao de AMANHA (Open-Meteo)
+        run: python coletar_tempo.py --quando amanha --saida amanha.json
+
+      - name: Conferir a legenda (travas de coerencia)
+        run: python gerar_card_amanha.py --dados amanha.json --so-legenda --legenda-saida LEGENDA_CARD.txt
+
+      - name: Gerar o card
+        run: python gerar_card_amanha.py --dados amanha.json --saida CARD.jpg
+
+      - name: Guardar o card como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-amanha
+          path: |
+            reels/CARD.jpg
+            reels/LEGENDA_CARD.txt
+          retention-days: 7
+
+      - name: Aguardar o horario alvo (18:00 BRT)
+        if: github.event_name == 'schedule'
+        working-directory: .
+        run: |
+          ALVO=$(date -u -d "today 21:00" +%s)
+          AGORA=$(date -u +%s)
+          if [ "$AGORA" -lt "$ALVO" ]; then
+            echo "Card pronto. Aguardando $(( (ALVO-AGORA)/60 )) min ate 21:00 UTC (18:00 BRT)."
+            sleep $((ALVO - AGORA))
+          else
+            echo "Runner chegou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Seguindo."
+          fi
+
+      - name: Publicar o JPG num Release
+        id: upload
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="card-$(date +%Y-%m-%d)"
+          gh release create "$TAG" CARD.jpg --title "$TAG" --notes "Card automatico das 18h" || \
+            gh release upload "$TAG" CARD.jpg --clobber
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/CARD.jpg" >> $GITHUB_OUTPUT
+
+      - name: Postar o card
+        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: python gerar_card_amanha.py --dados amanha.json --publicar --url "${{ steps.upload.outputs.url }}"
+
+      - name: Apagar Releases de card com mais de 7 dias
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.publicar) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LIMITE=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh release list --limit 100 --json tagName,createdAt \
+            --jq ".[] | select(.createdAt < \"$LIMITE\") | select(.tagName | startswith(\"card-\")) | .tagName" \
+          | while read -r TAG; do
+              [ -z "$TAG" ] && continue
+              gh release delete "$TAG" --cleanup-tag --yes || true
+            done
+
+      - name: Avisar falha por e-mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[Previsao Sul Fluminense] FALHOU: card das 18h"
+          to: pablo.ramoa@gmail.com
+          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            O card das 18h (amanha no Sul Flu) falhou e NAO foi publicado.
+            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
