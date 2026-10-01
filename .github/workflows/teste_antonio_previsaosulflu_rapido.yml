@@ -1,0 +1,74 @@
+name: Teste rapido Antonio Previsao Sulflu
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/teste_antonio_previsaosulflu_rapido.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar TTS
+        run: pip install edge-tts==7.2.8
+      - name: Gerar voz Antonio por card
+        run: |
+          mkdir -p teste_sulflu/voz teste_sulflu/video
+          python - <<'PY'
+          import asyncio
+          from pathlib import Path
+          import edge_tts
+          falas = [
+              'Previsao do tempo para o Sul Fluminense. Vamos conferir rapidamente como fica o tempo na regiao.',
+              'Resumo do dia. Aqui voce confere os principais indices e destaques da previsao.',
+              'Volta Redonda. Temperaturas, chance de chuva, vento e umidade estao na tela.',
+              'Barra Mansa. Confira agora os principais dados da previsao para a cidade.',
+              'Resende. Veja na tela as temperaturas e as condicoes previstas para o dia.',
+              'Porto Real. Esta e a previsao do tempo para hoje na cidade.',
+              'Angra dos Reis. Fechando o giro, confira os dados previstos para o litoral sul fluminense.'
+          ]
+          async def main():
+              for i,t in enumerate(falas):
+                  await edge_tts.Communicate(t, voice='pt-BR-AntonioNeural', rate='-6%').save(f'teste_sulflu/voz/{i:02d}.mp3')
+          asyncio.run(main())
+          PY
+      - name: Montar MP4 com os cards reais do pipeline
+        shell: bash
+        run: |
+          set -e
+          imgs=(
+            assets/output/card_manha_01_capa.jpg
+            assets/output/card_manha_02_resumo_do_dia.jpg
+            assets/output/card_manha_03_volta_redonda.jpg
+            assets/output/card_manha_04_barra_mansa.jpg
+            assets/output/card_manha_05_resende.jpg
+            assets/output/card_manha_06_porto_real.jpg
+            assets/output/card_manha_07_angra_dos_reis.jpg
+          )
+          for i in 0 1 2 3 4 5 6; do
+            idx=$(printf '%02d' "$i")
+            dur=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "teste_sulflu/voz/$idx.mp3")
+            ffmpeg -y -loglevel error -loop 1 -i "${imgs[$i]}" -i "teste_sulflu/voz/$idx.mp3" \
+              -t "$dur" \
+              -vf "scale=1080:1350,pad=1080:1920:0:285:color=#102b46,format=yuv420p" \
+              -r 30 -c:v libx264 -preset veryfast -c:a aac -b:a 128k -shortest \
+              "teste_sulflu/video/$idx.mp4"
+          done
+          cd teste_sulflu/video
+          printf "file '00.mp4'\nfile '01.mp4'\nfile '02.mp4'\nfile '03.mp4'\nfile '04.mp4'\nfile '05.mp4'\nfile '06.mp4'\n" > lista.txt
+          ffmpeg -y -loglevel error -f concat -safe 0 -i lista.txt -c copy ../previsaosulflu_antonio_teste.mp4
+          cd ../..
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 teste_sulflu/previsaosulflu_antonio_teste.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previsaosulflu-antonio-teste-rapido
+          path: teste_sulflu/previsaosulflu_antonio_teste.mp4
+          retention-days: 7
