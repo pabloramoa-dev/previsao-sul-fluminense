@@ -17,14 +17,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Instalar TTS
-        run: pip install edge-tts==7.2.8
+      - name: Instalar ffmpeg e TTS
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ffmpeg
+          pip install edge-tts==7.2.8
       - name: Gerar voz Antonio por card
         run: |
           mkdir -p teste_sulflu/voz teste_sulflu/video
           python - <<'PY'
           import asyncio
-          from pathlib import Path
           import edge_tts
           falas = [
               'Previsao do tempo para o Sul Fluminense. Vamos conferir rapidamente como fica o tempo na regiao.',
