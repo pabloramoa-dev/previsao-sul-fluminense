@@ -1,0 +1,131 @@
+name: Teste Antonio no Seu Ranzinza
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/teste_antonio_ranzinza.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependências
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ffmpeg libcairo2-dev libpango1.0-dev pkg-config fonts-dejavu-core
+          mkdir -p ~/.fonts
+          curl -sSL -o ~/.fonts/Poppins-Regular.ttf https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-Regular.ttf
+          curl -sSL -o ~/.fonts/Poppins-Bold.ttf https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-Bold.ttf
+          fc-cache -f
+          pip install manim==0.20.1 edge-tts==7.2.8 numpy
+      - name: Gerar Antonio Neural
+        run: |
+          mkdir -p teste_antonio
+          python - <<'PY'
+          import asyncio, edge_tts
+          texto = ('Bom dia, criaturas. Hoje é só um teste de voz. '
+                   'Troquei a narração pra ver se vocês param de dizer que eu pareço um rádio velho. '
+                   'E aí: essa voz combina comigo, ou ficou educada demais?')
+          asyncio.run(edge_tts.Communicate(
+              texto, voice='pt-BR-AntonioNeural', rate='-6%'
+          ).save('teste_antonio/antonio.mp3'))
+          PY
+          ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 teste_antonio/antonio.mp3 > teste_antonio/duracao.txt
+      - name: Criar cena de teste
+        run: |
+          cat > teste_antonio/cena.py <<'PY'
+          from manim import *
+          import os, sys, math
+          sys.path.insert(0, os.path.abspath('reels'))
+          import previsao_lib as P
+          import dvh_lib as L
+
+          config.frame_width = 8.0
+          config.frame_height = 14.222
+          config.pixel_width = 540
+          config.pixel_height = 960
+          config.frame_rate = 30
+          DUR = float(open('teste_antonio/duracao.txt').read().strip())
+
+          class TesteAntonio(Scene):
+              def construct(self):
+                  # Visual oficial do Previsão Sul Fluminense, sem tocar na produção.
+                  cen = P.varanda('nublado')
+                  self.add(cen['grupo'])
+
+                  ator = P.ranzinza('resmungando')
+                  ator['grupo'].scale(1.08).shift(DOWN * 1.55)
+                  self.add(ator['grupo'])
+                  L.respirar(ator['grupo'], amp=0.035, periodo=2.4)
+
+                  # Boca simples sincronizada por energia simulada para o preview.
+                  centro = ator['boca'].get_center()
+                  ator['boca'].set_opacity(0)
+                  boca = Ellipse(width=0.34, height=0.08, fill_color=BLACK,
+                                 fill_opacity=1, stroke_width=0).move_to(centro)
+                  self.add(boca)
+                  relogio = Dot(radius=0.001).set_opacity(0)
+                  estado = {'t': 0.0}
+                  def motor(m, dt):
+                      estado['t'] += dt
+                  relogio.add_updater(motor)
+                  self.add(relogio)
+                  base = boca.copy()
+                  def mexer(m):
+                      t = estado['t']
+                      # variação natural curta, evitando boca estática durante a fala
+                      h = 0.09 + 0.11 * abs(math.sin(t * 10.5)) * (0.75 + 0.25*abs(math.sin(t*3.2)))
+                      novo = Ellipse(width=0.36, height=h, fill_color=BLACK,
+                                     fill_opacity=1, stroke_width=0).move_to(base.get_center())
+                      m.become(novo)
+                  boca.add_updater(mexer)
+
+                  topo = RoundedRectangle(width=6.4, height=1.0, corner_radius=0.18,
+                          fill_color=BLACK, fill_opacity=0.76, stroke_color=P.AMAR, stroke_width=4)
+                  titulo = Text('TESTE DE VOZ · NÃO PUBLICAR', font=L.FONTE,
+                               weight=BOLD, font_size=29, color=WHITE)
+                  titulo.move_to(topo)
+                  cab = VGroup(topo, titulo).to_edge(UP, buff=0.45)
+                  self.add(cab)
+
+                  selo = Text('ANTONIO NEURAL', font=L.FONTE, weight=BOLD,
+                              font_size=34, color=BLACK)
+                  faixa = RoundedRectangle(width=4.5, height=0.75, corner_radius=0.16,
+                           fill_color=P.AMAR, fill_opacity=1, stroke_color=BLACK, stroke_width=3)
+                  selo.move_to(faixa)
+                  self.add(VGroup(faixa, selo).shift(UP * 3.85))
+
+                  legenda = Text('“Essa voz combina comigo?”', font=L.FONTE,
+                                 weight=BOLD, font_size=36, color=WHITE)
+                  band = RoundedRectangle(width=6.5, height=1.15, corner_radius=0.18,
+                         fill_color=BLACK, fill_opacity=0.72, stroke_width=0)
+                  legenda.move_to(band)
+                  self.add(VGroup(band, legenda).shift(DOWN * 4.45))
+
+                  self.add_sound(os.path.abspath('teste_antonio/antonio.mp3'))
+                  self.wait(DUR + 0.25)
+          PY
+      - name: Renderizar MP4
+        run: |
+          manim -ql --disable_caching --media_dir teste_antonio/media -o teste_antonio_ranzinza teste_antonio/cena.py TesteAntonio
+          MP4=$(find teste_antonio/media -type f -name 'teste_antonio_ranzinza.mp4' | head -1)
+          test -n "$MP4"
+          cp "$MP4" teste_antonio/teste_antonio_ranzinza.mp4
+          ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 teste_antonio/teste_antonio_ranzinza.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: teste-antonio-ranzinza
+          path: |
+            teste_antonio/teste_antonio_ranzinza.mp4
+            teste_antonio/antonio.mp3
+          retention-days: 7
+          if-no-files-found: error
