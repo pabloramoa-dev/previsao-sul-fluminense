@@ -9,6 +9,7 @@ runs:
         cache: npm
         cache-dependency-path: video/package-lock.json
     - shell: bash
+      working-directory: ${{ github.workspace }}
       run: npm ci --prefix video
       env:
         HYPERFRAMES_NO_TELEMETRY: '1'
@@ -18,7 +19,7 @@ runs:
         path: ~/.cache/hyperframes/chrome
         key: ${{ runner.os }}-${{ runner.arch }}-hyperframes-0.8.96
     - shell: bash
-      working-directory: video
+      working-directory: ${{ github.workspace }}/video
       run: npx --no-install hyperframes browser ensure
       env:
         HYPERFRAMES_NO_TELEMETRY: '1'
