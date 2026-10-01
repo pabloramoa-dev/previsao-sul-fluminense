@@ -22,24 +22,30 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y ffmpeg
           pip install edge-tts==7.2.8
-      - name: Gerar voz Antonio por card
+      - name: Gerar voz Antonio mais animada por card
         run: |
           mkdir -p teste_sulflu/voz teste_sulflu/video
           python - <<'PY'
           import asyncio
           import edge_tts
           falas = [
-              'Previsao do tempo para o Sul Fluminense. Vamos conferir rapidamente como fica o tempo na regiao.',
-              'Resumo do dia. Aqui voce confere os principais indices e destaques da previsao.',
-              'Volta Redonda. Temperaturas, chance de chuva, vento e umidade estao na tela.',
-              'Barra Mansa. Confira agora os principais dados da previsao para a cidade.',
-              'Resende. Veja na tela as temperaturas e as condicoes previstas para o dia.',
-              'Porto Real. Esta e a previsao do tempo para hoje na cidade.',
-              'Angra dos Reis. Fechando o giro, confira os dados previstos para o litoral sul fluminense.'
+              'Previsao do tempo para o Sul Fluminense! Vamos conferir rapidamente como fica o tempo na regiao.',
+              'Resumo do dia! Aqui voce confere os principais indices e destaques da previsao.',
+              'Volta Redonda! Temperaturas, chance de chuva, vento e umidade estao na tela.',
+              'Barra Mansa! Confira agora os principais dados da previsao para a cidade.',
+              'Resende! Veja na tela as temperaturas e as condicoes previstas para o dia.',
+              'Porto Real! Esta e a previsao do tempo para hoje na cidade.',
+              'Angra dos Reis! Fechando o giro, confira os dados previstos para o litoral sul fluminense.'
           ]
           async def main():
               for i,t in enumerate(falas):
-                  await edge_tts.Communicate(t, voice='pt-BR-AntonioNeural', rate='-6%').save(f'teste_sulflu/voz/{i:02d}.mp3')
+                  await edge_tts.Communicate(
+                      t,
+                      voice='pt-BR-AntonioNeural',
+                      rate='+4%',
+                      pitch='+4Hz',
+                      volume='+4%'
+                  ).save(f'teste_sulflu/voz/{i:02d}.mp3')
           asyncio.run(main())
           PY
       - name: Montar MP4 com os cards reais do pipeline
@@ -66,11 +72,11 @@ jobs:
           done
           cd teste_sulflu/video
           printf "file '00.mp4'\nfile '01.mp4'\nfile '02.mp4'\nfile '03.mp4'\nfile '04.mp4'\nfile '05.mp4'\nfile '06.mp4'\n" > lista.txt
-          ffmpeg -y -loglevel error -f concat -safe 0 -i lista.txt -c copy ../previsaosulflu_antonio_teste.mp4
+          ffmpeg -y -loglevel error -f concat -safe 0 -i lista.txt -c copy ../previsaosulflu_antonio_animado.mp4
           cd ../..
-          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 teste_sulflu/previsaosulflu_antonio_teste.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 teste_sulflu/previsaosulflu_antonio_animado.mp4
       - uses: actions/upload-artifact@v4
         with:
-          name: previsaosulflu-antonio-teste-rapido
-          path: teste_sulflu/previsaosulflu_antonio_teste.mp4
+          name: previsaosulflu-antonio-animado
+          path: teste_sulflu/previsaosulflu_antonio_animado.mp4
           retention-days: 7
