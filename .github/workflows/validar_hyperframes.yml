@@ -1,7 +1,7 @@
 name: Validar HyperFrames Sul Fluminense
 on:
   push:
-    branches: [hyperframes-sulflu]
+    branches: [hyperframes-impacto]
   workflow_dispatch:
 permissions:
   contents: read
@@ -9,6 +9,12 @@ jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      PREVISAO_TTS: edge
+      PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
+      PREVISAO_EDGE_RATE: '+10%'
+      PREVISAO_EDGE_PITCH: '+6Hz'
+      PREVISAO_EDGE_VOLUME: '+6%' 
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hyperframes
@@ -22,11 +28,11 @@ jobs:
           pip install -r reels/requirements.txt
       - name: Render real com dados demonstrativos sem publicação
         working-directory: reels
-        run: python gerar_juarez.py --demo --saida TESTE_HYPERFRAMES.mp4
+        run: python ../hyperframes/gerar_hf.py --demo --render TESTE_HYPERFRAMES.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: previsaosulflu-hyperframes-teste
           path: |
             reels/TESTE_HYPERFRAMES.mp4
-            reels/TESTE_HYPERFRAMES.render.json
+            hyperframes/build/pacote.json
           if-no-files-found: error

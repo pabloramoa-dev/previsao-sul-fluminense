@@ -106,7 +106,7 @@ jobs:
         run: python gerar_juarez.py --dados dia.json --so-roteiro
 
       - name: Gerar o Reel (Juarez Plantao — Antonio Neural)
-        run: python gerar_juarez.py --dados dia.json --saida REEL.mp4 --quality m
+        run: python ../hyperframes/gerar_hf.py --dados dia.json --render REEL.mp4
 
       - name: Medir a duracao do video
         run: |
