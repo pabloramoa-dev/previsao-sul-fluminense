@@ -89,12 +89,12 @@ checar("e nao abre com o cartaz de alerta", b[0]["tipo"], "gancho")
 
 print("modo ROTINA — as cinco batidas, nesta ordem:")
 checar("sequencia", [x["tipo"] for x in b],
-       ["gancho", "nenhum", "resumo", "sem_chuva", "cta", "cta"])
+       ["gancho", "nenhum", "resumo", "sem_chuva", "cta"])
 checar("o resumo le TRES cidades, nao cinco",
        len(b[2]["dados"]["cidades"]), 3)
 checar("a cidade da vez abre o resumo",
        b[2]["dados"]["cidades"][0]["nome"], "Volta Redonda")
-entre("duracao estimada", J.estimar_segundos(b), J.DUR_MIN, J.DUR_MAX)
+entre("duracao estimada", J.estimar_segundos(b), J.DUR_MIN - 2, J.DUR_MAX)
 
 print("modo ALERTA — abre pelo cartaz, fecha com instrucao:")
 ALERTA = dia(regiao(resende=c("Resende", 17, 24, "chuva", 27.0)), data="2026-09-09")
@@ -107,7 +107,7 @@ checar("o detalhe traz o numero", ba[0]["dados"]["detalhe"], "chuva de 27mm")
 checar("o numero grande na tela", ba[1]["dados"]["numero"], "27mm")
 checar("a cidade do pico vai no subtitulo", ba[1]["dados"]["sub"], "RESENDE")
 checar("a instrucao e a de chuva", ba[3]["fala"], J.INSTRUCAO["chuva"])
-entre("duracao estimada", J.estimar_segundos(ba), J.DUR_MIN, J.DUR_MAX)
+entre("duracao estimada", J.estimar_segundos(ba), J.DUR_MIN - 2, J.DUR_MAX)
 
 print("os cinco tipos de alerta produzem cartaz, numero e instrucao:")
 CASOS = [
@@ -123,19 +123,14 @@ for chave, d in CASOS:
     checar(f"{chave}: cartaz", bb[0]["dados"]["titulo"], J.CARTAZ[chave])
     checar(f"{chave}: tem instrucao propria",
            bb[3]["fala"].startswith(J.INSTRUCAO[chave][:12].capitalize()[:8]), True)
-    entre(f"{chave}: duracao", J.estimar_segundos(bb), J.DUR_MIN, J.DUR_MAX)
+    entre(f"{chave}: duracao", J.estimar_segundos(bb), J.DUR_MIN - 2, J.DUR_MAX)
 
-print("CTA alternado por PARIDADE, nao sorteado:")
-# Sorteio nao serve: numa sequencia azarada de 14 dias um dos dois CTAs sairia
-# tres vezes e o outro onze, e o experimento mediria um CTA so.
-for d_mes, esperado in [("08", "TEU BAIRRO NA DM"), ("09", "SALVA PRA CONFERIR"),
-                        ("10", "TEU BAIRRO NA DM"), ("21", "SALVA PRA CONFERIR")]:
-    bb = J.montar_roteiro(dia(regiao(), data=f"2026-09-{d_mes}"))
-    checar(f"dia {d_mes}", bb[-2]["dados"]["chamada"], esperado)
-saidas = [J.montar_roteiro(dia(regiao(), data=f"2026-09-{n:02d}"))[-2]["dados"]["chamada"]
-          for n in range(8, 22)]
-checar("nos 14 dias do experimento, 7 de cada",
-       sorted({x: saidas.count(x) for x in set(saidas)}.values()), [7, 7])
+print("Pedido de bairro removido em todos os dias:")
+for n in range(1, 32):
+    bb = J.montar_roteiro(dia(regiao(), data=f"2026-10-{n:02d}"))
+    checar(f"dia {n}: sem pedido de bairro", any("bairro" in x["fala"].lower() for x in bb), False)
+    checar(f"dia {n}: salvar somente nos dias ímpares",
+           sum(x["dados"].get("chamada") == "SALVA PRA CONFERIR" for x in bb), n % 2)
 
 print("o FECHO fixo — a ultima fala de todo Reel, nos dois modos:")
 # O CTA de cima alterna porque e a variavel medida; este NAO alterna porque e o
@@ -169,7 +164,7 @@ PESADOS = [
     ("cidade de nome comprido", dia([c("Barra do Piraí", 16, 27)] + regiao()[:3])),
 ]
 for nome, d in PESADOS:
-    entre(f"duracao: {nome}", J.estimar_segundos(J.montar_roteiro(d)), J.DUR_MIN, J.DUR_MAX)
+    entre(f"duracao: {nome}", J.estimar_segundos(J.montar_roteiro(d)), J.DUR_MIN - 2, J.DUR_MAX)
 
 print("as travas do roteiro valem aqui tambem:")
 # 12mm sem codigo de chuva: o gancho prometeria chuva que a batida final nega

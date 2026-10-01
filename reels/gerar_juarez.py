@@ -158,8 +158,7 @@ CARTAZ = {
 # CTA ALTERNADO POR PARIDADE DO DIA (plano v3). Não é sorteio: alternar por
 # paridade garante que os dois CTAs saem o mesmo número de vezes nos 14 dias do
 # experimento. Com sorteio, uma sequência azarada mediria um CTA só.
-CTA_PAR = ("Teu bairro, na mensagem.",
-           "TEU BAIRRO NA DM", "manda o nome e recebe a previsão do teu canto")
+CTA_PAR = None  # Pedido de bairro removido por solicitação do usuário.
 CTA_IMPAR = ("Salva aí, pra conferir depois.",
              "SALVA PRA CONFERIR", "o dia inteiro cabe em vinte segundos")
 
@@ -265,8 +264,10 @@ def montar_roteiro(dados):
             tipo="chuva", cidade=pico)
 
     # --- 5. CTA, alternado por paridade --------------------------------
-    fala_cta, chamada, sub = cta_do_dia(dados.get("data"))
-    add(fala_cta, chamada, tipo="cta", chamada=chamada, sub=sub)
+    cta = cta_do_dia(dados.get("data"))
+    if cta is not None:
+        fala_cta, chamada, sub = cta
+        add(fala_cta, chamada, tipo="cta", chamada=chamada, sub=sub)
 
     # --- 6. O FECHO: a última coisa dita, todo dia, nos dois modos --------
     fala_f, chamada_f, sub_f = FECHO_CANAL

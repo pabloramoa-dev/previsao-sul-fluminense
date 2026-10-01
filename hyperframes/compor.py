@@ -294,7 +294,7 @@ def cena_cta(p, cena, bat):
   <div class="cta-aviao"><svg viewBox="0 0 120 120" width="150" height="150"><path d="M10 58 L110 12 L78 108 L58 70 Z" fill="#ffffff" stroke="{PT}" stroke-width="6" stroke-linejoin="round"/><path d="M58 70 L110 12" stroke="{PT}" stroke-width="6"/></svg></div>
   <div class="cta-chamada">{esc(c1.get("chamada", b[0]["legenda"]))}</div>
   <div class="cta-sub">{esc(c1.get("sub", ""))}</div>
-  <div class="cta-bolha"><span>Aterrado, VR?</span></div>
+  <div class="cta-bolha"><span>@previsaosulflu</span></div>
  </div>
 </div>'''
 
@@ -317,7 +317,7 @@ FAB = {"abertura": cena_abertura, "quadro": cena_quadro, "chuva": cena_chuva,
 def ticker(p):
     itens = " &#9679; ".join(
         f'{esc(c["nome"].upper())} <b>{c["min"]}°/{c["max"]}°</b>' for c in p["cidades"])
-    itens += " &#9679; SIGA @PREVISAOSULFLU &#9679; MANDA TEU BAIRRO NA DM"
+    itens += " &#9679; SIGA @PREVISAOSULFLU"
     return f'<div class="tk-faixa"><div class="tk-rot">SUL FLU</div><div class="tk-janela"><div id="tk-trilho">{itens} &#9679; {itens}</div></div></div>'
 
 
