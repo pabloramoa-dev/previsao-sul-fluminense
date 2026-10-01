@@ -1,0 +1,32 @@
+name: Validar HyperFrames Sul Fluminense
+on:
+  push:
+    branches: [hyperframes-sulflu]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-hyperframes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependências
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config fonts-dejavu-core
+          pip install -r reels/requirements.txt
+      - name: Render real com dados demonstrativos sem publicação
+        working-directory: reels
+        run: python gerar_juarez.py --demo --saida TESTE_HYPERFRAMES.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previsaosulflu-hyperframes-teste
+          path: |
+            reels/TESTE_HYPERFRAMES.mp4
+            reels/TESTE_HYPERFRAMES.render.json
+          if-no-files-found: error

@@ -255,3 +255,17 @@ Três decisões:
 
 O cartaz sai de cena nos últimos 0.3s, junto com todo o resto, pro frame limpo
 que fecha o loop.
+
+### Composição HyperFrames (padrão)
+
+O motor compartilhado `produzir()` finaliza os vídeos com HyperFrames 0.8.96.
+Manim mantém os personagens, mapas, painéis, gestos, lip sync e câmera; HyperFrames
+adiciona legendas destacadas, transições leves, progresso, trilha instrumental
+sintetizada e efeitos de passagem. Gancho, resumo e CTA preservam seus painéis.
+As vozes, dados, cron e publicação permanecem sob as configurações existentes.
+
+Preparação: `npm ci --prefix video` e, em `video`, `npx --no-install hyperframes browser ensure`.
+Os workflows de vídeo instalam essas dependências pela action local.
+O MP4 só substitui o destino após validação de áudio, duração, 1080x1920 e 30 fps.
+Para reversão explícita: `PREVISAO_RENDERER=manim`; falhas do HyperFrames abortam
+sem publicar silenciosamente um vídeo de outro motor.

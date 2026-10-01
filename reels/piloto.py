@@ -459,7 +459,8 @@ class Piloto(MovingCameraScene):
                                                  fs=48, larg=P.SEGURA - 0.6)
             else:
                 legs += P.legenda_karaoke(b["legenda"], ini, fim, y=y_leg, fs=48)
-        self.add(P.trilha_temporal(legs, pop=0.10))
+        if os.environ.get("PREVISAO_HF_CAPTIONS") != "1":
+            self.add(P.trilha_temporal(legs, pop=0.10))
 
         # ---------------- névoa nas batidas marcadas ----------------
         jn = [(SEGS[i]["ini"], SEGS[i]["fim"]) for i, b in enumerate(BATIDAS)
