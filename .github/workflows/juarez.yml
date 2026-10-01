@@ -3,28 +3,16 @@ name: Reel diario — Juarez Plantao (06h)
 # O UNICO Reel do dia, no ar desde 2026-09-06 (plano v3).
 #
 # Substitui os dois do ranzinza.yml — Seu Ranzinza as 06h10 e Dona Maria as
-# 18h00 —, cujos crons ficaram comentados na mesma mudanca. O experimento de 14
-# dias (08/09 a 21/09, decisao em 22/09) mede o skip rate de UM Reel por dia
-# contra a linha de base de 04/09; com tres Reels no ar o numero medido nao
-# responderia pela mudanca de formato.
-#
-# PARA VOLTAR ATRAS depois de 22/09: comente o cron daqui e descomente os dois
-# do ranzinza.yml. Nenhum codigo foi apagado — gerar_dia.py e gerar_tarde.py
-# continuam inteiros e testados.
+# 18h00 —, cujos crons ficaram comentados na mesma mudanca. O plano v3 mede o
+# skip rate de UM Reel por dia contra a linha de base anterior.
 #
 # O modo do Reel (rotina ou alerta) NAO se decide aqui: quem decide e o
 # modo_do_dia() do limiares.py, lendo o dia.json que o passo anterior baixou.
-
-# >>> NO AR. Ligado em 05/09/2026, primeira publicacao automatica em 06/09. <<<
 #
-# A partir daqui o perfil publica sozinho, todo dia as 06:00 BRT, e este e o
-# UNICO Reel: ranzinza.yml e monitor_alertas.yml estao com os crons comentados,
-# e o teste do repositorio trava isso.
-#
-# PARA DESLIGAR: comente as quatro linhas do schedule abaixo (e afrouxe o
-# "exatamente um cron" do teste_juarez.py, que passa a falhar). O botao
-# "Run workflow" continua funcionando com "publicar" desmarcado, que gera o MP4
-# como artifact sem postar nada.
+# VOZ APROVADA EM 30/09/2026:
+# Antonio Neural (pt-BR-AntonioNeural), rate +10%, pitch +6Hz, volume +6%.
+# Esse preset vale SOMENTE para o Juarez / boletim principal do Previsao Sulflu.
+# Ranzinza e Dona Maria continuam com seus motores/vozes separados.
 
 on:
   schedule:
@@ -38,10 +26,6 @@ on:
         type: boolean
         default: false
 
-# Escrita no repositório: o passo "Publicar o MP4 num Release" cria um
-# Release, e o token padrão do Actions só lê. Sem isto, de 11/09 a 16/09/2026
-# todo Reel foi gerado e morreu em "HTTP 403: Resource not accessible by
-# integration" — nenhum chegou ao Instagram.
 permissions:
   contents: write
 
@@ -54,9 +38,16 @@ jobs:
         working-directory: reels
     env:
       # Visual do Reel: colagem de papel (vox) por padrão, desde 16/09/2026.
-      # Para voltar ao visual anterior sem editar arquivo, crie a variable
-      # PREVISAO_ESTILO=classico em Settings > Variables.
       PREVISAO_ESTILO: ${{ vars.PREVISAO_ESTILO || 'vox' }}
+
+      # Voz oficial do boletim principal — Antonio Neural, sem chave de API.
+      # O gerar_voz_kokoro.py mantém o mesmo contrato de WAV + segs.json, mas
+      # troca de backend apenas neste job quando PREVISAO_TTS=edge.
+      PREVISAO_TTS: edge
+      PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
+      PREVISAO_EDGE_RATE: '+10%'
+      PREVISAO_EDGE_PITCH: '+6Hz'
+      PREVISAO_EDGE_VOLUME: '+6%'
 
     steps:
       - name: Aguardar o horario alvo (06:00 BRT)
@@ -78,6 +69,8 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Mantido porque os outros geradores do repositorio continuam usando
+      # Kokoro e compartilham requirements. O Juarez, neste job, usa Edge.
       - name: Cache do modelo Kokoro (~350MB)
         uses: actions/cache@v4
         with:
@@ -108,24 +101,18 @@ jobs:
       - name: Baixar previsao do Open-Meteo
         run: python coletar_tempo.py --saida dia.json
 
-      # Roda ANTES de gastar os ~4 minutos de Kokoro e render. Imprime o
-      # roteiro, o modo do dia e a duracao estimada no log — e as travas de
-      # coerencia (conferir_manchete, conferir_gancho) abortam aqui se o
-      # roteiro prometer o que o dado nao sustenta.
       - name: Conferir o roteiro e o modo do dia
         run: python gerar_juarez.py --dados dia.json --so-roteiro
 
-      - name: Gerar o Reel (Juarez Plantao)
+      - name: Gerar o Reel (Juarez Plantao — Antonio Neural)
         run: python gerar_juarez.py --dados dia.json --saida REEL.mp4 --quality m
 
-      # A duracao real, medida no MP4 — nao a estimativa do roteiro. E por este
-      # numero que se calibra o PALAVRAS_POR_SEGUNDO do gerar_juarez.py.
       - name: Medir a duracao do video
         run: |
           DUR=$(ffprobe -v error -show_entries format=duration \
                 -of default=noprint_wrappers=1:nokey=1 REEL.mp4)
           echo "duracao real: ${DUR}s (alvo do plano v3: 18-22s)"
-          echo "### Reel do Juarez — ${DUR}s" >> $GITHUB_STEP_SUMMARY
+          echo "### Reel do Juarez — ${DUR}s — Antonio Neural +10%" >> $GITHUB_STEP_SUMMARY
 
       - name: Guardar o video como artifact
         if: always()
@@ -170,7 +157,6 @@ jobs:
           from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
           body: |
             O Reel das 06h (Juarez Plantao) falhou e NAO foi publicado.
-            Durante o experimento de 14 dias, este e o unico Reel do dia:
-            uma falha aqui e um dia sem post.
+            Este e o unico Reel diario principal do perfil.
 
             Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
