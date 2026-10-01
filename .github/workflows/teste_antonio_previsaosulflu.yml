@@ -1,0 +1,128 @@
+name: Teste Antonio no Previsao Sulflu
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/teste_antonio_previsaosulflu.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dependencias do pipeline e TTS
+        run: |
+          pip install -r requirements.txt
+          pip install edge-tts==7.2.8
+          python -m playwright install --with-deps chromium
+
+      - name: Gerar cards reais do Previsao Sulflu
+        run: |
+          mkdir -p teste_antonio/voz teste_antonio/video
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from src import clima, indices, perguntas, gerar_carrossel as gc, historico
+          try:
+              from src import astronomia
+              fase = astronomia.fase_da_lua().get('nome', 'indisponivel')
+          except Exception:
+              fase = 'indisponivel'
+
+          cidades = clima.coletar_todas()
+          resumo = clima.resumo_regional(cidades)
+          umidade_media = sum(c.umidade for c in cidades) / len(cidades)
+          aqi_regional = max(c.aqi for c in cidades)
+          itens = indices.resumo_indices(resumo, umidade_media, aqi_regional)
+          pergunta = perguntas.escolher_pergunta(resumo['tmax'], resumo['weathercode_pred'])
+          recorde = historico.checar_recorde(cidades[0].nome, cidades[0].tmin, cidades[0].tmax)
+          slides = gc.gerar_carrossel_manha(cidades, resumo, itens, pergunta, fase, recorde)
+
+          # Episodio curto: capa + resumo + cinco cidades.
+          slides = slides[:7]
+          cond_map = {
+              0:'ceu limpo',1:'predominio de sol',2:'sol entre nuvens',3:'tempo nublado',
+              45:'neblina',48:'neblina',51:'garoa',53:'garoa',55:'garoa',
+              61:'chuva',63:'chuva',65:'chuva forte',80:'pancadas de chuva',81:'pancadas de chuva',
+              82:'pancadas fortes',95:'tempestade',96:'tempestade',99:'tempestade'
+          }
+          falas = [
+              f"Previsao do tempo para o Sul Fluminense. Hoje, as temperaturas na regiao ficam entre {resumo['tmin']:.0f} e {resumo['tmax']:.0f} graus.",
+              f"No panorama regional, a maior chance de chuva chega a {resumo['prob_chuva']:.0f} por cento. Agora, vamos cidade por cidade."
+          ]
+          for c in cidades[:5]:
+              cond = cond_map.get(c.weathercode, 'tempo variavel')
+              falas.append(
+                  f"{c.nome}: {cond}, minima de {c.tmin:.0f} e maxima de {c.tmax:.0f} graus, com {c.prob_chuva:.0f} por cento de chance de chuva."
+              )
+
+          out = Path('teste_antonio')
+          (out/'manifest.json').write_text(json.dumps({'slides': slides, 'falas': falas}, ensure_ascii=False, indent=2), encoding='utf-8')
+          print('SLIDES:')
+          for s in slides: print(s)
+          print('FALAS:')
+          for f in falas: print(f)
+          PY
+
+      - name: Gerar narracao Antonio Neural por slide
+        run: |
+          python - <<'PY'
+          import asyncio, json
+          from pathlib import Path
+          import edge_tts
+          d=json.loads(Path('teste_antonio/manifest.json').read_text(encoding='utf-8'))
+          async def main():
+              for i, texto in enumerate(d['falas']):
+                  arq=Path('teste_antonio/voz')/f'{i:02d}.mp3'
+                  await edge_tts.Communicate(texto, voice='pt-BR-AntonioNeural', rate='-6%').save(str(arq))
+          asyncio.run(main())
+          PY
+
+      - name: Montar episodio vertical
+        shell: bash
+        run: |
+          set -e
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          d=json.loads(Path('teste_antonio/manifest.json').read_text(encoding='utf-8'))
+          for i,(img,_) in enumerate(zip(d['slides'], d['falas'])):
+              audio=f'teste_antonio/voz/{i:02d}.mp3'
+              seg=f'teste_antonio/video/{i:02d}.mp4'
+              dur=float(subprocess.check_output([
+                  'ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',audio
+              ], text=True).strip())
+              vf=("scale=1080:1350:force_original_aspect_ratio=decrease,"
+                  "pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=#102b46,"
+                  "format=yuv420p")
+              subprocess.run([
+                  'ffmpeg','-y','-loglevel','error','-loop','1','-i',img,'-i',audio,
+                  '-t',f'{dur+0.18:.3f}','-vf',vf,'-r','30','-c:v','libx264','-preset','veryfast',
+                  '-c:a','aac','-b:a','128k','-shortest','-movflags','+faststart',seg
+              ], check=True)
+          Path('teste_antonio/video/lista.txt').write_text(''.join(f"file '{i:02d}.mp4'\n" for i in range(len(d['falas']))), encoding='utf-8')
+          PY
+          cd teste_antonio/video
+          ffmpeg -y -loglevel error -f concat -safe 0 -i lista.txt -c copy ../previsaosulflu_antonio.mp4
+          cd ../..
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 teste_antonio/previsaosulflu_antonio.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previsaosulflu-antonio-teste
+          path: |
+            teste_antonio/previsaosulflu_antonio.mp4
+            teste_antonio/manifest.json
+            teste_antonio/voz/*.mp3
+            assets/output/*.jpg
+          retention-days: 7
+          if-no-files-found: error
