@@ -836,12 +836,26 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
     conteudo.update(extra or {})
     json.dump(conteudo, open(os.path.join(trab, "conteudo.json"), "w"),
               ensure_ascii=False)
-    env = dict(os.environ, DVH_LIP_JSON=lip, RANZINZA_TRAB=trab)
+    usar_hf = os.environ.get("PREVISAO_RENDERER", "hyperframes") == "hyperframes"
+    env = dict(os.environ, DVH_LIP_JSON=lip, RANZINZA_TRAB=trab,
+               PREVISAO_HF_CAPTIONS="1" if usar_hf else "0")
     rodar(["manim", f"-q{quality}", "--fps", str(fps),
            os.path.join(AQUI, "piloto.py"), "Piloto"], env=env)
 
     mp4 = f"media/videos/piloto/1920p{fps}/Piloto.mp4"
-    if os.environ.get("PREVISAO_ESTILO", "vox").strip().lower() != "classico":
+    if usar_hf:
+        import hyperframes as HF
+        import vox_papel as VX
+        base_hf = mp4
+        if os.environ.get("PREVISAO_ESTILO", "vox").strip().lower() != "classico":
+            base_hf = VX.aplicar_textura(mp4, os.path.join(trab, "mudo_papel.mp4"))
+        master = VX.masterizar(narr, os.path.join(trab, "narracao_master.wav"))
+        HF.renderizar(base_hf, master, batidas, segs, saida, trab)
+        base, _ = os.path.splitext(saida)
+        rodar(["ffmpeg", "-y", "-v", "error", "-i", saida, "-vf", "scale=720:1280",
+               "-c:v", "libx264", "-crf", "24", "-pix_fmt", "yuv420p",
+               "-c:a", "aac", "-movflags", "+faststart", base + "_preview_720p.mp4"])
+    elif os.environ.get("PREVISAO_ESTILO", "vox").strip().lower() != "classico":
         # Colagem (vox): grão de papel sobre o vídeo mudo, voz masterizada por
         # ganho FIXO + limitador, e entrega H.264 Main / Level 4.0 a 30 fps.
         import vox_papel as VX
