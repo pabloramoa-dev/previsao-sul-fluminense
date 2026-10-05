@@ -123,6 +123,7 @@ jobs:
           path: |
             reels/REEL.mp4
             reels/REEL_preview_720p.mp4
+            reels/CAPA.jpg
           retention-days: 7
 
       - name: Publicar o MP4 num Release
@@ -132,9 +133,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="reel-$(date +%Y-%m-%d)"
-          gh release create "$TAG" REEL.mp4 --title "$TAG" --notes "Reel automatico" || \
-            gh release upload "$TAG" REEL.mp4 --clobber
+          gh release create "$TAG" REEL.mp4 CAPA.jpg --title "$TAG" --notes "Reel automatico" || \
+            gh release upload "$TAG" REEL.mp4 CAPA.jpg --clobber
           echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/REEL.mp4" >> $GITHUB_OUTPUT
+          echo "capa=https://github.com/${{ github.repository }}/releases/download/$TAG/CAPA.jpg" >> $GITHUB_OUTPUT
 
       - name: Postar como Reels
         if: ${{ github.event_name == 'schedule' || inputs.publicar }}
@@ -142,7 +144,11 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           VIDEO_URL: ${{ steps.upload.outputs.url }}
-        run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json --voz juarez
+          CAPA_URL: ${{ steps.upload.outputs.capa }}
+        run: |
+          CAPA_MS=$(cat capa_ms.txt 2>/dev/null || echo 0)
+          python postar_reel.py --video "$VIDEO_URL" --dados dia.json --voz juarez \
+            --capa-url "$CAPA_URL" --capa-ms "$CAPA_MS"
 
       - name: Avisar falha por e-mail
         if: failure()
