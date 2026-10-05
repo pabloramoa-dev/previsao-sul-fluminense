@@ -370,6 +370,8 @@ def main():
     ap.add_argument("--capa-ms", type=int, default=0,
                     help="milissegundo do vídeo usado como capa na grade. "
                          "0 (padrão) = primeiro frame, que já traz o selo da cidade")
+    ap.add_argument("--capa-url", default="",
+                    help="URL pública de uma imagem JPG usada como capa (cover_url)")
     a = ap.parse_args()
 
     if a.legenda_arquivo:
@@ -414,6 +416,9 @@ def main():
     }
     if a.capa_ms:
         corpo_reel["thumb_offset"] = str(a.capa_ms)
+    if a.capa_url:
+        print(f"  capa: imagem {a.capa_url}")
+        corpo_reel["cover_url"] = a.capa_url
     r = _post(f"{ig_user}/media", corpo_reel)
     cid = r["id"]
     print(f"  container {cid}")
