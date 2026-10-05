@@ -215,6 +215,34 @@ def agrupar_cenas(batidas):
     return cenas
 
 
+def momento_da_capa(cenas, cortes, dur):
+    """Segundo do vídeo que vira a miniatura da GRADE do perfil.
+
+    No Manim o frame 0 já trazia o selo da cidade. No HyperFrames o frame 0 é
+    só o cenário de chuva, e a grade passou a mostrar quadros vazios (desde
+    01/10/2026). A capa agora é o QUADRO das cidades já montado: pegamos
+    2,2 s depois do início da cena, sem passar do corte seguinte.
+    """
+    for j, c in enumerate(cenas):
+        if c["tipo"] != "quadro":
+            continue
+        fim = cortes[j] - 0.15 if j < len(cortes) else dur - 0.2
+        return round(max(c["ini"] + 0.6, min(c["ini"] + 2.2, fim)), 2)
+    return round(min(1.5, dur / 2), 2)   # sem quadro: abertura já montada
+
+
+def extrair_capa(mp4, capa_s):
+    """Salva CAPA.jpg (mesma pasta do MP4) e capa_ms.txt para o workflow."""
+    pasta = os.path.dirname(mp4)
+    jpg = os.path.join(pasta, "CAPA.jpg")
+    sh(f'ffmpeg -y -loglevel error -ss {capa_s:.2f} -i "{mp4}" -frames:v 1 -q:v 2 "{jpg}"')
+    if not os.path.exists(jpg) or os.path.getsize(jpg) < 10_000:
+        raise RuntimeError("capa da grade não foi gerada")
+    with open(os.path.join(pasta, "capa_ms.txt"), "w") as f:
+        f.write(str(int(capa_s * 1000)))
+    print(f"capa: {jpg} ({capa_s:.2f}s)")
+
+
 def data_extenso(iso):
     import datetime as dt
     d = dt.date.fromisoformat(iso)
@@ -266,6 +294,9 @@ def preparar(dados, render=None, qualidade="standard"):
         trans_nomes.append({"quadro": "glitch", "chuva": "whip-pan",
                             "cta": "flash-through-white"}.get(c["tipo"], "whip-pan"))
 
+    capa_s = momento_da_capa(cenas, cortes, dur)
+    print(f"capa da grade: {capa_s:.2f}s (quadro com as cidades na tela)")
+
     tr, sfx = trilha(dur, cortes)
     gravar_wav(os.path.join(AUDIO, "trilha.wav"), tr, estereo=True)
     gravar_wav(os.path.join(AUDIO, "whoosh.wav"), sfx, estereo=True)
@@ -286,6 +317,7 @@ def preparar(dados, render=None, qualidade="standard"):
                     for i, b in enumerate(batidas)],
         "cenas": cenas, "cortes": cortes, "transicoes": trans_nomes,
         "palavras": palavras,
+        "capa_s": capa_s,
         "boca": [[c["start"], c["value"]] for c in cues],
     }
     with open(os.path.join(BUILD, "pacote.json"), "w", encoding="utf-8") as f:
@@ -304,6 +336,7 @@ def preparar(dados, render=None, qualidade="standard"):
                  cwd=AQUI)[-800:])
         from hyperframes import conferir
         conferir(saida, dur)
+        extrair_capa(saida, capa_s)
     return pacote
 
 
