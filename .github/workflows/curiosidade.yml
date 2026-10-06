@@ -113,7 +113,7 @@ jobs:
           path: |
             reels/CURIOSIDADE.mp4
             reels/LEGENDA.txt
-          retention-days: 7
+          retention-days: 2
 
       # O Instagram exige que o MP4 esteja numa URL pública. Um Release do
       # próprio repo resolve — mesma técnica do ranzinza.yml.
@@ -135,6 +135,14 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           VIDEO_URL: ${{ steps.upload.outputs.url }}
         run: python postar_reel.py --video "$VIDEO_URL" --legenda-arquivo LEGENDA.txt
+
+      - name: Apagar Release após publicação confirmada
+        if: ${{ (github.event_name == 'schedule' || inputs.publicar) && success() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="curiosidade-$(date +%Y-%m-%d)"
+          gh release delete "$TAG" --cleanup-tag --yes || true
 
       - name: Avisar falha por e-mail
         if: failure()
