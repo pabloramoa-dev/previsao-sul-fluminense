@@ -139,7 +139,7 @@ jobs:
         with:
           name: reel-ranzinza
           path: reels/REEL.mp4
-          retention-days: 7
+          retention-days: 2
 
       # O Instagram exige que o MP4 esteja numa URL pública. Um Release do
       # próprio repo resolve — e ainda deixa o histórico dos vídeos guardado.
@@ -162,6 +162,14 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           VIDEO_URL: ${{ steps.upload.outputs.url }}
         run: python postar_reel.py --video "$VIDEO_URL" --dados dia.json
+
+      - name: Apagar Release do Ranzinza após publicar
+        if: ${{ (github.event_name == 'schedule' || inputs.publicar) && success() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="reel-$(date +%Y-%m-%d)"
+          gh release delete "$TAG" --cleanup-tag --yes || true
 
       - name: Avisar falha por e-mail
         if: failure()
@@ -255,7 +263,7 @@ jobs:
         with:
           name: reel-maria
           path: reels/TARDE.mp4
-          retention-days: 7
+          retention-days: 2
 
       - name: Publicar o MP4 num Release
         id: upload
@@ -277,6 +285,14 @@ jobs:
         run: |
           python postar_reel.py --video "$VIDEO_URL" --dados amanha.json \
             --voz maria --quando amanha
+
+      - name: Apagar Release da Dona Maria após publicar
+        if: ${{ (github.event_name == 'schedule' || inputs.publicar) && success() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="tarde-$(date +%Y-%m-%d)"
+          gh release delete "$TAG" --cleanup-tag --yes || true
 
       - name: Avisar falha por e-mail
         if: failure()
