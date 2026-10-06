@@ -124,7 +124,7 @@ jobs:
             reels/REEL.mp4
             reels/REEL_preview_720p.mp4
             reels/CAPA.jpg
-          retention-days: 7
+          retention-days: 2
 
       - name: Publicar o MP4 num Release
         id: upload
@@ -149,6 +149,14 @@ jobs:
           CAPA_MS=$(cat capa_ms.txt 2>/dev/null || echo 0)
           python postar_reel.py --video "$VIDEO_URL" --dados dia.json --voz juarez \
             --capa-url "$CAPA_URL" --capa-ms "$CAPA_MS"
+
+      - name: Apagar Release após publicação confirmada
+        if: ${{ (github.event_name == 'schedule' || inputs.publicar) && success() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="reel-$(date +%Y-%m-%d)"
+          gh release delete "$TAG" --cleanup-tag --yes || true
 
       - name: Avisar falha por e-mail
         if: failure()
