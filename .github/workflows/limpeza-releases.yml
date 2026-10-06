@@ -1,0 +1,36 @@
+name: Limpeza de Releases de mídia
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/limpeza-releases.yml"
+  schedule:
+    - cron: "35 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Excluir Releases temporários antigos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          limite=$(date -u -d "2 days ago" +%s)
+          gh release list --repo "${{ github.repository }}" --limit 1000 --json tagName,createdAt --jq '.[] | [.tagName,.createdAt] | @tsv' |
+          while IFS=$'\t' read -r tag criado; do
+            case "$tag" in
+              reel-*|tarde-*|curiosidade-*) ;;
+              *) continue ;;
+            esac
+            ts=$(date -u -d "$criado" +%s)
+            if [ "$ts" -lt "$limite" ]; then
+              echo "apagando $tag"
+              gh release delete "$tag" --repo "${{ github.repository }}" --cleanup-tag --yes || true
+            fi
+          done
