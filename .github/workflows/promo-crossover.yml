@@ -1,0 +1,47 @@
+name: Promo crossover — personagens da previsao
+
+on:
+  push:
+    paths:
+      - "reels/promo_crossover_trigger_20261006.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PREVISAO_ESTILO: vox
+      PREVISAO_RENDERER: hyperframes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-hyperframes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: reels/requirements.txt
+      - name: Dependencias de sistema
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config fonts-dejavu-core
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+      - name: Dependencias Python
+        run: pip install -r reels/requirements.txt
+      - name: Renderizar os tres personagens
+        working-directory: reels
+        run: python promo_crossover.py
+      - name: Entregar MP4s
+        uses: actions/upload-artifact@v4
+        with:
+          name: promo-crossover-previsao
+          path: |
+            reels/promo_crossover_out/*.mp4
+          retention-days: 2
