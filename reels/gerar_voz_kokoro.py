@@ -231,7 +231,17 @@ def main():
     linhas = [l.strip() for l in open(a.roteiro, encoding="utf-8") if l.strip()]
     backend = os.environ.get("PREVISAO_TTS", "kokoro").strip().lower()
     if backend == "edge":
-        gerar_edge(linhas, a)
+        try:
+            gerar_edge(linhas, a)
+        except Exception as exc:
+            if os.environ.get("PREVISAO_TTS_FALLBACK", "kokoro").strip().lower() != "kokoro":
+                raise
+            print(
+                f"::warning::Antonio Neural indisponível ({type(exc).__name__}); "
+                "usando Kokoro pm_alex local nesta execução.",
+                file=sys.stderr,
+            )
+            gerar_kokoro(linhas, a)
     elif backend == "kokoro":
         gerar_kokoro(linhas, a)
     else:
