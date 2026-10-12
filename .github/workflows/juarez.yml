@@ -15,6 +15,13 @@ name: Reel diario — Juarez Plantao (06h)
 # Ranzinza e Dona Maria continuam com seus motores/vozes separados.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "reels/gerar_voz_kokoro.py"
+      - "hyperframes/**"
+      - ".github/actions/setup-hyperframes/**"
+      - ".github/workflows/juarez.yml"
   schedule:
     # dispara cedo e o job espera ate a hora certa — mesma tecnica do
     # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
@@ -44,6 +51,7 @@ jobs:
       # O gerar_voz_kokoro.py mantém o mesmo contrato de WAV + segs.json, mas
       # troca de backend apenas neste job quando PREVISAO_TTS=edge.
       PREVISAO_TTS: edge
+      PREVISAO_TTS_FALLBACK: kokoro
       PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
       PREVISAO_EDGE_RATE: '+10%'
       PREVISAO_EDGE_PITCH: '+6Hz'
