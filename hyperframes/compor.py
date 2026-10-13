@@ -91,10 +91,9 @@ def juarez_svg():
   {poly([T(-0.85, -1.55), T(0.85, -1.55), T(0.70, -2.10), T(-0.70, -2.10)], "#1c2b38", 8)}
   {poly([T(-0.55, 0), T(0.55, 0), T(0.85, -1.55), T(-0.85, -1.55)], OFF, 9)}
   {poly([T(-0.08, -0.05), T(0.14, -0.05), T(0.20, -0.30), T(0.02, -1.15), T(-0.02, -0.30)], "#8a2f28", 6)}
-  <line x1="{P(*omb).split(',')[0]}" y1="{P(*omb).split(',')[1]}" x2="{P(*be_fim).split(',')[0]}" y2="{P(*be_fim).split(',')[1]}" stroke="#2c3e50" stroke-width="33" stroke-linecap="round"/>
+  <g id="jz-braco-esq"><line x1="{P(*omb).split(',')[0]}" y1="{P(*omb).split(',')[1]}" x2="{P(*be_fim).split(',')[0]}" y2="{P(*be_fim).split(',')[1]}" stroke="#2c3e50" stroke-width="33" stroke-linecap="round"/><circle cx="{P(*be_fim).split(',')[0]}" cy="{P(*be_fim).split(',')[1]}" r="19" fill="#e8b48f" stroke="{PT}" stroke-width="5"/></g>
   {poly([T(-0.62, 0.05), T(-0.10, -0.10), T(-0.30, -0.55), T(-0.90, -1.58), T(-0.40, -1.58), T(-0.50, -0.20)], "#2c3e50", 9)}
   {poly([T(0.62, 0.05), T(0.10, -0.10), T(0.30, -0.55), T(0.90, -1.58), T(0.40, -1.58), T(0.50, -0.20)], "#2c3e50", 9)}
-  <circle cx="{P(*be_fim).split(',')[0]}" cy="{P(*be_fim).split(',')[1]}" r="19" fill="#e8b48f" stroke="{PT}" stroke-width="5"/>
  </g>
  <g id="jz-braco">
   <line x1="{P(*omb).split(',')[0]}" y1="{P(*omb).split(',')[1]}" x2="{P(*cot).split(',')[0]}" y2="{P(*cot).split(',')[1]}" stroke="#2c3e50" stroke-width="33" stroke-linecap="round"/>
@@ -364,6 +363,7 @@ def compor(p):
                   for k, c in enumerate(cenas)],
         "cortes": p["cortes"], "transicoes": p["transicoes"],
         "batidas": [{"tipo": b["tipo"], "ini": b["ini"], "fim": b["fim"]} for b in bat],
+        "direcao": p.get("direcao", []),
         "boca": [[t, MOUTH.get(v, 0.3)] for t, v in p["boca"]],
         "paginas": [[pg[0]["s"], pg[-1]["e"]] for pg in paginas],
         "palavras": [[w["s"], w["e"], w["w"]] for w in p["palavras"]],
@@ -650,7 +650,19 @@ html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: {NAVY
     tl.fromTo(["#jz-sobE", "#jz-sobD"], {{ y: 0 }}, {{ y: -14, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.out" }}, b.ini);
     tl.fromTo("#jz-mov", {{ rotation: 0, svgOrigin: "250 600" }}, {{ rotation: (k % 2 ? 2.5 : -2.5), duration: 0.18, yoyo: true, repeat: 1, ease: "power1.inOut" }}, b.ini);
     tl.fromTo("#jz-braco", {{ rotation: 0, svgOrigin: "250 385" }}, {{ rotation: (k % 2 ? -4 : 3), duration: 0.22, yoyo: true, repeat: 1, ease: "sine.inOut" }}, b.ini + 0.05);
+    // Gestos inspirados no motor da Nina: o braço LIVRE, não o microfone.
+    var dr = D.direcao[k];
+    if (dr) {{
+      var angulos = {{ repouso:0, explicar:-7, apontar:-13, enfatizar:-10, alertar:-15, acolher:-5, perguntar:-9 }};
+      var rot = angulos[dr.gesto] || 0;
+      var janela = Math.min(0.7, Math.max(0.25, (b.fim - b.ini) * 0.35));
+      tl.fromTo("#jz-braco-esq", {{rotation:0,svgOrigin:"210 385"}},
+        {{rotation:rot*dr.energia,duration:janela,ease:"sine.inOut",yoyo:true,repeat:1,immediateRender:false}}, b.ini+0.05);
+      var camera = {{aproximar:1.06,aproximar_suave:1.035,abrir:1.0,estabilizar:1.0,manter:1.015}};
+      tl.to("#jz-wrap", {{scale:camera[dr.camera]||1,duration:.42,ease:"power2.inOut"}},b.ini);
+    }}
   }});
+  if (D.direcao.length) tl.to("#jz-wrap", {{scale:1,duration:.23,ease:"power2.out"}},Math.max(0,D.dur-.27));
   // pupilas olham pro número/quadro nas cenas de dado
   D.cenas.forEach(function (c) {{
     var dx = (c.tipo === "cta") ? 0 : 7, dy = (c.tipo === "cta") ? 0 : -6;
