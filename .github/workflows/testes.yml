@@ -46,3 +46,7 @@ jobs:
       - name: Reel do Juarez (dois modos)
         working-directory: reels
         run: python teste_juarez.py
+
+      - name: Gestos, direção, dados intactos e checagem técnica
+        working-directory: reels
+        run: python teste_direcao.py

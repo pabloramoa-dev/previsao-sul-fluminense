@@ -43,6 +43,8 @@ import juarez_lib as J
 import dvh_lib as L
 import dvh_lip as LIP
 import vox_papel as VX
+import direcao_previsao as DIRECAO
+import atuacao_manim as ATUACAO
 
 config.frame_width = 8.0
 config.frame_height = 14.222
@@ -325,6 +327,13 @@ class Piloto(MovingCameraScene):
             self.add(cen["bancada"])
         # período ajustado pra caber um nº inteiro de respiros no vídeo (loop)
         L.respirar(G, amp=0.045, periodo=FIM / max(1, round(FIM / 3.0)))
+        if DIRECAO.ativo():
+            arquivo = os.path.join(TRAB, 'direcao.json')
+            plano = (json.load(open(arquivo, encoding='utf-8')) if os.path.isfile(arquivo)
+                     else DIRECAO.planejar(BATIDAS, SEGS, PERSONAGEM))
+            # Braço esquerdo livre; os movimentos preexistentes continuam na mão direita.
+            ATUACAO.anexar(self, v, G, plano,
+                           escala=ESCALA_J if EH_JUAREZ else 1.3)
 
         v["boca"].set_stroke(opacity=0)
         LIP.anexar_lipsync(self, v["boca"], t0=0.0, escala=1.25, deslocamento=DOWN * 0.04)

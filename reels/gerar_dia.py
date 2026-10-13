@@ -836,6 +836,12 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
     conteudo.update(extra or {})
     json.dump(conteudo, open(os.path.join(trab, "conteudo.json"), "w"),
               ensure_ascii=False)
+    # Direção visual gratuita calculada sobre os tempos reais da voz.
+    import direcao_previsao as D
+    segmentos = json.load(open(segs, encoding='utf-8'))
+    plano = D.planejar(batidas, segmentos, personagem) if D.ativo() else []
+    with open(os.path.join(trab, 'direcao.json'), 'w', encoding='utf-8') as fd:
+        json.dump(plano, fd, ensure_ascii=False, indent=2)
     usar_hf = os.environ.get("PREVISAO_RENDERER", "hyperframes") == "hyperframes"
     env = dict(os.environ, DVH_LIP_JSON=lip, RANZINZA_TRAB=trab,
                PREVISAO_HF_CAPTIONS="1" if usar_hf else "0")

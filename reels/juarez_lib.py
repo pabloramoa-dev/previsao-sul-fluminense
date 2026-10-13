@@ -159,7 +159,7 @@ def juarez(humor="dramatico"):
                    orE, orD, cabelo, topete, cab,
                    barba, olhoE_branco, olhoD_branco, sobE, sobD, oe, od, nariz, boca)
     return dict(grupo=grupo, cab=cab, oe=oe, od=od, boca=boca,
-               maoE=maoE, maoD=maoD, sobE=sobE, sobD=sobD, microfone=microfone)
+               maoE=maoE, maoD=maoD, bracoE=be, sobE=sobE, sobD=sobD, microfone=microfone)
 
 
 # =====================================================================
