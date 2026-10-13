@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import direcao_previsao as DIRECAO
+import qualidade_previsao as QA
 
 
 def sh(cmd, **kw):
@@ -27,6 +29,7 @@ def validar(batidas, segs):
 def compor(batidas, segs, pasta):
     dur = validar(batidas, segs)
     parts, anim = [], []
+    plano = DIRECAO.planejar(batidas, segs) if DIRECAO.ativo() else []
     for i, (b, s) in enumerate(zip(batidas, segs)):
         a, z = s['ini'], s['fim']
         # Os painéis meteorológicos e o CTA originais ficam integralmente visíveis.
@@ -45,7 +48,13 @@ def compor(batidas, segs, pasta):
                 parts.append(f'<div id="cap{i}_{k}" class="clip caption" data-start="{start}" data-duration="{length}" data-track-index="2">{" ".join(spans)}</div>')
         if i:
             anim.append(f'tl.fromTo("#flash",{{opacity:.12}},{{opacity:0,duration:.22,immediateRender:false}},{a});')
+        # A câmera só move a camada do personagem, nunca os painéis com dados.
+        if plano:
+            escala, x = DIRECAO.camera(plano[i])
+            anim.append(f'tl.to("#base",{{scale:{escala},x:{x},duration:.5,ease:"power2.inOut"}},{a});')
         # Moldura animada sem recortar os números nem deslocar os mapas originais.
+    if plano:
+        anim.append(f'tl.to("#base",{{scale:1,x:0,duration:.25,ease:"power2.out"}},{max(0,dur-.3)});')
     anim.append(f'tl.fromTo("#progress",{{scaleX:0}},{{scaleX:1,duration:{dur},ease:"none"}},0);')
     text = f'''<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{{font-family:Local;src:url(assets/bold.ttf)}}
@@ -83,9 +92,14 @@ def renderizar(base, voz, batidas, segs_path, saida, trab):
     final = Path(saida).resolve()
     tmp = final.with_name(final.stem+'.rendering.mp4')
     sh(['node',cli,'render',work,'--output',tmp,'--workers',os.environ.get('PREVISAO_HF_WORKERS','2'),'--no-browser-gpu'], env=env)
-    conferir(tmp,dur)
+    probe = conferir(tmp,dur)
+    plano = DIRECAO.planejar(batidas,segs) if DIRECAO.ativo() else DIRECAO.planejar(batidas,segs)
+    qa = QA.verificar(batidas,segs,plano,probe)
+    QA.gravar(final.with_suffix('.quality.json'),qa)
+    if not qa['aprovado_tecnicamente']:
+        raise ValueError('Qualidade técnica do Reel reprovada: ' + '; '.join(qa['erros']))
     tmp.replace(final)
-    final.with_suffix('.render.json').write_text(json.dumps({'motor':'hyperframes','versao':'0.8.96','duracao':dur,'fps':30,'resolucao':[1080,1920]}, indent=2))
+    final.with_suffix('.render.json').write_text(json.dumps({'motor':'hyperframes','versao':'0.8.96-direcao-expressiva','duracao':dur,'fps':30,'resolucao':[1080,1920], 'direcao_automatica':DIRECAO.ativo(), 'gestos':qa['gestos'], 'qa':'aprovado'}, ensure_ascii=False,indent=2))
 
 def mixar(voz,segs,dur,destino):
     import numpy as np
