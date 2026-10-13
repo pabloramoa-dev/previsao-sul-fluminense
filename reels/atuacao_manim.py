@@ -13,7 +13,7 @@ def anexar(scene, personagem, grupo, plano, escala=1.0):
         return
     state = {"dx": 0., "dy": 0.}
     relogio = VMobject()
-    def mover(_obj, _dt):
+    def mover(_obj, dt):
         t = scene.renderer.time
         item = next((p for p in plano if p["inicio"] <= t < p["fim"]), None)
         dx, dy = (D.deslocamento(item["gesto"],t,item["inicio"],item["fim"],item["energia"])
