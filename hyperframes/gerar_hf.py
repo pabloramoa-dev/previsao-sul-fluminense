@@ -46,6 +46,8 @@ sys.path.insert(0, RAIZ)
 
 from gerar_juarez import (DEMO, FILTRO_BIRA, GAP_ENTRE_BATIDAS, SPEED_BIRA,  # noqa: E402
                           VOZ_BIRA, cenario_telao, montar_roteiro)
+from direcao_previsao import ativo as direcao_ativa, planejar as planejar_direcao
+from qualidade_previsao import verificar as verificar_qa, gravar as gravar_qa
 from lipsync_amplitude import gerar_cues  # noqa: E402
 from limiares import modo_do_dia  # noqa: E402
 
@@ -308,6 +310,8 @@ def preparar(dados, render=None, qualidade="standard"):
             p["b"] = i
             palavras.append(p)
 
+    segs_direcao = [dict(ini=ini,fim=fim) for ini,fim in tempos]
+    direcao = planejar_direcao(batidas,segs_direcao,'juarez')
     pacote = {
         "dur": dur, "modo": modo, "data": dados["data"],
         "data_ext": data_extenso(dados["data"]),
@@ -319,6 +323,7 @@ def preparar(dados, render=None, qualidade="standard"):
         "palavras": palavras,
         "capa_s": capa_s,
         "boca": [[c["start"], c["value"]] for c in cues],
+        "direcao": direcao if direcao_ativa() else [],
     }
     with open(os.path.join(BUILD, "pacote.json"), "w", encoding="utf-8") as f:
         json.dump(pacote, f, ensure_ascii=False, indent=1)
@@ -335,7 +340,11 @@ def preparar(dados, render=None, qualidade="standard"):
         print(sh(f"{HF} render --output \"{saida}\" --quality {qualidade}",
                  cwd=AQUI)[-800:])
         from hyperframes import conferir
-        conferir(saida, dur)
+        probe = conferir(saida, dur)
+        qa = verificar_qa(batidas,segs_direcao,direcao,probe)
+        gravar_qa(os.path.splitext(saida)[0]+'.quality.json',qa)
+        if not qa['aprovado_tecnicamente']:
+            raise ValueError('Reel do Juarez não aprovado: '+ '; '.join(qa['erros']))
         extrair_capa(saida, capa_s)
     return pacote
 
