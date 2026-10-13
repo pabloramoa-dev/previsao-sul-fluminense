@@ -195,7 +195,7 @@ def ranzinza(humor="bravo"):
                    orE, orD, tufoE, tufoD, cab, fios,
                    nariz, oculos, sobE, sobD, oe, od, ruga, bigode, boca)
     return dict(grupo=grupo, cab=cab, oe=oe, od=od, boca=boca, bigode=bigode,
-                oculos=oculos, bengala=beng, maoE=maoE, maoD=maoD, sobE=sobE, sobD=sobD)
+                oculos=oculos, bengala=beng, maoE=maoE, maoD=maoD, bracoE=be, sobE=sobE, sobD=sobD)
 
 
 # =====================================================================
@@ -1279,7 +1279,7 @@ def dona_maria(humor="simpatica"):
                    orE, orD, brincoE, brincoD, moldura, cab, coque,
                    bochE, bochD, nariz, oculos, sobE, sobD, oe, od, cilios, boca)
     return dict(grupo=grupo, cab=cab, oe=oe, od=od, boca=boca, oculos=oculos,
-                maoE=maoE, maoD=maoD, sobE=sobE, sobD=sobD, avental=av)
+                maoE=maoE, maoD=maoD, bracoE=be, sobE=sobE, sobD=sobD, avental=av)
 
 
 # =====================================================================
