@@ -1,0 +1,27 @@
+{
+  "name": "RANZINZA E DONA MARIA",
+  "style": "tempo",
+  "footer": "Conte seu bairro nos comentarios!",
+  "scenes": [
+    {
+      "title": "Mito ou verdade?",
+      "text": "Uma previsao com chance de chuva nao significa que vai chover o dia inteiro.",
+      "seconds": 4
+    },
+    {
+      "title": "E agora?",
+      "text": "A: Ignorar os horarios. B: Conferir a previsao por hora antes de sair.",
+      "seconds": 4
+    },
+    {
+      "title": "A resposta",
+      "text": "A alternativa B e a melhor escolha. A previsao por hora ajuda a planejar o dia.",
+      "seconds": 4
+    },
+    {
+      "title": "Voce decide",
+      "text": "Qual dica de tempo gostaria de ver no proximo episodio?",
+      "seconds": 4
+    }
+  ]
+}
