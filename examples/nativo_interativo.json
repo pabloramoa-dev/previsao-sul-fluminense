@@ -1,0 +1,12 @@
+{
+  "interatividade": {
+    "modo": "mito_verdade",
+    "pergunta": "Chance de chuva significa chover o dia inteiro?",
+    "opcoes": [
+      "Sim",
+      "Não"
+    ],
+    "resposta": "Não. Confira os horários da previsão",
+    "segundos": 2.7
+  }
+}

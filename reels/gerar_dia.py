@@ -883,6 +883,11 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
                "-c:v", "libx264", "-crf", "22", "-preset", "medium",
                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
                "-shortest", saida])
+    # Sem pergunta editorial, a previsão e a voz Kokoro permanecem intactas.
+    if (extra or {}).get("interatividade"):
+        from tools.native_video_finisher import apply_from_metadata
+        print("acabamento nativo:", apply_from_metadata(
+            saida, extra, RAIZ))
     print(f"pronto: {saida}")
     return saida
 
@@ -903,7 +908,8 @@ def gerar(dados, saida, quality="m"):
                            # de que cidade é este vídeo (ver selo_cidade)
                            "destaque": dados.get("destaque")
                                        or dados["cidades"][0]["nome"],
-                           "destaque_rotulo": "HOJE EM"})
+                           "destaque_rotulo": "HOJE EM",
+                           "interatividade": dados.get("interatividade")})
 
 
 DEMO = {
