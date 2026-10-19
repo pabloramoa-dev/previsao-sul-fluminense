@@ -886,8 +886,17 @@ def produzir(batidas, saida, cenario="sol", calor=False, personagem="ranzinza",
     # Sem pergunta editorial, a previsão e a voz Kokoro permanecem intactas.
     if (extra or {}).get("interatividade"):
         from tools.native_video_finisher import apply_from_metadata
-        print("acabamento nativo:", apply_from_metadata(
-            saida, extra, RAIZ))
+        acabamento = apply_from_metadata(saida, extra, RAIZ)
+        print("acabamento nativo:", acabamento)
+        if acabamento.get("applied"):
+            # A previa 720p precisa conter a mesma interatividade do arquivo
+            # definitivo; antes era criada cedo demais no fluxo HyperFrames.
+            base, _ = os.path.splitext(saida)
+            rodar(["ffmpeg", "-y", "-v", "error", "-i", saida,
+                   "-vf", "scale=720:1280", "-c:v", "libx264",
+                   "-preset", "veryfast", "-crf", "24", "-pix_fmt", "yuv420p",
+                   "-c:a", "aac", "-b:a", "128k",
+                   "-movflags", "+faststart", base + "_preview_720p.mp4"])
     print(f"pronto: {saida}")
     return saida
 
