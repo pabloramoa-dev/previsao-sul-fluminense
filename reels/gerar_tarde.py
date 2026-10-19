@@ -476,7 +476,8 @@ def main():
                     "destaque": d.get("destaque") or d["cidades"][0]["nome"],
                     # ela fala do dia seguinte; o rótulo tem que dizer isso,
                     # senão o selo desmente o cartão logo abaixo
-                    "destaque_rotulo": "AMANHÃ EM"})
+                    "destaque_rotulo": "AMANHÃ EM",
+                    "interatividade": d.get("interatividade")})
 
 
 if __name__ == "__main__":
