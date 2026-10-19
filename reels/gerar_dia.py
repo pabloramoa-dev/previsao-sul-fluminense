@@ -908,7 +908,8 @@ def gerar(dados, saida, quality="m"):
                            # de que cidade é este vídeo (ver selo_cidade)
                            "destaque": dados.get("destaque")
                                        or dados["cidades"][0]["nome"],
-                           "destaque_rotulo": "HOJE EM"})
+                           "destaque_rotulo": "HOJE EM",
+                           "interatividade": dados.get("interatividade")})
 
 
 DEMO = {
