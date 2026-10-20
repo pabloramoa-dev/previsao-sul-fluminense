@@ -251,7 +251,7 @@ def montar(cidades, respostas, indice_dia):
                               or d0["temperature_2m_max"][indice_dia]),
         "chuva_hora": primeira_chuva_da_tarde(
             r0.get("hourly", {}).get("precipitation"), indice_dia),
-        "gerado_em": datetime.datetime.now().isoformat(timespec="seconds"),
+        "gerado_em": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     }
 
 

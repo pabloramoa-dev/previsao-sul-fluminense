@@ -508,6 +508,7 @@ html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: {NAVY
 <script>
 (function () {{
   var D = {dados_js};
+  window.__qaScenes = D.cenas;
   var cenaIds = D.cenas.map(function (c) {{ return c.id; }});
 
   // 1) TRANSIÇÕES entre cenas — receitas CSS do catálogo de transições do

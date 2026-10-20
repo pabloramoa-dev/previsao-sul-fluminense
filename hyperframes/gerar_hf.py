@@ -259,7 +259,18 @@ def preparar(dados, render=None, qualidade="standard"):
     os.makedirs(vendor, exist_ok=True)
     shutil.copy(os.path.join(RAIZ, 'video/node_modules/gsap/dist/gsap.min.js'), vendor)
 
+    quality = None
+    if render and dados is not DEMO:
+        from src.forecast_quality import assess
+        quality = assess(dados)
     batidas = montar_roteiro(dados)
+    if quality and not quality['gates']['allow_alert_reel'] and any(b['tipo']=='alerta' for b in batidas):
+        raise ValueError('Confiança insuficiente para Reel de alerta')
+    if quality and not quality['gates']['allow_categorical_language']:
+        for b in batidas:
+            if b.get('fala') == 'Números confirmados.':
+                b['fala'] = 'É o que está previsto.'
+
     modo = modo_do_dia(dados)
     print(f"modo: {modo} | batidas: {len(batidas)}")
 
@@ -313,6 +324,7 @@ def preparar(dados, render=None, qualidade="standard"):
     segs_direcao = [dict(ini=ini,fim=fim) for ini,fim in tempos]
     direcao = planejar_direcao(batidas,segs_direcao,'juarez')
     pacote = {
+        "confidence": quality,
         "dur": dur, "modo": modo, "data": dados["data"],
         "data_ext": data_extenso(dados["data"]),
         "ceu": cenario_telao(dados),
@@ -337,6 +349,7 @@ def preparar(dados, render=None, qualidade="standard"):
 
     if render:
         saida = os.path.abspath(render)
+        subprocess.run(["node", os.path.join(RAIZ, "video/validate-production-layout.mjs"), AQUI], check=True)
         print(sh(f"{HF} render --output \"{saida}\" --quality {qualidade}",
                  cwd=AQUI)[-800:])
         from hyperframes import conferir
@@ -346,6 +359,8 @@ def preparar(dados, render=None, qualidade="standard"):
         if not qa['aprovado_tecnicamente']:
             raise ValueError('Reel do Juarez não aprovado: '+ '; '.join(qa['erros']))
         extrair_capa(saida, capa_s)
+        from tools.channel_ops import record_render
+        record_render(saida, dados, RAIZ)
     return pacote
 
 
