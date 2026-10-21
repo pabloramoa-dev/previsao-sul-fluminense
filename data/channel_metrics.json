@@ -1,0 +1,176 @@
+{
+  "measurements": [
+    {
+      "media_id": "18360993328220674",
+      "window": "24h",
+      "age_hours": 33.32,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 8,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18118575236088109",
+      "window": "24h",
+      "age_hours": 43.25,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 6,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18126888488483679",
+      "window": "24h",
+      "age_hours": 56.57,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 11,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18164126482491957",
+      "window": "24h",
+      "age_hours": 68.62,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 9,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18138252796723847",
+      "window": "72h",
+      "age_hours": 81.8,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 105,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "17908835430574721",
+      "window": "72h",
+      "age_hours": 92.52,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 4,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "17978610485915218",
+      "window": "72h",
+      "age_hours": 106.09,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 26,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18212071705366037",
+      "window": "72h",
+      "age_hours": 116.18,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 11,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18357328462223558",
+      "window": "72h",
+      "age_hours": 129.62,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 16,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18417965401155633",
+      "window": "72h",
+      "age_hours": 139.89,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 6,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18107355629236245",
+      "window": "72h",
+      "age_hours": 153.5,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 12,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18103278350030391",
+      "window": "72h",
+      "age_hours": 163.75,
+      "collected_at": "2026-10-21T19:18:15.548145+00:00",
+      "metrics": {
+        "reach": 10,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    }
+  ],
+  "status": "ok",
+  "errors": [],
+  "updated_at": "2026-10-21T19:18:15.548145+00:00",
+  "account": "previsaosulflu"
+}
