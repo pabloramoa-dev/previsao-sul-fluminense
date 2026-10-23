@@ -3,7 +3,7 @@ import {AbsoluteFill, Audio, OffthreadVideo, interpolate, spring, staticFile, us
 
 export type WeatherCity={nome:string;min:number;max:number;cond:string;chuva_mm?:number};
 export type WeatherBeat={tipo:string;ini:number;fim:number;legenda?:string};
-export type WeatherCastProps={durationFrames:number;data:string;cidades:WeatherCity[];batidas:WeatherBeat[]};
+export type WeatherCastProps={durationFrames:number;data:string;cidades:WeatherCity[];batidas:WeatherBeat[];demo?:boolean};
 const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
 const condition=(cond:string)=>({sol:'SOL',calor:'CALOR',abafado:'ABAFADO',ameno:'AMENO',nublado:'NUBLADO',chuva:'CHUVA',tempestade:'TEMPORAL',frio:'FRIO'} as Record<string,string>)[cond]||'TEMPO';
 const tint=(cond:string)=>cond.includes('chuva')||cond==='tempestade'?'#6bd1f2':cond==='sol'||cond==='calor'?'#ffd453':'#cae2e3';
@@ -15,7 +15,7 @@ const SunCloud:React.FC<{cond:string}>=({cond})=><div style={{width:75,height:75
    {(cond==='chuva'||cond==='tempestade')&&<div style={{position:'absolute',left:22,top:59,fontWeight:900,color:'#146cca',fontSize:30}}>•••</div>}</>}
  </div>;
 
-export const WeatherCast:React.FC<WeatherCastProps>=({cidades,data,batidas})=>{
+export const WeatherCast:React.FC<WeatherCastProps>=({cidades,data,batidas,demo=true})=>{
  const frame=useCurrentFrame(),{fps,durationInFrames}=useVideoConfig(),t=frame/fps;
  const cityList=cidades.length?cidades:[{nome:'Sul Fluminense',min:0,max:0,cond:'sol'}];
  const firstTime=2.0,period=4.2;
@@ -45,7 +45,7 @@ export const WeatherCast:React.FC<WeatherCastProps>=({cidades,data,batidas})=>{
     <div style={{height:'100%',width:barWidth+'%',background:'#f9cc46'}}/>
   </div>
   {/* Identificação obrigatória: os valores deste vídeo vêm do DEMO do próprio repositório */}
-  <div style={{position:'absolute',right:28,top:24,padding:'10px 17px',border:'3px solid #f5cf59',borderRadius:10,
+  <div style={{position:'absolute',right:28,top:24,display:demo?'block':'none',padding:'10px 17px',border:'3px solid #f5cf59',borderRadius:10,
    background:'rgba(9,26,42,.94)',color:'#ffdc67',fontSize:22,fontWeight:900,letterSpacing:2,zIndex:20}}>
    DEMONSTRAÇÃO • NÃO PUBLICAR
   </div>
@@ -76,7 +76,7 @@ export const WeatherCast:React.FC<WeatherCastProps>=({cidades,data,batidas})=>{
   </div>
   {/* Flash técnico mínimo nos cortes do roteiro, sem ocultar o apresentador */}
   <div style={{position:'absolute',left:12,right:12,top:11,height:14,background:'#fff',opacity:transition*.22,pointerEvents:'none'}}/>
-  <div style={{position:'absolute',right:23,bottom:20,fontSize:18,fontWeight:900,letterSpacing:1,
+  <div style={{position:'absolute',right:23,bottom:20,display:demo?'block':'none',fontSize:18,fontWeight:900,letterSpacing:1,
    color:'#ffe7a5',opacity:pulse*.9,textShadow:'1px 1px 6px #142a3f'}}>REMOTION • TESTE ISOLADO</div>
  </AbsoluteFill>;
 };

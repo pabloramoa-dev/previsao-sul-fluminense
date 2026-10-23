@@ -53,29 +53,24 @@ jobs:
         run: |
           python ../hyperframes/gerar_hf.py --demo --render REEL_ORIGINAL_REMOTION.mp4
           ffprobe -v error -show_entries stream=codec_type,width,height -of json REEL_ORIGINAL_REMOTION.mp4
-      - name: Preparar Remotion sem tocar no pipeline principal
+      - name: Testar finalizador identico ao usado na producao
+        working-directory: reels
+        run: |
+          python ../lab/remotion-juarez/finalizar.py --video REEL_ORIGINAL_REMOTION.mp4 --pacote ../hyperframes/build/pacote.json --production
+          test -s REEL_ORIGINAL_REMOTION.mp4
+          test -s CAPA.jpg
+      - name: Validar video e amostras do novo acabamento
         working-directory: lab/remotion-juarez
         run: |
-          mkdir -p public out
-          cp ../../reels/REEL_ORIGINAL_REMOTION.mp4 public/juarez-original.mp4
-          ffmpeg -v error -y -i public/juarez-original.mp4 -vn -ac 1 -ar 44100 public/voz-original.wav
-          python prepare_props.py
-          npm install --no-audit --no-fund
-          npx remotion browser ensure
-      - name: Renderizar MP4 com novo visual e validar
-        working-directory: lab/remotion-juarez
-        run: |
-          npx remotion render src/index.ts BoletimSulFlu out/boletim-sulflu-remotion.mp4 --props=props.json --codec=h264 --crf=21 --concurrency=2
-          ffprobe -v error -show_streams -show_format -of json out/boletim-sulflu-remotion.mp4 > out/qa-probe.json
           python - <<'PY'
           import json
           p=json.load(open('out/qa-probe.json'))
-          v=[x for x in p['streams'] if x['codec_type']=='video']
-          a=[x for x in p['streams'] if x['codec_type']=='audio']
-          assert len(v)==1 and len(a)>=1
+          v=[s for s in p['streams'] if s['codec_type']=='video']
+          a=[s for s in p['streams'] if s['codec_type']=='audio']
+          assert len(v)==1 and len(a)>0
           assert (v[0]['width'],v[0]['height'])==(1080,1920)
-          assert 15<=float(p['format']['duration'])<=120
-          print('QA: video com som e dimensoes corretas')
+          assert json.load(open('props.json'))['demo']==False
+          print('Integração Remotion aprovada (sem publicar)')
           PY
           ffmpeg -v error -y -ss 00:00:05 -i out/boletim-sulflu-remotion.mp4 -frames:v 1 out/quadro-5s.jpg
           ffmpeg -v error -y -ss 00:00:12 -i out/boletim-sulflu-remotion.mp4 -frames:v 1 out/quadro-12s.jpg

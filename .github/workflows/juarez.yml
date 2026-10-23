@@ -22,6 +22,7 @@ on:
       - "hyperframes/**"
       - ".github/actions/setup-hyperframes/**"
       - ".github/workflows/juarez.yml"
+      - "lab/remotion-juarez/**"
   schedule:
     # dispara cedo e o job espera ate a hora certa — mesma tecnica do
     # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
@@ -116,12 +117,16 @@ jobs:
       - name: Gerar o Reel (Juarez Plantao — Antonio Neural)
         run: python ../hyperframes/gerar_hf.py --dados dia.json --render REEL.mp4
 
+      - name: Aplicar acabamento Remotion aprovado e validar antes de publicar
+        run: |
+          python ../lab/remotion-juarez/finalizar.py --video REEL.mp4 --pacote ../hyperframes/build/pacote.json --dados dia.json --production
+
       - name: Medir a duracao do video
         run: |
           DUR=$(ffprobe -v error -show_entries format=duration \
                 -of default=noprint_wrappers=1:nokey=1 REEL.mp4)
           echo "duracao real: ${DUR}s (alvo do plano v3: 18-22s)"
-          echo "### Reel do Juarez — ${DUR}s — Antonio Neural +10%" >> $GITHUB_STEP_SUMMARY
+          echo "### Reel do Juarez — ${DUR}s — Remotion + voz original (Antonio ou Kokoro reserva)" >> $GITHUB_STEP_SUMMARY
 
       - name: Guardar o video como artifact
         if: always()
@@ -132,6 +137,7 @@ jobs:
             reels/REEL.mp4
             reels/REEL_preview_720p.mp4
             reels/CAPA.jpg
+            lab/remotion-juarez/out/qa-probe.json
           retention-days: 2
 
       - name: Publicar o MP4 num Release
