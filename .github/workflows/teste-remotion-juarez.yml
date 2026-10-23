@@ -1,0 +1,89 @@
+name: TESTE Remotion Sul Flu - Juarez (nao publicar)
+on:
+  push:
+    branches:
+      - experimento/remotion-juarez-20261023
+    paths:
+      - 'lab/remotion-juarez/**'
+      - '.github/workflows/teste-remotion-juarez.yml'
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    env:
+      HYPERFRAMES_NO_TELEMETRY: '1'
+      DO_NOT_TRACK: '1'
+      PREVISAO_TTS: 'edge'
+      PREVISAO_TTS_FALLBACK: 'kokoro'
+      PREVISAO_EDGE_VOICE: 'pt-BR-AntonioNeural'
+      PREVISAO_EDGE_RATE: '+10%'
+      PREVISAO_EDGE_PITCH: '+6Hz'
+      PREVISAO_EDGE_VOLUME: '+6%'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            .github/actions/setup-hyperframes
+            assets
+            hyperframes
+            reels
+            video
+            tools
+            src
+            limiares.py
+            lab/remotion-juarez
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependencias locais
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -q ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config fonts-dejavu-core
+          pip install -r reels/requirements.txt
+      - uses: ./.github/actions/setup-hyperframes
+      - name: Gerar boletim Juarez original com dados demonstrativos
+        working-directory: reels
+        run: |
+          python ../hyperframes/gerar_hf.py --demo --render REEL_ORIGINAL_REMOTION.mp4
+          ffprobe -v error -show_entries stream=codec_type,width,height -of json REEL_ORIGINAL_REMOTION.mp4
+      - name: Preparar Remotion sem tocar no pipeline principal
+        working-directory: lab/remotion-juarez
+        run: |
+          mkdir -p public out
+          cp ../../reels/REEL_ORIGINAL_REMOTION.mp4 public/juarez-original.mp4
+          ffmpeg -v error -y -i public/juarez-original.mp4 -vn -ac 1 -ar 44100 public/voz-original.wav
+          python prepare_props.py
+          npm install --no-audit --no-fund
+          npx remotion browser ensure
+      - name: Renderizar MP4 com novo visual e validar
+        working-directory: lab/remotion-juarez
+        run: |
+          npx remotion render src/index.ts BoletimSulFlu out/boletim-sulflu-remotion.mp4 --props=props.json --codec=h264 --crf=21 --concurrency=2
+          ffprobe -v error -show_streams -show_format -of json out/boletim-sulflu-remotion.mp4 > out/qa-probe.json
+          python - <<'PY'
+          import json
+          p=json.load(open('out/qa-probe.json'))
+          v=[x for x in p['streams'] if x['codec_type']=='video']
+          a=[x for x in p['streams'] if x['codec_type']=='audio']
+          assert len(v)==1 and len(a)>=1
+          assert (v[0]['width'],v[0]['height'])==(1080,1920)
+          assert 15<=float(p['format']['duration'])<=120
+          print('QA: video com som e dimensoes corretas')
+          PY
+          ffmpeg -v error -y -ss 00:00:05 -i out/boletim-sulflu-remotion.mp4 -frames:v 1 out/quadro-5s.jpg
+          ffmpeg -v error -y -ss 00:00:12 -i out/boletim-sulflu-remotion.mp4 -frames:v 1 out/quadro-12s.jpg
+          cp props.json out/props-demo.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sulflu-remotion-juarez-demo
+          path: lab/remotion-juarez/out/
+          retention-days: 7
+          if-no-files-found: warn
