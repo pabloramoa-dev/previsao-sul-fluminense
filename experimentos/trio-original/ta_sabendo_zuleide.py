@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tá Sabendo, Zuleide? EP 01, Bebel e Zuleide originais com gancho e final."""
+"""Tá Sabendo, Zuleide? EP 01, Nina e Zuleide originais com gancho e final."""
 from __future__ import annotations
 import json
 import math
@@ -38,7 +38,7 @@ ROTEIRO = [
     ("maria", "Pois mandou para o grupo inteiro, até para dona Cida!", "GRUPO ERRADO"),
     ("nina", "Minha reputação pegou elevador expresso para a cobertura!", "ELEVADOR SUBINDO"),
     ("maria", "E esse homem elegante que passou a noite na sua sala?", "UM HOMEM NA SALA"),
-    ("nina", "Zuleide, sou uma mulher aberta a novas oportunidades!", "BEBEL SORRINDO"),
+    ("nina", "Zuleide, sou uma mulher aberta a novas oportunidades!", "NINA SORRINDO"),
     ("maria", "Você disse que ele não fala, não reclama e nunca discute!", "AUDIO MISTERIOSO"),
     ("nina", "Uma raridade. No meu histórico, é descoberta científica!", "DESCOBERTA"),
     ("maria", "Também disse que ele é lindo e combina com qualquer roupa!", "ROUPAS"),
@@ -60,9 +60,9 @@ ROTEIRO = [
     ("maria", "Agora preciso explicar isso para mil moradores!", "MIL MORADORES"),
     ("nina", "Vamos mandar outro áudio, no grupo certo!", "NOVO AUDIO"),
     ("maria", "Você não manda mais nada! Eu escrevo o comunicado!", "COMUNICADO OFICIAL"),
-    ("nina", "Coloca o título: o misterioso homem da Bebel!", "TITULO ENGRAÇADO"),
+    ("nina", "Coloca o título: o misterioso homem da Nina!", "TITULO ENGRAÇADO"),
     ("maria", "Nada disso! Bazar solidário, sábado, três da tarde.", "CONVITE BAZAR"),
-    ("nina", "Sem graça. Assim ninguém vai querer abrir!", "BEBEL DESANIMADA"),
+    ("nina", "Sem graça. Assim ninguém vai querer abrir!", "NINA DESANIMADA"),
     ("maria", "Uma foto do manequim resolve esse mistério.", "FOTO DO MANEQUIM"),
     ("nina", "Boa! Mas preciso tirar a camisa dele para vender!", "CAMISA NO CABIDE"),
     ("maria", "Vou ajudar antes que invente outra manchete!", "ZULEIDE VISITA"),
@@ -72,19 +72,21 @@ ROTEIRO = [
     ("maria", "E esse chapéu?", "CHAPEU"),
     ("nina", "É charme! Se não vender roupa, vende elegância!", "ROUPAS DO BAZAR"),
     ("maria", "Você precisa parar de transformar tudo em novela!", "NOVELA"),
-    ("nina", "E perder a melhor parte da vida? Nunca!", "BEBEL FELIZ"),
+    ("nina", "E perder a melhor parte da vida? Nunca!", "NINA FELIZ"),
     ("maria", "Chegaram respostas! Os moradores vão doar roupas!", "DOACOES"),
     ("nina", "Então o homem misterioso fez bem ao condomínio!", "SOLIDARIEDADE"),
     ("maria", "E você também. Nossa brinquedoteca vai ficar linda!", "BRINQUEDOTECA"),
     ("nina", "Viu? Uma boa fofoca pode virar boa ação!", "FINAL FELIZ"),
     ("maria", "Mas dona Cida perguntou se o manequim está solteiro.", "MENSAGEM CIDA"),
     ("nina", "Diz que está disponível com desconto no bazar!", "OFERTA"),
-    ("maria", "Bebel! Vai vender o namorado?", "ZULEIDE CHOCADA"),
+    ("maria", "Nina! Vai vender o namorado?", "ZULEIDE CHOCADA"),
     ("nina", "Se ele ajudar na brinquedoteca, até o chapéu vai junto!", "PIADA FINAL"),
 ]
 VOICES = {"nina": ("pf_dora", 1.02, 1.0),
           "maria": ("pf_dora", 0.95, 0.94)}
 SR = 44100
+# Risadas naturais após as piadas; a voz falada permanece Kokoro original.
+RISADA_APOS = {5: "nina", 12: "maria", 21: "nina", 29: "nina", 36: "maria", 48: "maria"}
 
 
 def run(*cmd):
@@ -139,11 +141,25 @@ def preparar():
             fatias.append(samples[ini:fim].copy())
         por_pessoa[pessoa] = fatias
 
-    ordem = {"nina": 0, "ranzinza": 0, "maria": 0}
+    ordem = {who:0 for who in VOICES}
     parte_audio = []
     timeline = []
+    risadas = []
+    som_riso = {}
+    for pessoa in VOICES:
+        path_riso = BUILD / ("risada_"+pessoa+".wav")
+        if not path_riso.exists():
+            raise FileNotFoundError("Risada CC0 nao baixada: "+str(path_riso))
+        som = wav_read(path_riso)[:int(1.10*SR)]
+        peak = float(np.max(np.abs(som))) or 1.
+        som = (som / peak * 0.40).astype(np.float32)
+        fade=min(len(som)//3, int(0.055*SR))
+        if fade:
+            som[:fade]*=np.linspace(0,1,fade)
+            som[-fade:]*=np.linspace(1,0,fade)
+        som_riso[pessoa] = som
     cursor = 0
-    for pessoa, fala, ilustracao in ROTEIRO:
+    for i,(pessoa,fala,ilustracao) in enumerate(ROTEIRO):
         pedaco = por_pessoa[pessoa][ordem[pessoa]]
         ordem[pessoa] += 1
         ini = cursor / SR
@@ -152,8 +168,21 @@ def preparar():
         fim = cursor / SR
         timeline.append({"personagem": pessoa, "fala": fala,
                          "ilustracao": ilustracao, "ini": ini, "fim": fim})
-        parte_audio.append(np.zeros(round(0.22 * SR), dtype=np.float32))
-        cursor += round(0.22 * SR)
+        if i in RISADA_APOS:
+            pause=np.zeros(int(0.12*SR), dtype=np.float32)
+            parte_audio.append(pause)
+            cursor+=len(pause)
+            r_start=cursor/SR
+            ri=som_riso[RISADA_APOS[i]]
+            parte_audio.append(ri)
+            cursor+=len(ri)
+            risadas.append({"personagem":RISADA_APOS[i],
+                            "ini":r_start, "fim":cursor/SR, "apos_fala":i})
+            pause=np.zeros(int(0.23*SR), dtype=np.float32)
+        else:
+            pause=np.zeros(int(0.22*SR), dtype=np.float32)
+        parte_audio.append(pause)
+        cursor+=len(pause)
     audio = np.concatenate(parte_audio)
     wav_write(BUILD / "trio_original.wav", audio)
     # Executa diretamente a implementação ORIGINAL do Sul Fluminense,
@@ -161,7 +190,7 @@ def preparar():
     run(sys.executable, REELS / "lipsync_amplitude.py",
         BUILD / "trio_original.wav", BUILD / "lip_original.json", "--fps", 24)
     cues = json.loads((BUILD / "lip_original.json").read_text())["mouthCues"]
-    info = {"timeline": timeline, "mouthCues": cues, "duration": len(audio) / SR,
+    info = {"timeline": timeline, "risadas": risadas, "mouthCues": cues, "duration": len(audio) / SR,
             "source": {"nina": "nina_source/motor/nina_lib.py",
                        "ranzinza_maria": "reels/previsao_lib.py",
                        "voice": "scripts originais Kokoro com filtros originais"}}
@@ -177,7 +206,7 @@ class PortariaSabe(Scene):
         timeline = cfg["timeline"]
         cues = cfg["mouthCues"]
         self.camera.background_color = "#101725"
-        nomes = {"nina": "BEBEL", "maria": "DONA ZULEIDE"}
+        nomes = {"nina": "NINA", "maria": "DONA ZULEIDE"}
         cores = {"nina": "#4A304C", "ranzinza": "#354150", "maria": "#405447"}
         personagens = {
             "nina": NL.nina(expr="ironica", cenario="tarde"),
@@ -200,7 +229,7 @@ class PortariaSabe(Scene):
             ).move_to([0, y, 0])
             accent = Line([-3.86, y+3.05, 0], [3.86, y+3.05, 0],
                           color="#DBB972", stroke_width=6)
-            nome = Text("BEBEL", font="DejaVu Sans", font_size=34,
+            nome = Text("NINA", font="DejaVu Sans", font_size=34,
                         weight="BOLD", color="#FFE4A5").move_to([-2.0, y+2.66, 0])
             suporte = RoundedRectangle(corner_radius=0.20, width=3.42, height=4.16,
                                       fill_color="#121E2E", fill_opacity=1,
@@ -258,6 +287,11 @@ class PortariaSabe(Scene):
             idx=max(0,min(len(timeline)-1,bisect_right(beginnings,t)-1))
             it=timeline[idx]
             quem=it["personagem"] if t < it["fim"] else None
+            # A boca acompanha o efeito sonoro durante o riso.
+            for riso in cfg.get("risadas", []):
+                if riso["ini"] <= t < riso["fim"]:
+                    quem = riso["personagem"]
+                    break
             par=dupla(idx)
             if idx!=clock_state["idx"]:
                 clock_state["idx"]=idx
