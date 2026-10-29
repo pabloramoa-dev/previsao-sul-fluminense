@@ -1,0 +1,67 @@
+name: Piloto experimental — Nina Ranzinza Dona Maria originais
+on:
+  push:
+    branches:
+      - experimento/trio-original-20261029
+    paths:
+      - .github/workflows/trio-original-piloto.yml
+      - experimentos/trio-original/**
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  renderizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Importar personagem original da Nina
+        uses: actions/checkout@v4
+        with:
+          repository: pabloramoa-dev/nina-me-contou
+          ref: main
+          path: nina_source
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependências para os motores Manim e Kokoro originais
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng libcairo2-dev libpango1.0-dev pkg-config fonts-dejavu-core
+          python -m pip install -r reels/requirements.txt
+      - name: Cache do modelo de voz Kokoro original
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
+      - name: Gerar falas usando os geradores oficiais de cada personagem
+        env:
+          PREVISAO_TTS: kokoro
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python experimentos/trio-original/renderizar.py --prepare
+      - name: Renderizar os três personagens originais numa tela
+        run: |
+          manim --disable_caching --fps 24 --resolution 720,1280 experimentos/trio-original/renderizar.py TrioPiloto
+      - name: Montar arquivo final vertical com áudio original
+        run: |
+          VIDEO=$(find media/videos -type f -name 'TrioPiloto.mp4' | head -1)
+          test -n "$VIDEO" && test -s "$VIDEO"
+          ffmpeg -y -loglevel error -i "$VIDEO" \
+            -i experimentos/trio-original/build/trio_original.wav \
+            -map 0:v:0 -map 1:a:0 -vf scale=1080:1920 \
+            -r 24 -c:v libx264 -preset veryfast -crf 23 -pix_fmt yuv420p \
+            -c:a aac -b:a 160k -movflags +faststart -shortest \
+            experimentos/trio-original/build/piloto_trio_original.mp4
+          ffprobe -v error -show_entries stream=codec_type,width,height -of default=noprint_wrappers=1 experimentos/trio-original/build/piloto_trio_original.mp4
+      - name: Entregar MP4 para avaliação sem publicar em redes sociais
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: piloto-trio-personagens-originais
+          path: |
+            experimentos/trio-original/build/piloto_trio_original.mp4
+            experimentos/trio-original/build/timeline.json
+          if-no-files-found: warn
+          retention-days: 3
