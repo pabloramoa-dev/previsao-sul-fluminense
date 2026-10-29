@@ -148,6 +148,7 @@ class TrioPiloto(Scene):
         # Somente a escala e a posição são alteradas para dividir a tela em 3.
         panels = {}
         all_subs = []
+        all_visuals = []
         for pessoa, y in centers.items():
             fundo = Rectangle(width=frame_w, height=4.40,
                               fill_color=cores[pessoa], fill_opacity=1,
@@ -164,6 +165,7 @@ class TrioPiloto(Scene):
             self.add(cartao)
             hint = Text("CENA ILUSTRADA", font_size=19,
                         font="DejaVu Sans", color="#A9BCD3").move_to([1.78, y - 0.98, 0])
+            hint.set_opacity(0)
             self.add(hint)
             glyph = Text(icons[pessoa], font_size=78,
                          font="DejaVu Sans", color="#F2D7A0").move_to([1.78, y + 0.40, 0])
@@ -189,6 +191,14 @@ class TrioPiloto(Scene):
             legenda.set_opacity(0)
             self.add(legenda)
             all_subs.append(legenda)
+            ilustracao = Text(item["ilustracao"], font="DejaVu Sans",
+                              font_size=22, color="#F2D7A0", weight="BOLD")
+            if ilustracao.width > 3.1:
+                ilustracao.scale_to_fit_width(3.1)
+            ilustracao.move_to([1.78, y - 1.01, 0])
+            ilustracao.set_opacity(0)
+            self.add(ilustracao)
+            all_visuals.append(ilustracao)
 
         # Reaproveita as bocas originais: Nina por nina_lib.boca_fala,
         # e casal por dvh_lip.boca_visema do Sul Fluminense.
@@ -208,12 +218,13 @@ class TrioPiloto(Scene):
             estado["gesture"][pessoa] = 0.0
             estado["iris"][pessoa] = 0.0
         def updater(clock, dt):
-            t = self.renderer.time
+            t = estado["tempo"]
             ativo = next((i for i, it in enumerate(timeline)
                           if it["ini"] <= t < it["fim"]), -1)
             falante = timeline[ativo]["personagem"] if ativo >= 0 else None
             for i, (item, sub) in enumerate(zip(timeline, all_subs)):
                 sub.set_opacity(1 if i == ativo else 0)
+                all_visuals[i].set_opacity(1 if i == ativo else 0)
 
             cue = next((c["value"] for c in mouth_cues
                         if c["start"] <= t < c["end"]), "X")
@@ -262,11 +273,17 @@ class TrioPiloto(Scene):
                 pane["card"].set_stroke(color="#FFE28B" if ativo_pessoa else "#C3A56A",
                                         width=5 if ativo_pessoa else 2)
 
-        clock = VMobject()
-        clock.add_updater(updater)
+        # A animação é conduzida explicitamente por alpha do Manim.
+        # Scene.wait pode congelar updaters em frames sem mobjects mutáveis.
+        # UpdateFromAlphaFunc força atualização de boca, olhos e respiração em CADA quadro.
+        estado["tempo"] = 0.0
+        clock = Dot(point=ORIGIN, radius=0.001, fill_opacity=0, stroke_opacity=0)
         self.add(clock)
-        self.wait(cfg["duration"])
-        clock.clear_updaters()
+        def atualizar_quadro(obj, alpha):
+            estado["tempo"] = min(cfg["duration"] - 0.00001, max(0.0, alpha * cfg["duration"]))
+            updater(obj, 0.0)
+        self.play(UpdateFromAlphaFunc(clock, atualizar_quadro),
+                  run_time=cfg["duration"], rate_func=linear)
 
 
 if __name__ == "__main__":
