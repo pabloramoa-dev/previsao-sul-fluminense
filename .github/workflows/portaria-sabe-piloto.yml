@@ -1,0 +1,79 @@
+name: A Portaria Sabe — episódio 01 piloto original (sem publicar)
+on:
+  push:
+    branches: [experimento/portaria-sabe-ep01-20261029]
+    paths:
+      - ".github/workflows/portaria-sabe-piloto.yml"
+      - "experimentos/trio-original/portaria_sabe.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  piloto:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Importar motor original da Nina sem vídeos históricos
+        uses: actions/checkout@v4
+        with:
+          repository: pabloramoa-dev/nina-me-contou
+          ref: main
+          path: nina_source
+          filter: blob:none
+          sparse-checkout: motor
+          sparse-checkout-cone-mode: true
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar motores originais Manim e Kokoro
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng libcairo2-dev libpango1.0-dev pkg-config fonts-dejavu-core
+          python -m pip install -r reels/requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/dvh_kokoro
+          key: kokoro-v1.0
+      - name: Criar falas e antecipação com vozes oficiais
+        env:
+          PREVISAO_TTS: kokoro
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python experimentos/trio-original/portaria_sabe.py --prepare
+          python - <<'PY'
+          import json
+          p="experimentos/trio-original/build/timeline.json"
+          d=json.load(open(p))
+          print(f"Duracao de narracao: {d['duration']:.1f}s; falas: {len(d['timeline'])}")
+          assert len(d["timeline"]) > 35
+          assert 120 < d["duration"] < 260, "Roteiro fora do intervalo para piloto de tres minutos"
+          PY
+      - name: Animar os desenhos originais e diálogos em duplas
+        run: |
+          manim --disable_caching --fps 24 --resolution 720,1280 \
+            experimentos/trio-original/portaria_sabe.py PortariaSabe
+      - name: Montar MP4 vertical com vozes originais
+        run: |
+          VIDEO=$(find media/videos -type f -name "PortariaSabe.mp4" | head -1)
+          test -n "$VIDEO" && test -s "$VIDEO"
+          ffmpeg -y -loglevel error -i "$VIDEO" \
+            -i experimentos/trio-original/build/trio_original.wav \
+            -map 0:v:0 -map 1:a:0 -vf scale=1080:1920 \
+            -r 24 -c:v libx264 -preset veryfast -crf 23 -pix_fmt yuv420p \
+            -c:a aac -b:a 160k -movflags +faststart -shortest \
+            experimentos/trio-original/build/a_portaria_sabe_ep01.mp4
+          ffprobe -v error -show_entries format=duration \
+            -of default=noprint_wrappers=1:nokey=1 \
+            experimentos/trio-original/build/a_portaria_sabe_ep01.mp4
+      - name: Entregar para avaliação, sem publicação automática
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a-portaria-sabe-ep01-piloto-mp4
+          path: |
+            experimentos/trio-original/build/a_portaria_sabe_ep01.mp4
+            experimentos/trio-original/build/timeline.json
+          if-no-files-found: warn
+          retention-days: 7
