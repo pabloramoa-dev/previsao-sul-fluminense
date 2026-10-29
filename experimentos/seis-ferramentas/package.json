@@ -1,0 +1,17 @@
+{
+  "name": "nina-zuleide-experimento-cinematico",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "render": "remotion render composition.tsx NinaZuleideSeisFerramentas out/nina_zuleide_cinematico.mp4 --codec h264 --crf 24 --concurrency 2"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.409",
+    "@remotion/noise": "4.0.409",
+    "@remotion/google-fonts": "4.0.409",
+    "remotion": "4.0.409",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "culori": "4.0.2"
+  }
+}
