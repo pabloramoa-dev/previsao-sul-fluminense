@@ -19,6 +19,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Instalar FFmpeg e fontes
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg fonts-dejavu-core
       - name: Carregar vídeo original Nina/Zuleide do GitHub Actions
         env:
           GH_TOKEN: ${{ github.token }}
