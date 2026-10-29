@@ -68,6 +68,7 @@ jobs:
         working-directory: experimentos/seis-ferramentas
         run: |
           npm install --no-audit --no-fund
+          ln -s "$(pwd)/node_modules" ../../third_party/node_modules
           npx remotion render composition.tsx NinaZuleideSeisFerramentas out/base_cinematico.mp4 --codec h264 --crf 28 --concurrency 2 --log error
       - name: Finalizar legendas Auto Caption e áudio original
         working-directory: experimentos/seis-ferramentas
