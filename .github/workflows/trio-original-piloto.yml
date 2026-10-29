@@ -21,6 +21,9 @@ jobs:
           repository: pabloramoa-dev/nina-me-contou
           ref: main
           path: nina_source
+          filter: blob:none
+          sparse-checkout: motor
+          sparse-checkout-cone-mode: true
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
