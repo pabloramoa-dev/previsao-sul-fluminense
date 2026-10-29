@@ -3,7 +3,7 @@ on:
   push:
     branches: [experimento/portaria-sabe-ep02-encomenda-20261029]
     paths:
-      - ".github/workflows/portaria-sabe-piloto.yml"
+      - ".github/workflows/portaria-sabe-ep02.yml"
       - "experimentos/trio-original/portaria_sabe_ep02.py"
   workflow_dispatch:
 permissions:
