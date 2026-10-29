@@ -31,52 +31,52 @@ config.pixel_width = 720
 config.pixel_height = 1280
 
 ROTEIRO = [
-    ("nina", "Um homem bonito visitou três apartamentos do meu prédio na mesma noite. Eu achei que tinha descoberto um romance secreto. Só não imaginava que meu nome estava na lista dele!", "TRES VISITAS"),
-    ("nina", "E quando a síndica apareceu, eu descobri que a história era muito pior para o meu orgulho. Volta comigo para o começo!", "VOLTA AO COMECO"),
-    ("nina", "Seu Osvaldo, o senhor viu aquele rapaz de camisa azul que entrou ontem à noite?", "RAPAZ DE AZUL"),
-    ("ranzinza", "Vi, e vi você rondando a portaria três vezes. Está procurando encomenda ou namorado?", "OLHO NA PORTARIA"),
-    ("nina", "Depende. Se a encomenda tiver olhos bonitos, eu aceito os dois!", "ENCOMENDA ESPECIAL"),
-    ("ranzinza", "Pois o bonitão subiu para o doze zero dois, depois o vinte e três zero quatro.", "ANDAR 12 E 23"),
-    ("nina", "E depois veio procurar o dezoito zero um, que por acaso é o meu apartamento!", "APTO 1801"),
-    ("ranzinza", "Não foi procurar você. Pediu para deixar este envelope e foi embora.", "ENVELOPE"),
-    ("nina", "Um envelope com meu nome? Ah, finalmente o destino resolveu aprender meu endereço!", "NOME NO ENVELOPE"),
-    ("ranzinza", "Leia antes de inventar casamento, dona Bebel. Está escrito: você é a próxima.", "VOCE E A PROXIMA"),
-    ("nina", "Como assim, eu sou a próxima? Próxima de quê? De casar, de mudar ou de passar vergonha?", "BILHETE MISTERIOSO"),
-    ("ranzinza", "Com a sua sorte, os três. E não venha me pedir para investigar a vida dos moradores.", "CAMERAS"),
-    ("nina", "Mas o senhor já investigou. Até sabe quantos andares ele visitou!", "REGISTRO DE ENTRADA"),
-    ("ranzinza", "Eu trabalho aqui, menina. Investigar é serviço. Fofocar é o seu esporte olímpico.", "PORTEIRO ATENTO"),
-    ("nina", "Então faça um favor profissional: pergunta à dona Zuleide se ela conhece esse homem.", "SALA DA SINDICA"),
-    ("ranzinza", "Zuleide, vem cá. A Bebel está criando uma novela por causa de um envelope.", "CHAMADA INTERNA"),
-    ("maria", "Se for a Bebel, eu já separo o livro de ocorrências e dois comprimidos para dor de cabeça.", "LIVRO DE OCORRENCIAS"),
-    ("ranzinza", "Um moço entrou em três apartamentos. A última parada foi perto do dela.", "TRES APARTAMENTOS"),
-    ("maria", "Eu sei muito bem quem é esse moço. E você devia parar de anotar visita como se fosse detetive.", "LISTA DE VISITAS"),
-    ("ranzinza", "Eu? Mas você instalou uma pasta chamada acontecimentos suspeitos no computador da portaria!", "PASTA SUSPEITA"),
-    ("maria", "É controle de condomínio! Aliás, o apartamento vinte e três zero quatro estava vazio ontem.", "APTO VAZIO"),
-    ("ranzinza", "Vazio? O sujeito passou vinte minutos lá dentro! Então agora eu quero saber o que houve.", "PORTA FECHADA"),
-    ("maria", "Calma, Osvaldo. Tudo tem explicação, mas eu não vou estragar a surpresa.", "SEGREDO DA SINDICA"),
-    ("ranzinza", "Surpresa comigo trabalhando? Só espero que não seja mais uma assembleia de três horas.", "REUNIAO"),
-    ("maria", "Chama a Bebel. Antes que ela conte no grupo do prédio que apareceu um galã internacional.", "GRUPO DO PREDIO"),
-    ("nina", "Dona Zuleide, me diga a verdade. O homem tem duas namoradas ou três?", "BOATO"),
-    ("maria", "Nenhuma! E tire esse sorriso de investigação da cara, minha filha.", "SEM NAMORADAS"),
-    ("nina", "Então por que ele passou no doze zero dois, no vinte e três zero quatro e deixou meu nome num bilhete?", "TRES PORTAS"),
-    ("maria", "O doze zero dois é da dona Cida, que toca piano. O vinte e três zero quatro está reservado para ensaios.", "PIANO E ENSAIO"),
-    ("nina", "Ensaios? A senhora está montando um programa de televisão escondido no condomínio?", "CAMERA E PALCO"),
-    ("maria", "Quase. Vamos fazer o primeiro show de talentos da Torre mil e um.", "SHOW DE TALENTOS"),
-    ("nina", "Pera aí. Aquele rapaz bonito trabalha com eventos? E eu estou na lista por qual motivo?", "LISTA DE PARTICIPANTES"),
-    ("maria", "Porque eu escolhi você para apresentar o show. Você sabe falar até quando ninguém perguntou nada.", "MICROFONE"),
-    ("nina", "Apresentadora? Eu achei que o universo estivesse mandando um pretendente!", "MICROFONE OU ROMANCE"),
-    ("maria", "O universo mandou responsabilidade. Já é uma novidade para o seu apartamento.", "CONVITE"),
-    ("nina", "Mas e se eu travar no palco? O prédio inteiro vai rir de mim.", "PALCO"),
-    ("maria", "Bebel, você já discutiu com o porteiro pelo interfone durante quinze minutos. Palco não assusta você.", "INTERFONE"),
-    ("nina", "Tá bom, eu apresento. Mas escolho meu figurino, meus comentários e o horário do intervalo!", "ACEITO O CONVITE"),
-    ("maria", "Fechado. E por favor, nada de transformar a premiação em aplicativo de encontros.", "TROFEU"),
-    ("nina", "Seu Osvaldo, descobri tudo! O galã era produtor, e eu virei apresentadora do show.", "PRODUTOR"),
-    ("ranzinza", "Eu sabia. Não tinha cara de namorado. Tinha cara de quem vende ingresso caro.", "INGRESSOS"),
-    ("nina", "E a melhor parte: ele me chamou para tomar um café depois do ensaio.", "CONVITE PARA CAFE"),
-    ("ranzinza", "Eu conheço esse café. É a máquina da portaria, e ela está quebrada há duas semanas.", "MAQUINA QUEBRADA"),
-    ("nina", "Então amanhã eu trago o café. E o senhor faz o favor de não espantar meu convidado!", "CAFE AMANHA"),
-    ("ranzinza", "Desde que não me faça cantar no show, pode trazer até a banda inteira.", "PORTEIRO CANTOR"),
-    ("nina", "Combinado! O mistério das três visitas acabou. Agora falta descobrir se meu talento é apresentar... ou me meter em confusão!", "FIM DO MISTERIO"),
+    ("nina", "Ontem, um homem lindo visitou três apartamentos. E meu nome estava na lista dele! Eu achei que era romance. Mal sabia da confusão que vinha!", "TRES VISITAS"),
+    ("nina", "Mas a síndica já sabia de tudo. Volta comigo para o começo!", "A HISTORIA COMECA"),
+    ("nina", "Seu Osvaldo, viu aquele rapaz bonito de camisa azul?", "VISITANTE"),
+    ("ranzinza", "Vi. E vi você rondando a portaria três vezes!", "PORTARIA"),
+    ("nina", "Não rondava. Eu pesquisava o mercado de pretendentes!", "BEBEL INVESTIGA"),
+    ("ranzinza", "O sujeito foi ao doze zero dois e ao vinte e três zero quatro.", "DOIS APARTAMENTOS"),
+    ("nina", "Depois perguntou pelo dezoito zero um. Meu apartamento!", "APTO 1801"),
+    ("ranzinza", "Deixou um envelope com seu nome. E foi embora.", "ENVELOPE"),
+    ("nina", "Finalmente! O destino aprendeu meu endereço!", "CARTA MISTERIOSA"),
+    ("ranzinza", "Leia antes de casar. Está escrito: você é a próxima.", "BILHETE"),
+    ("nina", "Próxima de quê? De namorar ou de passar vergonha?", "UM SEGREDO"),
+    ("ranzinza", "Com sua sorte, os dois. Não me envolva nisso!", "RABUGICE"),
+    ("nina", "Mas o senhor já investigou até os andares!", "REGISTRO"),
+    ("ranzinza", "Sou porteiro! Fofocar é seu esporte, não o meu.", "CAMERAS"),
+    ("nina", "Então chama a síndica. Ela conhece todo mundo!", "SINDICA"),
+    ("ranzinza", "Zuleide, a Bebel inventou uma novela por causa de um envelope.", "INTERFONE"),
+    ("maria", "Se é a Bebel, vou buscar meu livro de ocorrências!", "LIVRO"),
+    ("ranzinza", "O rapaz entrou em três apartamentos. Você conhece?", "VISITAS"),
+    ("maria", "Conheço. E pare de bancar o detetive, Osvaldo!", "SINDICA SABE"),
+    ("ranzinza", "Você criou uma pasta chamada moradores suspeitos no computador!", "ARQUIVO"),
+    ("maria", "Isso é administração! Aliás, o vinte e três zero quatro estava vazio.", "APTO VAZIO"),
+    ("ranzinza", "Vazio? Ele ficou vinte minutos lá dentro!", "PORTA FECHADA"),
+    ("maria", "Tudo tem explicação. Só não posso estragar a surpresa.", "SURPRESA"),
+    ("ranzinza", "Surpresa comigo trabalhando? Espero que não seja assembleia!", "REUNIAO"),
+    ("maria", "Chame a Bebel antes que ela espalhe isso no grupo.", "GRUPO DO PREDIO"),
+    ("nina", "Dona Zuleide, aquele homem tem duas namoradas ou três?", "FOFOCA"),
+    ("maria", "Nenhuma! Pare de inventar romance, menina!", "NENHUMA"),
+    ("nina", "E por que meu nome apareceu naquele bilhete?", "BILHETE"),
+    ("maria", "Dona Cida, do doze zero dois, toca piano. O outro apartamento virou sala de ensaio.", "PIANO"),
+    ("nina", "Ensaio? A senhora vai gravar televisão escondida?", "ENSAIO"),
+    ("maria", "Quase! Faremos o primeiro show de talentos da Torre mil e um!", "SHOW"),
+    ("nina", "O rapaz é produtor? E eu estou na lista por quê?", "LISTA"),
+    ("maria", "Porque você vai apresentar o show. Você fala por três!", "MICROFONE"),
+    ("nina", "Apresentadora? Eu esperava um namorado, não um emprego!", "CONVITE"),
+    ("maria", "O universo mandou responsabilidade. Já é novidade!", "RESPONSABILIDADE"),
+    ("nina", "Mas e se eu travar diante de todo mundo?", "PALCO"),
+    ("maria", "Você discute pelo interfone sem respirar. Vai conseguir!", "INTERFONE"),
+    ("nina", "Tá bem! Eu apresento. Mas escolho meu figurino!", "ACEITO"),
+    ("maria", "Fechado! Só não transforme o show em aplicativo de namoro!", "ACORDO"),
+    ("nina", "Seu Osvaldo, descobri tudo! O galã é produtor e eu, apresentadora.", "REVELACAO"),
+    ("ranzinza", "Eu sabia! Não tinha cara de namorado. Tinha cara de vendedor!", "PORTEIRO"),
+    ("nina", "E ele me convidou para um café depois do ensaio!", "CAFE"),
+    ("ranzinza", "Na máquina da portaria? Está quebrada há duas semanas!", "MAQUINA"),
+    ("nina", "Então eu trago o café. E o senhor não espante meu convidado!", "ENCONTRO"),
+    ("ranzinza", "Só se prometer que não vai me fazer cantar!", "PROMESSA"),
+    ("nina", "Mistério resolvido! Agora só falta eu não passar vergonha no palco!", "FIM"),
 ]
 VOICES = {"nina": ("pf_dora", 1.02, 1.0),
           "ranzinza": ("pm_alex", 0.95, 0.88),
@@ -269,6 +269,19 @@ class PortariaSabe(Scene):
                 subtitle.move_to([0,Y[sub_idx]-2.52,0])
                 illus.become(visuals[idx].copy())
                 illus.move_to([1.91,Y[sub_idx]-1.38,0])
+                key = it["ilustracao"].upper()
+                sym = ("3" if "VISITA" in key or "APARTAMENT" in key else
+                       "18" if "1801" in key else
+                       "!" if "SURPRESA" in key or "SEGREDO" in key else
+                       "@" if "GRUPO" in key or "INTERFONE" in key else
+                       "01" if "SHOW" in key or "PALCO" in key or "ENSAIO" in key else
+                       "?" if "MISTERIO" in key else
+                       "✓" if "FIM" in key or "ACEITO" in key else
+                       "•")
+                for slot,pane in enumerate(panes):
+                    pane["icone"].become(Text(sym, font="DejaVu Sans",
+                                              font_size=90, color="#F4D59D"))
+                    pane["icone"].move_to([1.91,Y[slot]+0.42,0])
                 clock_state["duo"]=par
                 for slot,who in enumerate(par):
                     pane=panes[slot]
