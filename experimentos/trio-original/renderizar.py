@@ -113,9 +113,11 @@ def preparar():
         cursor += round(0.22 * SR)
     audio = np.concatenate(parte_audio)
     wav_write(BUILD / "trio_original.wav", audio)
-    # Reutiliza o algoritmo de lipsync do Sul Fluminense sem refazer suas regras.
-    from lipsync_amplitude import gerar_cues
-    cues = gerar_cues(audio, SR, fps=24)
+    # Executa diretamente a implementação ORIGINAL do Sul Fluminense,
+    # evitando o arquivo homônimo do projeto Nina.
+    run(sys.executable, REELS / "lipsync_amplitude.py",
+        BUILD / "trio_original.wav", BUILD / "lip_original.json", "--fps", 24)
+    cues = json.loads((BUILD / "lip_original.json").read_text())["mouthCues"]
     info = {"timeline": timeline, "mouthCues": cues, "duration": len(audio) / SR,
             "source": {"nina": "nina_source/motor/nina_lib.py",
                        "ranzinza_maria": "reels/previsao_lib.py",
@@ -153,7 +155,7 @@ class TrioPiloto(Scene):
             fundo.move_to([0, y, 0])
             self.add(fundo)
             nome = Text(exibicao[pessoa], font="DejaVu Sans", font_size=27,
-                        weight=BOLD, color="#FFE1A6").move_to([-1.8, y + 1.90, 0])
+                        weight="BOLD", color="#FFE1A6").move_to([-1.8, y + 1.90, 0])
             self.add(nome)
             cartao = RoundedRectangle(corner_radius=0.12, width=3.47, height=2.70,
                                       fill_color="#151E2B", fill_opacity=1,
@@ -180,7 +182,7 @@ class TrioPiloto(Scene):
             pessoa = item["personagem"]
             y = centers[pessoa]
             legenda = Text(textwrap.fill(item["fala"], 46), font="DejaVu Sans",
-                           font_size=27, color=WHITE, weight=MEDIUM)
+                           font_size=27, color=WHITE, weight="MEDIUM")
             if legenda.width > 7.35:
                 legenda.scale_to_fit_width(7.35)
             legenda.move_to([0, y - 1.77, 0])
