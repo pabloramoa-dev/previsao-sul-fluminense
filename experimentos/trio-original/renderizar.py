@@ -24,6 +24,12 @@ sys.path.insert(0, str(NINA))
 import nina_lib as NL
 from manim import *
 
+# Geometria original para tela vertical: três segmentos no formato 9:16.
+config.frame_width = 8.0
+config.frame_height = 14.222
+config.pixel_width = 720
+config.pixel_height = 1280
+
 ROTEIRO = [
     ("nina", "Gente, chegou uma mensagem sobre o quarto doze.", "MENSAGEM MISTERIOSA"),
     ("ranzinza", "Quarto doze? Eu mandei trancar aquela porta!", "PORTA TRANCADA"),
@@ -191,7 +197,7 @@ class TrioPiloto(Scene):
             else:
                 original = p["boca"]
             mouths[pessoa] = {"original": original, "center": original.get_center().copy(),
-                             "object": VMobject(), "status": None}
+                             "object": VGroup(), "status": None}
             self.add(mouths[pessoa]["object"])
 
         # Atualização independente de cena e fala, sincronizada ao áudio real.
@@ -222,7 +228,7 @@ class TrioPiloto(Scene):
                     mouth["object"].become(shape)
                     mouth["object"].move_to(mouth["original"].get_center())
                 elif mouth["status"] != "quiet":
-                    mouth["object"].become(VMobject())
+                    mouth["object"].become(VGroup())
                 mouth["status"] = "talk" if speaking else "quiet"
 
                 # Respiração; deslocamentos suaves sem deformar os modelos.
