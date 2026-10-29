@@ -1,0 +1,52 @@
+name: Nina Zuleide Kugutu - converter modelos originais SVG
+on:
+  push:
+    branches: [experimento/nina-zuleide-kugutu-real-20261029]
+    paths:
+      - "experimentos/kugutu-original/**"
+      - ".github/workflows/nina-zuleide-kugutu.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  exportar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pabloramoa-dev/nina-me-contou
+          path: nina_source
+          sparse-checkout: motor
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Dependências do motor original
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg libcairo2-dev libpango1.0-dev pkg-config fonts-dejavu-core
+          python -m pip install -r reels/requirements.txt
+      - name: Converter curvas originais Manim em SVG com slots Kugutu
+        run: python experimentos/kugutu-original/export_svg_original.py
+      - name: Empacotar e validar os dois atores com CLI real Kugutu
+        run: |
+          npm install -g @kugutu/cli
+          for NOME in nina maria; do
+            P=experimentos/kugutu-original/source/$NOME
+            kugutu validate "$P/character.json"
+            kugutu lint "$P/character.json" "$P/artwork.svg"
+            kugutu pack "$P/character.json" "$P/artwork.svg" --out "$P/$NOME.charpack"
+          done
+      - name: Entregar artes derivadas dos originais para inspeção
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kugutu-nina-zuleide-svg-original
+          path: experimentos/kugutu-original/source/
+          retention-days: 7
