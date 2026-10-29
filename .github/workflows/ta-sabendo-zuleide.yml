@@ -39,10 +39,10 @@ jobs:
       - name: Baixar risadas CC0 de voz feminina, sem API paga
         run: |
           mkdir -p experimentos/trio-original/build
-          curl -fL --retry 3 --retry-delay 2 -o experimentos/trio-original/build/risada_nina_origem.wav https://sfxmint.com/dl/laugh-05.wav
-          curl -fL --retry 3 --retry-delay 2 -o experimentos/trio-original/build/risada_maria_origem.wav https://sfxmint.com/dl/laugh-04.wav
-          ffmpeg -y -loglevel error -i experimentos/trio-original/build/risada_nina_origem.wav -ar 44100 -ac 1 -c:a pcm_s16le experimentos/trio-original/build/risada_nina.wav
-          ffmpeg -y -loglevel error -i experimentos/trio-original/build/risada_maria_origem.wav -ar 44100 -ac 1 -c:a pcm_s16le experimentos/trio-original/build/risada_maria.wav
+          curl -fL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 40 -o experimentos/trio-original/build/risada_nina_origem.mp3 https://sfxmint.com/dl/laugh-05.mp3
+          curl -fL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 40 -o experimentos/trio-original/build/risada_maria_origem.mp3 https://sfxmint.com/dl/laugh-04.mp3
+          ffmpeg -y -loglevel error -i experimentos/trio-original/build/risada_nina_origem.mp3 -ar 44100 -ac 1 -c:a pcm_s16le experimentos/trio-original/build/risada_nina.wav
+          ffmpeg -y -loglevel error -i experimentos/trio-original/build/risada_maria_origem.mp3 -ar 44100 -ac 1 -c:a pcm_s16le experimentos/trio-original/build/risada_maria.wav
       - name: Criar falas e antecipação com vozes oficiais
         env:
           PREVISAO_TTS: kokoro
