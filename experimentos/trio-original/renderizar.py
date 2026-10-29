@@ -282,7 +282,10 @@ class TrioPiloto(Scene):
         def atualizar_quadro(obj, alpha):
             estado["tempo"] = min(cfg["duration"] - 0.00001, max(0.0, alpha * cfg["duration"]))
             updater(obj, 0.0)
-        self.play(UpdateFromAlphaFunc(clock, atualizar_quadro),
+        # Animar o grupo inteiro impede o compositor Cairo de guardar o
+        # restante da cena como fundo estático, mesmo com atualizações laterais.
+        grupo_em_movimento = Group(*list(self.mobjects))
+        self.play(UpdateFromAlphaFunc(grupo_em_movimento, atualizar_quadro),
                   run_time=cfg["duration"], rate_func=linear)
 
 
