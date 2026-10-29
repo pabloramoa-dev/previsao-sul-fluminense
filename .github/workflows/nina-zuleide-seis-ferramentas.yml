@@ -1,0 +1,84 @@
+name: Nina e Zuleide — teste seis ferramentas (sem publicar)
+on:
+  push:
+    branches: [experimento/nina-zuleide-cinematico-6-ferramentas]
+    paths: ["experimentos/seis-ferramentas/**", ".github/workflows/nina-zuleide-seis-ferramentas.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Carregar vídeo original Nina/Zuleide do GitHub Actions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p experimentos/seis-ferramentas/public
+          gh run download 40966728105 -n nina-zuleide-vozes-originais-risadas -D /tmp/piloto
+          ffmpeg -y -loglevel error -i /tmp/piloto/ta_sabendo_nina_zuleide_risadas.mp4 -vf scale=540:960 -c:v libx264 -preset ultrafast -crf 24 -c:a aac -b:a 128k experimentos/seis-ferramentas/public/base.mp4
+          cp /tmp/piloto/timeline.json experimentos/seis-ferramentas/public/timeline.json
+      - name: Clonar seis ferramentas originais
+        run: |
+          mkdir -p third_party
+          git clone -q --depth=1 https://github.com/av/remotion-bits third_party/remotion-bits
+          git clone -q --depth=1 https://github.com/itsjwill/react-video-toolkit third_party/react-video-toolkit
+          git clone -q --depth=1 https://github.com/sebetancurch/auto-caption third_party/auto-caption
+          git clone -q --depth=1 https://github.com/neka-nat/kugutu third_party/kugutu
+          git clone -q --depth=1 https://github.com/WyattBlue/auto-editor third_party/auto-editor
+          git clone -q --depth=1 https://github.com/DanielSWolf/rhubarb-lip-sync third_party/rhubarb-lip-sync
+      - name: Legendas por código original do Auto Caption
+        run: python experimentos/seis-ferramentas/prepare_captions.py
+      - name: Kugutu - teste de rig SVG sem substituir personagens
+        continue-on-error: true
+        run: |
+          npm install -g @kugutu/cli
+          kugutu init /tmp/rig-piloto --template avatar-lite --id nina-reacao
+          kugutu --help > experimentos/seis-ferramentas/out/kugutu-check.txt
+      - name: Rhubarb - visemas a partir do áudio
+        continue-on-error: true
+        run: |
+          ffmpeg -y -loglevel error -i experimentos/seis-ferramentas/public/base.mp4 -ar 44100 -ac 1 -c:a pcm_s16le /tmp/fala.wav
+          ASSET=$(curl -fsSL https://api.github.com/repos/DanielSWolf/rhubarb-lip-sync/releases/latest | jq -r '.assets[] | select(.name | test("Linux.*zip")) | .browser_download_url' | head -1)
+          test -n "$ASSET"
+          curl -fsSL "$ASSET" -o /tmp/rhubarb.zip
+          mkdir -p /tmp/rhubarb && unzip -oq /tmp/rhubarb.zip -d /tmp/rhubarb
+          BIN=$(find /tmp/rhubarb -type f -name rhubarb | head -1)
+          chmod +x "$BIN"
+          "$BIN" -r phonetic -f json -o experimentos/seis-ferramentas/out/rhubarb.json /tmp/fala.wav
+      - name: Auto Editor - alternativa com pausas curtas
+        continue-on-error: true
+        run: |
+          python -m pip install auto-editor
+          auto-editor experimentos/seis-ferramentas/public/base.mp4 --margin 0.2s -o experimentos/seis-ferramentas/out/auto_editor_alternativo.mp4
+      - name: Remotion Bits e React Video Toolkit - exportar composição
+        working-directory: experimentos/seis-ferramentas
+        run: |
+          npm install --no-audit --no-fund
+          npx remotion render composition.tsx NinaZuleideSeisFerramentas out/base_cinematico.mp4 --codec h264 --crf 28 --concurrency 2 --log error
+      - name: Finalizar legendas Auto Caption e áudio original
+        working-directory: experimentos/seis-ferramentas
+        run: |
+          ffmpeg -y -loglevel error -i out/base_cinematico.mp4 -vf ass=out/real_auto_caption.ass -c:v libx264 -preset veryfast -crf 25 -pix_fmt yuv420p -profile:v baseline -c:a aac -b:a 128k -movflags +faststart out/NINA_ZULEIDE_SEIS_FERRAMENTAS.mp4
+          ffprobe -v error -show_entries format=duration -of default=nw=1 out/NINA_ZULEIDE_SEIS_FERRAMENTAS.mp4
+      - name: Entregar para avaliação sem postar
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nina-zuleide-seis-ferramentas-experimental
+          path: |
+            experimentos/seis-ferramentas/out/NINA_ZULEIDE_SEIS_FERRAMENTAS.mp4
+            experimentos/seis-ferramentas/out/real_auto_caption.ass
+            experimentos/seis-ferramentas/out/rhubarb.json
+            experimentos/seis-ferramentas/out/kugutu-check.txt
+          if-no-files-found: warn
+          retention-days: 5
