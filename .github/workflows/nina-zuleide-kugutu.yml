@@ -43,10 +43,32 @@ jobs:
             kugutu lint "$P/character.json" "$P/artwork.svg"
             kugutu pack "$P/character.json" "$P/artwork.svg" --out "$P/$NOME.charpack"
           done
+      - name: Recuperar áudio original com risadas e a linha do tempo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p experimentos/kugutu-original/public
+          gh run download 40966728105 -n nina-zuleide-vozes-originais-risadas -D /tmp/nina-zuleide-original
+          cp /tmp/nina-zuleide-original/ta_sabendo_nina_zuleide_risadas.mp4 experimentos/kugutu-original/public/source.mp4
+          cp /tmp/nina-zuleide-original/timeline.json experimentos/kugutu-original/public/timeline.json
+          ffmpeg -y -v error -i experimentos/kugutu-original/public/source.mp4 -vn -ar 44100 -c:a libmp3lame -b:a 128k experimentos/kugutu-original/public/audio.mp3
+          cp experimentos/kugutu-original/source/nina/nina.charpack experimentos/kugutu-original/public/nina.charpack
+          cp experimentos/kugutu-original/source/maria/maria.charpack experimentos/kugutu-original/public/maria.charpack
+          python experimentos/kugutu-original/prepare_envelope.py
+      - name: Renderizar MP4 Kugutu real com gestos, emoções e lip-sync
+        working-directory: experimentos/kugutu-original
+        run: |
+          npm install --no-audit --no-fund
+          mkdir -p out
+          npx remotion render composition.tsx NinaZuleideKugutu out/NINA_ZULEIDE_KUGUTU_ORIGINAL.mp4 --codec h264 --crf 26 --concurrency 2 --log error
+          ffprobe -v error -show_entries format=duration,width,height -of default=nw=1 out/NINA_ZULEIDE_KUGUTU_ORIGINAL.mp4
       - name: Entregar artes derivadas dos originais para inspeção
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: kugutu-nina-zuleide-svg-original
-          path: experimentos/kugutu-original/source/
+          path: |
+            experimentos/kugutu-original/source/
+            experimentos/kugutu-original/out/NINA_ZULEIDE_KUGUTU_ORIGINAL.mp4
+            experimentos/kugutu-original/public/timeline.json
           retention-days: 7
