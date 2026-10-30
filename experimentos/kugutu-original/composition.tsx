@@ -40,7 +40,9 @@ const Character:React.FC<{kind:'nina'|'maria';data:Data;top:boolean}>=({kind,dat
     let alive=true;
     fetch(staticFile(kind+'.charpack')).then(r=>r.json()).then(async pack=>{
       if(!alive||!ref.current)return;
-      const actor=await Kugutu.load(pack,ref.current);
+      const actor=await Kugutu.load(pack,ref.current,{autoStart:false});
+      const svg=ref.current?.querySelector("svg");
+      if(svg){svg.style.width="100%";svg.style.height="100%";svg.style.display="block";svg.style.margin="0 auto";}
       if(!alive){actor.destroy();return;}
       actor.stop();playerRef.current=actor;setReady(true);continueRender(handle);
     }).catch(err=>{console.error('Erro Kugutu',kind,err);continueRender(handle);});
