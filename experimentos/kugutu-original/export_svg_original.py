@@ -122,7 +122,7 @@ def figure(kind):
             {"id":"breathing-natural","type":"breathing","targets":["torso","head"],"params":{"cycleMs":3100,"amplitudeY":0.045,"torsoTiltDeg":0.8}},
             {"id":"mouth-voice","type":"mouth-open","targets":["mouth"],"params":{"maxOpen":0.95,"smoothing":0.32}},
             {"id":"gaze","type":"look-at","targets":["eye.l","eye.r","head"],"params":{"radiusX":0.15,"radiusY":0.10,"headFollow":0.15,"smoothing":0.22}},
-            {"id":"arm-sway","type":"arm-idle","targets":["upperArm.l","upperArm.r"],"params":{"cycleMs":3600,"amplitudeDeg":3.5}}
+            {"id":"arm-sway","type":"arm-idle","targets":["upperArm.l","upperArm.r"],"params":{"cycleMs":3600}}
         ]
     }
     (folder/"character.json").write_text(json.dumps(definition,ensure_ascii=False,indent=2),encoding="utf8")
