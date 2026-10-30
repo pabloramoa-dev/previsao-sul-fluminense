@@ -32,19 +32,15 @@ config.pixel_height = 1280
 
 ROTEIRO = [
     ("nina", "Zuleide, eu só queria receber meu jantar. Mas desci até a portaria de roupão, virei assunto do prédio e descobri um segredo seu!", "ENTREGA MISTERIOSA"),
-    ("maria", "Segredo meu? Nina, você não sabe guardar nem senha de elevador!", "SEGREDO DA SINDICA"),
     ("nina", "A história começou quando meu aplicativo avisou: pedido chegou. Só que ninguém tocou a campainha.", "CELULAR DE ENTREGA"),
     ("maria", "Porque a entrega é na portaria, minha filha. Está escrito em três avisos.", "PLACA NA PORTARIA"),
     ("nina", "Mas eu pedi o jantar para casa, não para fazer turismo no térreo!", "PEDIDO NA PORTARIA"),
-    ("maria", "O entregador trabalha fazendo entregas. Não como elevador particular dos moradores.", "ENTREGADOR EDUCADO"),
     ("nina", "Tá, eu concordo. Mas você precisava me avisar justo quando eu estava de máscara verde no rosto?", "MASCARA VERDE"),
     ("maria", "Máscara verde? Estava passando massa corrida na parede?", "MASCARA FACIAL"),
     ("nina", "É de cuidados com a pele, Zuleide. Só que parecia uma salada andando.", "NINA DE ROUPAO"),
     ("maria", "Então lave o rosto e desça.", "ELEVADOR"),
     ("nina", "Lavar? Eu estava na metade do ritual. E com quatro bobes no cabelo!", "BOBES NO CABELO"),
     ("maria", "Nina, ninguém no condomínio está fiscalizando sua cabeça.", "PORTARIA"),
-    ("nina", "Você está. E costuma fazer relatório com detalhes!", "CADERNO DA SINDICA"),
-    ("maria", "Eu faço relatório de infiltração. A sua fofoca é que vem de graça.", "CADERNO DE OCORRENCIAS"),
     ("nina", "Peguei o óculos escuro, botei um roupão florido e decidi descer disfarçada.", "DISFARCE DE ROUPAO"),
     ("maria", "Disfarçada de quê? De atriz fugindo de uma novela?", "OCULOS ESCUROS"),
     ("nina", "De mulher misteriosa. Só que o elevador parou em todos os andares!", "ELEVADOR LOTADO"),
@@ -52,7 +48,6 @@ ROTEIRO = [
     ("nina", "A dona Cida perguntou se eu ia a uma festa temática de abacate!", "FESTA DE ABACATE"),
     ("maria", "Desculpa, Nina, mas essa foi boa!", "RISADA ZULEIDE"),
     ("nina", "Pior: ela tirou foto do meu chinelo e mandou para o grupo.", "FOTO NO GRUPO"),
-    ("maria", "É, a dona Cida anda precisando de algum passatempo.", "GRUPO DO CONDOMINIO"),
     ("nina", "Cheguei na portaria e encontrei o entregador, supereducado, segurando minha sacola.", "SACOLA NA PORTARIA"),
     ("maria", "Viu? Bastava descer e tratar o rapaz com respeito.", "ENTREGADOR EDUCADO"),
     ("nina", "Tratei tão bem que agradeci duas vezes. Uma por mim e outra pelo abacate.", "SACOLA DE JANTAR"),
@@ -66,21 +61,16 @@ ROTEIRO = [
     ("nina", "Surpresa para quem? Para seu Osvaldo ou para a administração do prédio?", "BOLO DE CHOCOLATE"),
     ("maria", "Para você, sua curiosa! Você vive ajudando nas campanhas da brinquedoteca.", "CAIXA DE DOCES"),
     ("nina", "Pra mim? Uma sobremesa de agradecimento? Zuleide, eu estava pronta para uma fofoca e ganhei carinho!", "AMIZADE"),
-    ("maria", "Era para entregar aqui em casa. Só que eu ia descer para pegar.", "SINDICA SORRINDO"),
-    ("nina", "Ia? No futuro do pretérito da sua preguiça?", "ELEVADOR DESCENDO"),
     ("maria", "Eu já estava calçando os sapatos quando você ligou com escândalo!", "SAPATOS"),
     ("nina", "Então subi com as duas sacolas. Uma de jantar e outra com sua surpresa.", "DUAS SACOLAS"),
     ("maria", "Nossa surpresa. Eu comprei para dividirmos.", "DOCES E AMIZADE"),
     ("nina", "Eu abri a caixa e tinha bombons, um bilhetinho e um cartão escrito: para a maior fofoqueira do prédio.", "CARTAO ENGRAÇADO"),
-    ("maria", "Isso é porque você nunca viu o que a dona Cida conta!", "DONA CIDA FOFOCA"),
     ("nina", "Mas tem mais. No bilhete dizia: presente da segunda maior fofoqueira!", "SEGUNDA FOFOQUEIRA"),
     ("maria", "Fui eu quem escreveu. Reconhecer a verdade faz bem.", "RISADA DAS DUAS"),
     ("nina", "Só que agora o grupo do condomínio está perguntando por que eu desci vestida de abacate.", "MENSAGENS DO GRUPO"),
     ("maria", "Responde que foi uma campanha para valorizar os entregadores.", "CAMPANHA DO CONDOMINIO"),
-    ("nina", "Boa! E amanhã você desce comigo buscar o café da manhã.", "CAFE DA MANHA"),
     ("maria", "Desço, sim. Mas sem roupão florido!", "ROUPAO FLORIDO"),
     ("nina", "Combinado. Eu vou de óculos escuros e você de coroa de síndica.", "COROA DE SINDICA"),
-    ("maria", "Nina, não me inventa moda!", "SINDICA BRAVA"),
     ("nina", "O importante é: o jantar foi entregue, a amizade também... e a fofoca subiu de elevador!", "FINAL ENGRAÇADO"),
     ("maria", "E os bombons?", "BOMBONS"),
     ("nina", "Já comi metade. É o preço do serviço de entrega até o seu apartamento!", "BOMBOM FINAL"),
@@ -89,7 +79,7 @@ VOICES = {"nina": ("pf_dora", 1.02, 1.0),
           "maria": ("pf_dora", 0.95, 0.94)}
 SR = 44100
 # Risadas naturais após as piadas; a voz falada permanece Kokoro original.
-RISADA_APOS = {9: "maria", 19: "maria", 28: "nina", 36: "nina", 42: "maria", 51: "nina"}
+RISADA_APOS = {8: "maria", 16: "maria", 24: "nina", 34: "nina", 39: "maria", 42: "nina"}
 
 
 def run(*cmd):
