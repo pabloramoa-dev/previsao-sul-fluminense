@@ -66,7 +66,7 @@ def texto(d, xy, msg, tamanho, cor="#ffffff", bold=False):
 def pill(d, caixa, cor):
     d.rounded_rectangle(caixa, radius=18, fill=cor)
 
-def compor(t, cidades, estilo):
+def compor(t, cidades, estilo, dados_ficticios=True):
     im = Image.new("RGB", (W, H), "#10283f")
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, W, 12), fill="#f6c94e")
@@ -87,10 +87,11 @@ def compor(t, cidades, estilo):
         texto(d, (54, 591), "@PREVISAOSULFLU", 31, "#ffffff", True)
     else:
         lista = paginas(cidades)
-        page_index = min(int((t-1.35)//5.525), len(lista)-1)
+        duracao_pagina = 11.05 / len(lista)
+        page_index = min(int((t-1.35)//duracao_pagina), len(lista)-1)
         page_index = max(0, page_index)
         grupo = lista[page_index]
-        elapsed = (t-1.35) - page_index*5.525
+        elapsed = (t-1.35) - page_index*duracao_pagina
         tag = "GIRO DA REGIÃO" if estilo == "noticiario" else "CHUVA PREVISTA • mm"
         texto(d, (33, 175), tag, 30, "#ffe080", True)
         texto(d, (34, 220), f"Painel {page_index+1}/{len(lista)}", 19, "#bdd2df")
@@ -118,10 +119,11 @@ def compor(t, cidades, estilo):
         texto(d, (32, 866), "Mín/max: °C  •  Chuva: acumulado previsto", 17, "#bfd5e1")
     # Marca permanente: nunca tratar o fixture como previsão real.
     d.rounded_rectangle((18, 895, 522, 948), radius=11, fill="#e45d4a")
-    texto(d, (30, 910), "DEMONSTRAÇÃO • DADOS FICTÍCIOS • NÃO PUBLICAR", 16, "#ffffff", True)
+    rotulo = "DEMONSTRAÇÃO • DADOS FICTÍCIOS • NÃO PUBLICAR" if dados_ficticios else "TESTE COM DADOS REAIS • NÃO PUBLICAR"
+    texto(d, (30, 910), rotulo, 16, "#ffffff", True)
     return im
 
-def renderizar(destino, cidades, estilo):
+def renderizar(destino, cidades, estilo, dados_ficticios=True):
     destino = Path(destino)
     destino.parent.mkdir(parents=True, exist_ok=True)
     cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
@@ -132,7 +134,7 @@ def renderizar(destino, cidades, estilo):
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     try:
         for frame in range(FPS*SEGUNDOS):
-            proc.stdin.write(compor(frame/FPS, cidades, estilo).tobytes())
+            proc.stdin.write(compor(frame/FPS, cidades, estilo, dados_ficticios).tobytes())
     finally:
         proc.stdin.close()
     if proc.wait() != 0:
@@ -149,7 +151,7 @@ def main():
     args = p.parse_args()
     payload = json.loads(Path(args.dados).read_text(encoding="utf-8")) if args.dados else DEMO
     cidades = normalizar(payload)
-    video = renderizar(args.saida, cidades, args.estilo)
+    video = renderizar(args.saida, cidades, args.estilo, dados_ficticios=not bool(args.dados))
     print(json.dumps({"video":str(video), "estilo":args.estilo,
                       "cidades":len(cidades),"duracao_s":SEGUNDOS,
                       "fonte":"arquivo externo" if args.dados else "EXEMPLO FICTICIO",
