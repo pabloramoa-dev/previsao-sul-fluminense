@@ -1,4 +1,5 @@
 import React from 'react';
+import {ForecastStrip} from './ForecastStrip';
 import {AbsoluteFill, Audio, OffthreadVideo, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 
 export type WeatherCity={nome:string;min:number;max:number;cond:string;chuva_mm?:number};
@@ -74,6 +75,8 @@ export const WeatherCast:React.FC<WeatherCastProps>=({cidades,data,batidas,demo=
     </div>
    </div>
   </div>
+  {/* Novo sistema de telejornal: dados suplementares, sem duplicar/alterar narração ou visuais existentes. */}
+  <ForecastStrip cidades={cityList} t={t} dur={durationInFrames/fps} cta={cta} data={data}/>
   {/* Flash técnico mínimo nos cortes do roteiro, sem ocultar o apresentador */}
   <div style={{position:'absolute',left:12,right:12,top:11,height:14,background:'#fff',opacity:transition*.22,pointerEvents:'none'}}/>
   <div style={{position:'absolute',right:23,bottom:20,display:demo?'block':'none',fontSize:18,fontWeight:900,letterSpacing:1,
