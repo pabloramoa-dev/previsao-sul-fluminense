@@ -20,6 +20,13 @@ class PilotoOpuscarTest(unittest.TestCase):
         frame = compor(4.0, normalizar(dados), "dados")
         self.assertEqual(frame.size, (W, H))
 
+    def test_vinte_cidades_sem_omissao(self):
+        base = normalizar(DEMO)
+        muitas = base + [dict(c, nome=c["nome"]+" II") for c in base]
+        self.assertEqual(len(paginas(muitas)), 4)
+        self.assertEqual(len(paginas(muitas)[-1]), 5)
+        self.assertEqual(compor(11.5, muitas, "noticiario").size, (W, H))
+
     def test_estilos_e_tempos(self):
         self.assertEqual(FPS*SEGUNDOS, 210)
         for estilo in ("noticiario", "dados"):
