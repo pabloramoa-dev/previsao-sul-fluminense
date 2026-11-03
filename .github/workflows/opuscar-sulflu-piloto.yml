@@ -1,0 +1,51 @@
+name: Pilotos Lemo Opuscar - SulFlu (SEM PUBLICAR)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - experimento/lemo-opuscar-sulflu-20261103
+    paths:
+      - "lab/opuscar-sulflu/**"
+      - ".github/workflows/opuscar-sulflu-piloto.yml"
+  pull_request:
+    paths:
+      - "lab/opuscar-sulflu/**"
+      - ".github/workflows/opuscar-sulflu-piloto.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  laboratorio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependencias leves (CPU)
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          ffmpeg -version | head -n 1
+      - name: Testes unitarios (somente dados de exemplo)
+        run: python -m unittest discover -s lab/opuscar-sulflu -p 'test_*.py' -v
+      - name: Renderizar 2 opcoes, sem Instagram, sem API, sem segredo
+        run: |
+          python lab/opuscar-sulflu/piloto.py --estilo noticiario --saida output/opuscar-noticiario.mp4
+          python lab/opuscar-sulflu/piloto.py --estilo dados --saida output/opuscar-dados.mp4
+      - name: Conferir tamanho, resolucao e duracao reais
+        run: |
+          for v in output/opuscar-*.mp4; do
+            test -s "$v"
+            ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of csv=p=0 "$v"
+            ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$v"
+            ffmpeg -v error -i "$v" -f null -
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pilotos-lemo-opuscar-sulflu
+          path: output/opuscar-*.mp4
+          retention-days: 3
