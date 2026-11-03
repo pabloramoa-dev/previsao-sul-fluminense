@@ -1,0 +1,95 @@
+name: Lemo Opuscar - Episodio COMPLETO SulFlu (NAO PUBLICAR)
+on:
+  push:
+    branches:
+      - experimento/lemo-opuscar-sulflu-20261103
+    paths:
+      - "lab/remotion-juarez/src/ForecastStrip.tsx"
+      - "lab/remotion-juarez/src/WeatherCast.tsx"
+      - ".github/workflows/lemo-telejornal-episodio-completo.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  episodio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: reels
+    env:
+      PREVISAO_ESTILO: vox
+      PREVISAO_TTS: edge
+      PREVISAO_TTS_FALLBACK: kokoro
+      PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
+      PREVISAO_EDGE_RATE: "+10%"
+      PREVISAO_EDGE_PITCH: "+6Hz"
+      PREVISAO_EDGE_VOLUME: "+6%"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar HyperFrames e navegador
+        uses: ./.github/actions/setup-hyperframes
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache Kokoro e pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/dvh_kokoro
+            ~/.cache/pip
+          key: sulflu-opuscar-v1-${{ hashFiles('reels/requirements.txt') }}
+
+      - name: Dependencias de render
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config fonts-dejavu-core
+          sudo mkdir -p /usr/share/fonts/truetype/poppins
+          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
+            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
+              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
+          done
+          sudo fc-cache -f
+          pip install -r requirements.txt
+
+      - name: Coletar dados reais do Open-Meteo
+        run: python coletar_tempo.py --saida dia.json
+
+      - name: Validar coerencia do roteiro
+        run: python gerar_juarez.py --dados dia.json --so-roteiro
+
+      - name: Renderizar Juarez com narracao e sincronia originais
+        run: python ../hyperframes/gerar_hf.py --dados dia.json --render REEL.mp4
+
+      - name: Aplicar pacote Telejornal no Remotion (somente demonstracao)
+        run: |
+          python ../lab/remotion-juarez/finalizar.py \
+            --video REEL.mp4 \
+            --pacote ../hyperframes/build/pacote.json \
+            --dados dia.json
+
+      - name: Provar MP4 completo, 1080x1920, 30 fps, com audio
+        run: |
+          test -s REEL.mp4
+          ffprobe -v error -show_entries stream=codec_type,width,height,avg_frame_rate -of json REEL.mp4
+          ffmpeg -v error -i REEL.mp4 -f null -
+          test -s CAPA.jpg
+          test -s REEL_preview_720p.mp4
+
+      - name: Enviar video e capa para artifacts; nunca publicar no Instagram
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: episodio-telejornal-sulflu-completo
+          path: |
+            reels/REEL.mp4
+            reels/REEL_preview_720p.mp4
+            reels/CAPA.jpg
+            reels/dia.json
+            lab/remotion-juarez/out/qa-probe.json
+          retention-days: 3
