@@ -224,8 +224,11 @@ def cena_quadro(p, cena, bat):
     res = next(x for x in b if x["tipo"] == "resumo")
     cab = next((x for x in b if x["tipo"] == "nenhum"), None)
     titulo = (cab["legenda"] if cab else "NÚMEROS CONFIRMADOS").rstrip(".").upper()
+    cidades = res["dados"]["cidades"]
+    if len(cidades) != 5 or len({c["nome"] for c in cidades}) != 5:
+        raise ValueError("Quadro do Juarez deve exibir exatamente cinco cidades distintas")
     linhas = []
-    for k, c in enumerate(res["dados"]["cidades"]):
+    for k, c in enumerate(cidades):
         def cel(v, cls):
             s = f"{int(v):02d}" if int(v) >= 0 else str(int(v))
             return "".join(f'<span class="flap {cls}" data-alvo="{ch}">{ch}</span>' for ch in s)
@@ -242,7 +245,7 @@ def cena_quadro(p, cena, bat):
  <div class="qd-veu"></div>
  <div class="qd-topo"><span class="qd-check">✓</span><span class="qd-titulo">{esc(titulo)}</span></div>
  <div class="qd-painel">
-  <div class="qd-head"><span>{esc(res["dados"].get("titulo", "AS TRÊS MAIORES"))}</span><span class="qd-cols"><b>MÍN</b><b>MÁX</b></span></div>
+  <div class="qd-head"><span>{esc(res["dados"].get("titulo", "PREVISÃO EM 5 CIDADES"))}</span><span class="qd-cols"><b>MÍN</b><b>MÁX</b></span></div>
   {"".join(linhas)}
  </div>
 </div>'''
@@ -324,6 +327,10 @@ def legenda_html(p):
     """Páginas de até 4 palavras por batida — cada página é um grupo."""
     paginas = []
     for bi in range(len(p["batidas"])):
+        # No quadro a lista das cinco cidades JA e a legenda: o karaoke
+        # cobriria a quinta linha e impediria a leitura das temperaturas.
+        if p["batidas"][bi]["tipo"] == "resumo":
+            continue
         ws = [w for w in p["palavras"] if w["b"] == bi]
         pag = []
         for w in ws:
@@ -413,13 +420,13 @@ html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: {NAVY
 .qd-head {{ display: flex; justify-content: space-between; align-items: center; font-family: "BarlowCB", sans-serif; font-size: 40px; color: {YEL}; letter-spacing: 3px; margin-bottom: 12px; }}
 .qd-cols {{ display: flex; gap: 58px; padding-right: 18px; }}
 .qd-cols b {{ font-weight: 700; }}
-.qd-linha {{ position: relative; display: flex; align-items: center; justify-content: space-between; height: 128px; padding-left: 26px; border-top: 3px solid #22324a; }}
-.qd-barra {{ position: absolute; left: 0; top: 18px; width: 10px; height: 92px; background-color: {YEL}; border-radius: 5px; }}
-.qd-cidade {{ font-family: "BarlowC", sans-serif; font-size: 66px; color: #ffffff; }}
-.qd-cels {{ display: flex; gap: 22px; }}
+.qd-linha {{ position: relative; display: flex; align-items: center; justify-content: space-between; height: 100px; padding-left: 22px; border-top: 3px solid #22324a; }}
+.qd-barra {{ position: absolute; left: 0; top: 14px; width: 10px; height: 72px; background-color: {YEL}; border-radius: 5px; }}
+.qd-cidade {{ font-family: "BarlowC", sans-serif; font-size: 56px; color: #ffffff; white-space: nowrap; }}
+.qd-cels {{ display: flex; gap: 16px; }}
 .qd-cel {{ display: flex; align-items: center; gap: 4px; }}
-.qd-cel i {{ font-style: normal; font-family: "BarlowC", sans-serif; font-size: 50px; color: #9fb3c8; }}
-.flap {{ display: block; width: 58px; height: 86px; line-height: 86px; text-align: center; font-family: "BarlowC", sans-serif; font-size: 70px; color: #ffffff; background-color: #1d2c42; border-radius: 8px; border-bottom: 3px solid #0a1320; }}
+.qd-cel i {{ font-style: normal; font-family: "BarlowC", sans-serif; font-size: 44px; color: #9fb3c8; }}
+.flap {{ display: block; width: 52px; height: 72px; line-height: 72px; text-align: center; font-family: "BarlowC", sans-serif; font-size: 60px; color: #ffffff; background-color: #1d2c42; border-radius: 8px; border-bottom: 3px solid #0a1320; }}
 .qd-max .flap {{ color: {YEL}; }}
 /* ---------- chuva ---------- */
 .ch-veu {{ position: absolute; inset: 0; background-color: rgba(11,22,36,0.55); }}
