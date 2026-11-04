@@ -362,6 +362,44 @@ checar("e nao publica Reel",
        "postar_reel.py" in open(os.path.join(WF, "card_amanha.yml"), encoding="utf-8").read(),
        False)
 
+print("coleta Open-Meteo: retries sem usar rede real:")
+import io
+import json
+import urllib.error
+from unittest.mock import patch
+import coletar_tempo as CT
+
+cidades_teste = [("Volta Redonda", -22.5231, -44.1041),
+                 ("Resende", -22.4686, -44.4468)]
+amostra_api = [{"daily": {"time": ["2026-11-04"]}} for _ in cidades_teste]
+payload = json.dumps(amostra_api).encode("utf-8")
+with patch.object(CT.urllib.request, "urlopen",
+                  side_effect=[urllib.error.URLError("rede temporariamente indisponivel"),
+                               io.BytesIO(payload)]) as rede:
+    with patch.object(CT.time, "sleep", return_value=None):
+        resultado = CT.buscar(cidades_teste)
+    checar("a coleta se recupera após falha temporária", len(resultado), 2)
+    checar("consulta novamente após erro", rede.call_count, 2)
+
+payload_parcial = json.dumps(amostra_api[:1]).encode("utf-8")
+with patch.object(CT.urllib.request, "urlopen",
+                  side_effect=[io.BytesIO(payload_parcial) for _ in range(3)]) as rede:
+    with patch.object(CT.time, "sleep", return_value=None):
+        try:
+            CT.buscar(cidades_teste)
+        except RuntimeError:
+            checar("resposta parcial bloqueia a coleta", True, True)
+        else:
+            checar("resposta parcial bloqueia a coleta", False, True)
+    checar("resposta parcial repetida até limite de tentativas", rede.call_count, 3)
+
+try:
+    CA.cidades_do_card({"cidades": CA.DEMO["cidades"][:4]})
+except ValueError:
+    checar("card bloqueia previsão com menos de cinco cidades", True, True)
+else:
+    checar("card bloqueia previsão com menos de cinco cidades", False, True)
+
 print()
 if falhas:
     print("FALHOU:")
