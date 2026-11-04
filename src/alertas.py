@@ -99,7 +99,7 @@ def _proximas_horas(cidade, n: int = 3) -> dict[str, list]:
 
 
 def _pode_disparar(estado: dict[str, Any], tipo: str) -> bool:
-    hoje = dt.date.today().isoformat()
+    hoje = _agora().date().isoformat()
     log = estado.get("alertas_log", {})
     do_dia = [a for a in log.get(hoje, [])]
     if len(do_dia) >= LIMITE_ALERTAS_DIA:
@@ -114,7 +114,7 @@ def _pode_disparar(estado: dict[str, Any], tipo: str) -> bool:
 
 
 def _registrar(estado: dict[str, Any], tipo: str) -> None:
-    hoje = dt.date.today().isoformat()
+    hoje = _agora().date().isoformat()
     log = estado.setdefault("alertas_log", {})
     log.setdefault(hoje, []).append({"tipo": tipo, "hora": _agora().isoformat()})
     _salvar(estado)
@@ -212,7 +212,7 @@ def checar_chuva_acumulada(cidades) -> dict[str, Any] | None:
     qualquer cidade. Max 1 por dia. Retorna ranking ou None.
     """
     estado = _carregar()
-    hoje = dt.date.today().isoformat()
+    hoje = _agora().date().isoformat()
     if estado.get("chuva_acumulada_publicada") == hoje:
         return None
 
