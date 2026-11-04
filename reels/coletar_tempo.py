@@ -31,7 +31,7 @@ dá exatamente o mesmo vídeo — a mesma garantia que a semente do roteiro já 
 o Ranzinza (06h10) roda com deslocamento 0 e a Dona Maria (18h) com 5, então
 eles nunca destacam a mesma cidade no mesmo dia.
 """
-import argparse, json, sys, urllib.parse, urllib.request, datetime
+import argparse, json, sys, urllib.parse, urllib.request, urllib.error, datetime, time
 
 API = "https://api.open-meteo.com/v1/forecast"
 TZ = "America/Sao_Paulo"
@@ -170,10 +170,45 @@ def buscar(cidades, dias=2, timeout=30):
         "forecast_days": dias,
     })
     url = f"{API}?{q}"
-    with urllib.request.urlopen(url, timeout=timeout) as r:
-        dados = json.loads(r.read().decode())
-    # com 1 cidade a API devolve objeto; com várias, lista. Normaliza.
-    return dados if isinstance(dados, list) else [dados]
+    ultimo_erro = None
+    for tentativa in range(3):
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as r:
+                dados = json.loads(r.read().decode("utf-8"))
+            # A API devolve uma lista na ordem pedida; nunca usar zip() com
+            # uma resposta parcial, pois associaria previsoes a cidades erradas.
+            respostas = dados if isinstance(dados, list) else [dados]
+            if (len(respostas) != len(cidades) or
+                    any(not isinstance(r, dict) or not isinstance(r.get("daily"), dict)
+                        for r in respostas)):
+                raise ValueError(
+                    f"Open-Meteo retornou dados incompletos: "
+                    f"{len(respostas)} respostas para {len(cidades)} cidades"
+                )
+            return respostas
+        except urllib.error.HTTPError as exc:
+            # Erros 4xx permanentes (exceto 408/429) exigem corrigir a chamada.
+            if exc.code not in (408, 429) and exc.code < 500:
+                raise
+            ultimo_erro = exc
+            espera = 2 ** tentativa
+            if exc.code == 429:
+                try:
+                    espera = max(espera, min(30, int(exc.headers.get("Retry-After", "0"))))
+                except (ValueError, TypeError, AttributeError):
+                    pass
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                ValueError, UnicodeError) as exc:
+            ultimo_erro = exc
+            espera = 2 ** tentativa
+
+        if tentativa < 2:
+            print(f"Open-Meteo instavel (tentativa {tentativa + 1}/3): "
+                  f"{ultimo_erro}; repetindo em {espera}s", file=sys.stderr)
+            time.sleep(espera)
+
+    raise RuntimeError("Falha ao coletar previsao completa do Open-Meteo "
+                       "apos tres tentativas") from ultimo_erro
 
 
 def primeira_chuva_da_tarde(precip_horaria, indice_dia, limiar=0.2,
