@@ -39,8 +39,18 @@ RAIZ = os.path.dirname(AQUI)
 sys.path.insert(0, AQUI)
 sys.path.insert(0, RAIZ)
 
+from coletar_tempo import N_RESUMO, resumo_cinco
+
 DIAS = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
-N_CIDADES = 6
+N_CIDADES = N_RESUMO
+
+
+def cidades_do_card(dia):
+    """Mesmas cinco cidades do boletim: cidade do rodizio + principais."""
+    cidades = resumo_cinco(dia.get("cidades") or [], n=N_CIDADES)
+    if len(cidades) != N_CIDADES:
+        raise ValueError(f"Card incompleto: esperadas {N_CIDADES} cidades, recebidas {len(cidades)}")
+    return cidades
 
 
 def dia_semana(data_iso):
@@ -74,10 +84,10 @@ def legenda(dia):
     """Legenda do card. Diz AMANHÃ na primeira linha (validar_legenda exige)."""
     import engajamento
     import postar_reel as PR
-    cid = dia["cidades"]
+    cid = cidades_do_card(dia)
     sem, dm = dia_semana(dia["data"])
     linhas = [f"🎙️ Plantão antecipado: amanhã, {sem} ({dm}), no Sul Fluminense.", ""]
-    for c in cid[:N_CIDADES]:
+    for c in cid:
         linhas.append(f"{PR.EMOJI.get(cond_card(c), '🌡️')} {c['nome']}: "
                       f"{c['min']}° / {c['max']}°")
     linhas += ["", "☔ " + linha_chuva(cid)]
@@ -220,7 +230,7 @@ class Card(Scene):
 def render(dia, saida, trab=None):
     trab = trab or os.path.join(AQUI, "_trab_card")
     os.makedirs(trab, exist_ok=True)
-    cid = dia["cidades"][:N_CIDADES]
+    cid = cidades_do_card(dia)
     sem, dm = dia_semana(dia["data"])
     dados = {
         "cenario": cenario_amanha(dia),
