@@ -315,8 +315,8 @@ def crons_ativos(arquivo):
 checar("o juarez.yml tem exatamente um cron",
        len(crons_ativos("juarez.yml")), 1)
 checar("e o ranzinza.yml nenhum", crons_ativos("ranzinza.yml"), [])
-checar("o monitor de alertas tambem segue desligado",
-       crons_ativos("monitor_alertas.yml"), [])
+checar("o monitor de alertas voltou a rodar em horario comercial",
+       crons_ativos("monitor_alertas.yml"), ['- cron: "0 10-22/2 * * *"   # 07h-19h de Brasilia, a cada 2h'])
 # quem publica Reel no perfil do experimento
 publicam_reel = sorted(f for f in os.listdir(WF)
                        if f.endswith(".yml")
@@ -342,6 +342,17 @@ checar("e fica no ceu da cidade da vez em dia seco", J.cenario_telao(COMUM), "so
 print("card das 18h (amanha), post de imagem:")
 import gerar_card_amanha as CA
 cap_c = CA.legenda(CA.DEMO)
+cap_j = PR.legenda(CA.DEMO, voz="juarez")
+nomes_visiveis = [c["nome"] for c in CA.cidades_do_card(CA.DEMO)]
+checar("o card mostra exatamente cinco cidades distintas", len(set(nomes_visiveis)), 5)
+checar("a legenda do card mostra exatamente cinco linhas de temperatura",
+       sum("° / " in linha for linha in cap_c.splitlines()), 5)
+checar("a legenda do Reel mostra exatamente cinco linhas de temperatura",
+       sum("° / " in linha for linha in cap_j.splitlines()), 5)
+for nome in nomes_visiveis:
+    checar(f"{nome} presente na legenda do Reel", f"{nome}: " in cap_j, True)
+    checar(f"{nome} presente na legenda do card", f"{nome}: " in cap_c, True)
+checar("sexta cidade fora dos dois resumos", "Porto Real: " in cap_j or "Porto Real: " in cap_c, False)
 checar("a legenda diz amanha", "amanhã" in cap_c.casefold(), True)
 checar("a linha da chuva usa virgula", "6,4 mm" in cap_c, True)
 checar("dia seco nao inventa chuva",
