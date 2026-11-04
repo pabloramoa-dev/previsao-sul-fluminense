@@ -4,7 +4,7 @@ teste_juarez.py — o Reel unico das 06h.
 
 Cobre o que nao da pra ver sem renderizar: que o modo do dia sai do
 `limiares.py` e nao de uma regra escrita a mao aqui; que os dois modos montam o
-roteiro que devem montar; que a duracao estimada cai na faixa de 18-22s do
+roteiro que devem montar com cinco cidades; que a duracao estimada acompanha a faixa do
 plano v3; que o CTA alterna por paridade em vez de sortear; e que a cena sabe
 desenhar o painel de alerta que o modo alerta manda desenhar.
 
@@ -67,7 +67,7 @@ def dia(cidades, umidade=60, data="2026-09-08"):
             "destaque": cidades[0]["nome"]}
 
 
-# As dez cidades do perfil, pra que o resumo_cinco tenha de onde escolher
+# Amostra de seis cidades do perfil, suficiente para selecionar cinco no resumo
 def regiao(**mudancas):
     base = [c("Volta Redonda", 17, 27), c("Barra Mansa", 17, 28),
             c("Resende", 16, 26), c("Porto Real", 17, 27),
@@ -90,8 +90,12 @@ checar("e nao abre com o cartaz de alerta", b[0]["tipo"], "gancho")
 print("modo ROTINA — as cinco batidas, nesta ordem:")
 checar("sequencia", [x["tipo"] for x in b],
        ["gancho", "nenhum", "resumo", "sem_chuva", "cta"])
-checar("o resumo le TRES cidades, nao cinco",
-       len(b[2]["dados"]["cidades"]), 3)
+checar("o resumo le exatamente CINCO cidades",
+       len(b[2]["dados"]["cidades"]), 5)
+checar("sem cidade repetida no resumo",
+       len({c["nome"] for c in b[2]["dados"]["cidades"]}), 5)
+checar("as cinco tem minima e maxima",
+       all("min" in c and "max" in c for c in b[2]["dados"]["cidades"]), True)
 checar("a cidade da vez abre o resumo",
        b[2]["dados"]["cidades"][0]["nome"], "Volta Redonda")
 entre("duracao estimada", J.estimar_segundos(b), J.DUR_MIN - 2, J.DUR_MAX)
@@ -107,6 +111,7 @@ checar("o detalhe traz o numero", ba[0]["dados"]["detalhe"], "chuva de 27mm")
 checar("o numero grande na tela", ba[1]["dados"]["numero"], "27mm")
 checar("a cidade do pico vai no subtitulo", ba[1]["dados"]["sub"], "RESENDE")
 checar("a instrucao e a de chuva", ba[3]["fala"], J.INSTRUCAO["chuva"])
+checar("alerta tambem mostra cinco cidades", len(ba[2]["dados"]["cidades"]), 5)
 entre("duracao estimada", J.estimar_segundos(ba), J.DUR_MIN - 2, J.DUR_MAX)
 
 print("os cinco tipos de alerta produzem cartaz, numero e instrucao:")
@@ -161,10 +166,30 @@ PESADOS = [
     ("rotina impar", dia(regiao(), data="2026-09-09")),
     ("alerta chuva", dia(regiao(resende=c("Resende", 17, 24, "chuva", 27.0)))),
     ("alerta calor", dia(regiao(resende=c("Resende", 22, 38)))),
-    ("cidade de nome comprido", dia([c("Barra do Piraí", 16, 27)] + regiao()[:3])),
+    ("cidade de nome comprido", dia([c("Barra do Piraí", 16, 27)] + regiao()[:5])),
 ]
 for nome, d in PESADOS:
     entre(f"duracao: {nome}", J.estimar_segundos(J.montar_roteiro(d)), J.DUR_MIN - 2, J.DUR_MAX)
+
+print("boletim com menos de cinco cidades nao pode ser publicado:")
+try:
+    J.montar_roteiro(dia(regiao()[:4]))
+except ValueError:
+    checar("falha fechado com quatro cidades", True, True)
+else:
+    checar("falha fechado com quatro cidades", False, True)
+
+print("a composicao do HyperFrames mostra as CINCO linhas:")
+sys.path.insert(0, os.path.join(os.path.dirname(AQUI), "hyperframes"))
+from compor import cena_quadro, legenda_html
+quadro = cena_quadro({"dur": 30, "ceu": "sol"},
+                     {"id": "c1", "batidas": [2]}, b)
+checar("cinco cidades aparecem no HTML", quadro.count('class="qd-linha"'), 5)
+leg, paginas = legenda_html({
+    "batidas": b,
+    "palavras": [{"b": 2, "s": 3.0, "e": 3.5, "w": "Volta"}],
+})
+checar("karaoke nao cobre o quadro de cidades", len(paginas), 0)
 
 print("as travas do roteiro valem aqui tambem:")
 # 12mm sem codigo de chuva: o gancho prometeria chuva que a batida final nega
