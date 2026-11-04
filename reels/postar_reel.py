@@ -129,12 +129,17 @@ def legenda(dia, voz="ranzinza", quando="hoje"):
     ganchos = GANCHOS.get(voz, GANCHOS["ranzinza"])
     amanha = quando == "amanha"
     cid = dia["cidades"]
+    # Usar a MESMA selecao que o roteiro e o quadro do Juarez, sem sexta cidade.
+    from coletar_tempo import N_RESUMO, resumo_cinco
+    cidades_visiveis = resumo_cinco(cid, n=N_RESUMO)
+    if voz == "juarez" and len(cidades_visiveis) != N_RESUMO:
+        raise SystemExit("legenda bloqueada: o Reel do Juarez exige cinco cidades")
     cond = cond_do_post(cid[0])
     linhas = [ganchos.get(cond, ganchos["sol"]), ""]
     if amanha:
         dma = _dia_br(dia.get("data"))
         linhas += ["🗓️ PREVISÃO PARA AMANHÃ" + (f" — {dma}" if dma else ""), ""]
-    for c in cid[:6]:
+    for c in cidades_visiveis:
         linhas.append(f"{EMOJI.get(cond_do_post(c), '🌡️')} {c['nome']}: "
                       f"{c['min']}° / {c['max']}°")
     u = dia.get("umidade_min")

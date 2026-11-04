@@ -135,14 +135,10 @@ def rodar_alertas(dry_run: bool) -> None:
         cap = captions.caption_alerta(a["tipo"], a["detalhe"], a["cidades"])
         publicar.publicar_imagem(img, cap, dry_run=dry_run)
 
-    chuva = alertas.checar_chuva_acumulada(cidades)
-    if chuva:
-        linhas = " | ".join(f"{r['nome']}: {r['mm']:.0f}mm" for r in chuva["ranking"])
-        img = gc.gerar_card_alerta("chuva_acumulada", "CHOVEU QUANTO?", linhas,
-                              [r["nome"] for r in chuva["ranking"][:3]])
-        cap = captions.caption_alerta("chuva_forte", "Acumulados das ultimas 24h: " + linhas,
-                                      [r["nome"] for r in chuva["ranking"]])
-        publicar.publicar_imagem(img, cap, dry_run=dry_run)
+    # O antigo quadro "CHOVEU QUANTO?" somava horas da PREVISAO e as
+    # anunciava como chuva OBSERVADA nas ultimas 24h. Deixa-lo suspenso ate
+    # existir uma fonte de observacoes reais, para nao publicar dado enganoso.
+    # Alertas de chuva futura continuam ativos em detectar_alertas().
 
 
 def rodar_fim_semana(dry_run: bool) -> None:

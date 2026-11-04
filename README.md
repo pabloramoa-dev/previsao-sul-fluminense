@@ -1,88 +1,47 @@
-# previsao-sul-fluminense
+# Previsão Sul Fluminense — @previsaosulflu
 
-Automacao 100% automatica de previsao do tempo para o Instagram
-**@previsaosulflu**, cobrindo 5 cidades do Sul Fluminense:
-Volta Redonda, Barra Mansa, Resende, Porto Real e Angra dos Reis.
+Automação de previsão do tempo para Instagram. O sistema coleta dados de **10 municípios** do Sul Fluminense e exibe **exatamente 5 cidades distintas por boletim principal**: a cidade do rodízio diário e as cidades de maior audiência, sem duplicação. As cinco têm mínima e máxima no Reel, no card e nas respectivas legendas.
 
-## O que ele publica
+Municípios monitorados: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra do Piraí, Piraí, Itatiaia, Quatis, Pinheiral e Rio Claro. Angra dos Reis **não** pertence à lista de coleta atual.
 
-| Post | Quando (BRT) | Workflow |
-|------|--------------|----------|
-| Carrossel do dia | 06h diario | `post_manha.yml` |
-| Carrossel da noite | 18h diario | `post_noite.yml` |
-| Alertas de tempo | a cada 2h (7h-19h) | `monitor_alertas.yml` |
-| Fim de semana | quinta 18h30 | `fim_de_semana.yml` |
-| Mito ou Verdade | domingo 12h | `curiosidade.yml` |
-| Lembrete de token | dia 1o do mes | `renovar_token.yml` |
+## Programação ativa (horário de Brasília, UTC-3)
 
-Todos os carrosseis terminam com uma pergunta fechada de engajamento, e
-apos manha/noite e publicado um Story com a mesma pergunta.
+| Conteúdo | Horário | Workflow | Observações |
+|---|---|---|---|
+| Reel do Juarez — previsão de hoje | Todos os dias às 06h | `.github/workflows/juarez.yml` | HyperFrames, acabamento Remotion, Antonio Neural com fallback Kokoro. Publica Reel e tenta Story. |
+| Card da previsão de amanhã | Todos os dias por volta das 18h | `.github/workflows/card_amanha.yml` | Foto com cinco cidades, mesma seleção na legenda. |
+| Monitor de alertas | A cada 2h, das 07h às 19h | `.github/workflows/monitor_alertas.yml` | Só publica se houver gatilho; máximo de dois alertas por dia, sem repetição do mesmo tipo em 6h. |
 
-## Arquitetura
+O detector de alertas monitora a região toda (10 cidades), inclusive cidades fora do resumo diário. **São previsões, não observações.** O quadro retrospectivo “Choveu quanto?” está suspenso até existir uma fonte de dados realmente observados para as últimas 24h. O monitor também pode ser testado sem publicar.
 
-- **Dados:** Open-Meteo (previsao, sol/UV e qualidade do ar) - gratuito, sem chave.
-- **Imagens:** geradas com Pillow em `assets/output/` e servidas via raw URL.
-- **Publicacao:** Instagram Graph API v22.0 (carrossel, imagem unica e story).
-- **Orquestrador:** `src/main.py`, chamado pelos workflows.
-- **Estado:** `src/estado.json` (rotacao de perguntas + anti-spam de alertas) e
-  `src/historico.json` (recordes e comparacoes), commitados de volta pelo Action.
+Os agendamentos antigos de Seu Ranzinza e Dona Maria (`ranzinza.yml`), carrosséis (`post_manha.yml`, `post_noite.yml`, `fim_de_semana.yml`) e formatos experimentais estão desligados; seus arquivos continuam disponíveis para execução manual.
 
-## Configuracao dos Secrets (obrigatorio)
+## Como funciona
 
-Em **Settings > Secrets and variables > Actions**, crie:
+1. `reels/coletar_tempo.py` consulta o Open-Meteo em lote para os dez municípios. Em falhas transitórias (incluindo 429 e 5xx), tenta até três vezes; dados com contagem incorreta de cidades são rejeitados.
+2. `reels/coletar_tempo.py:resumo_cinco()` seleciona as cinco cidades exibidas. `reels/gerar_juarez.py` exige cinco cidades mesmo em dia de alerta.
+3. `hyperframes/gerar_hf.py` produz áudio e vídeo, e `lab/remotion-juarez/finalizar.py` realiza acabamento e validação antes da publicação.
+4. `reels/postar_reel.py` e `reels/gerar_card_amanha.py` reutilizam a mesma seleção, mantendo legenda e quadro coerentes.
+5. O workflow publica com a Instagram Graph API, verifica o processamento da mídia e executa limpeza de arquivos temporários.
 
-- `IG_ACCESS_TOKEN` - token de longa duracao do Instagram (~60 dias de validade)
-- `IG_USER_ID` - ID da conta Instagram (27148485038175)
+O sistema bloqueia a geração do boletim quando faltam cidades ou dados essenciais: é preferível registrar falha a publicar uma previsão parcial. Os gatilhos de alerta vêm do `limiares.py`. O monitor legado obtém dados via `src/clima.py`.
 
-> Por seguranca, esses valores devem ser inseridos por voce diretamente na
-> tela de Secrets do GitHub. Nunca coloque o token em arquivos do repositorio.
+## Testes seguros (sem publicar)
 
-Opcional: `RAW_BASE_URL` se as imagens forem servidas de outro local.
+- Em **GitHub Actions → Testes**, rode o workflow `testes.yml`, que valida os roteiros e as regras sem rede.
+- Em **Actions → Reel diario — Juarez Plantao (06h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado. O MP4 aparece como artifact temporário para avaliação visual.
+- Em **Actions → Card das 18h → Run workflow**, mantenha **Publicar no Instagram?** desmarcado.
+- Em **Actions → Monitor de Alertas → Run workflow**, deixe **dry_run = true** (padrão manual). O cron automático permite publicação quando há alerta.
 
-## Como renovar o token
+Não acione o modo de publicação manual para testar se você não quer enviar conteúdo à conta.
 
-O token expira em ~60 dias. Todo dia 1o o workflow `renovar_token.yml` abre
-uma issue de lembrete. Para renovar:
+## Credenciais
 
-1. Gere um novo token de longa duracao no Facebook Developers.
-2. Atualize o Secret `IG_ACCESS_TOKEN`.
-3. Rode qualquer workflow em modo dry-run para validar (ver abaixo).
+No GitHub, em **Settings → Secrets and variables → Actions**, configure `IG_USER_ID` e `IG_ACCESS_TOKEN` para as publicações. Nunca inclua tokens no repositório. O token pode precisar de renovação periódica. Os workflows usam `MAIL_USERNAME` e `MAIL_PASSWORD` para avisos de falha por e-mail, quando configurados.
 
-## Como testar sem publicar (dry-run)
+## Manutenção
 
-Cada workflow tem `workflow_dispatch` com a opcao **dry_run**. Em
-**Actions > (workflow) > Run workflow**, marque `dry_run = true`. O sistema
-gera imagens e captions e loga tudo, sem publicar no Instagram.
-
-Localmente:
-
-```bash
-pip install -r requirements.txt
-python -m src.main manha --dry-run
-```
-
-## Como pausar a automacao
-
-Va em **Actions**, selecione o workflow desejado e clique em
-**"..." > Disable workflow**. Para pausar tudo, desabilite os 6 workflows.
-Para retomar, use **Enable workflow**.
-
-## Como adicionar uma cidade
-
-Edite a lista `CIDADES` em `src/clima.py` adicionando um dict com
-`nome`, `lat` e `lon`. Os templates ja se ajustam ao numero de cidades.
-Confira o layout gerando uma amostra em dry-run antes de publicar.
-
-## Como adicionar perguntas ou curiosidades
-
-- Perguntas: edite as listas em `src/perguntas.py`.
-- Curiosidades: edite o banco em `src/curiosidade.py`.
-
-A rotacao (sem repeticao) e controlada por indices salvos em `src/estado.json`.
-
-## Notas tecnicas
-
-- A Graph API publica a imagem do Story, mas o sticker interativo de enquete
-  nao e suportado via API; o layout simula a enquete e direciona aos comentarios.
-- Falhas de API sao logadas e o job sai com erro, evitando post pela metade.
-- BRT = UTC-3, por isso os crons usam o horario UTC correspondente.
+- Para ajustar a ordem do rodízio e a lista de cidades, edite `reels/coletar_tempo.py`. Mantenha também `src/clima.py` alinhado para a cobertura de alertas.
+- Para controlar os critérios de alerta, revise `limiares.py` e `src/alertas.py` e execute os testes antes de publicar.
+- Para suspender qualquer publicação automática, desabilite o workflow específico em **Actions → Workflow → ⋯ → Disable workflow**.
+- Use o arquivo de diagnóstico das execuções do GitHub Actions para confirmar o sucesso de cada publicação; código correto não comprova postagem já realizada.
