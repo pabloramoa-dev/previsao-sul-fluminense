@@ -7,7 +7,7 @@ Thresholds (os NUMEROS moram em limiares.py, na raiz do repo, desde
 2026-09-04; aqui fica so a descricao do que cada um significa):
 - Queda ou subida >= 6C em relacao a leitura anterior (estado.json)
 - Chuva forte: prob > 70% e > 10mm nas proximas 3h, ausente na previsao da manha
-- Rajadas de vento >= 50 km/h previstas
+- Vento forte (velocidade a 10m >= 50 km/h) previsto
 - Weathercode de tempestade (95-99) nas proximas horas
 
 Anti-spam:
@@ -164,14 +164,14 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
         "queda_temperatura": "Queda brusca de temperatura nas próximas horas",
         "subida_temperatura": "Elevação brusca de temperatura nas próximas horas",
         "chuva_forte": "Chuva forte prevista para as próximas 3h",
-        "vento": "Rajadas de vento acima de 50 km/h previstas",
+        "vento": "Vento forte previsto, com velocidade de pelo menos 50 km/h",
         "tempestade": "Risco de tempestade nas próximas horas",
     }
     titulos = {
         "queda_temperatura": "ALERTA: QUEDA BRUSCA DE TEMPERATURA",
         "subida_temperatura": "ALERTA: CALOR CHEGANDO COM FORÇA",
         "chuva_forte": "ALERTA: CHUVA FORTE A CAMINHO",
-        "vento": "ALERTA: RAJADAS DE VENTO",
+        "vento": "ALERTA: VENTO FORTE",
         "tempestade": "ALERTA: RISCO DE TEMPESTADE",
     }
 
