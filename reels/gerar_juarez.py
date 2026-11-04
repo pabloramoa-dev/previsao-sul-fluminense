@@ -18,7 +18,7 @@ OS DOIS MODOS
 Quem decide não é este arquivo: é o `modo_do_dia()` do `limiares.py`, na raiz.
 
   ROTINA — o dia comum, que é a esmagadora maioria deles. Abre pelo número mais
-           extremo do dia, lê as três maiores e diz se chove.
+           extremo do dia, lê cinco cidades e diz se chove.
   ALERTA  — só quando um dos cinco limiares diários foi cruzado. Abre pelo
            cartaz vermelho, diz onde, e traz uma instrução do que fazer.
 
@@ -30,12 +30,12 @@ A meta declarada no plano é no máximo 2 alertas em 14 dias
 (`ALERTAS_ESPERADOS_EM_14_DIAS`). Se sair mais que isso, o problema são os
 limiares, não o dia — e eles se mexem num arquivo só.
 
-POR QUE 18-22 SEGUNDOS
+COBERTURA DAS CINCO CIDADES
 ----------------------
-A métrica do experimento é skip rate, e o vídeo do Ranzinza era longo demais
-pro que ele entrega. O resumo aqui lê TRÊS cidades, não cinco — é o corte que
-paga os segundos. `estimar_segundos()` calcula a duração antes de gastar dois
-minutos de Kokoro e render; o teste do repositório trava a faixa.
+A métrica do experimento é skip rate. Por solicitação de cobertura regional,
+o boletim agora lê SEMPRE CINCO cidades, com mínima e máxima de cada uma.
+Isso aumenta a duração em relação à edição antiga de três cidades.
+`estimar_segundos()` acompanha o novo orçamento antes da renderização.
 
 VOZ
 ---
@@ -44,7 +44,7 @@ Desde 23/09/2026 é a MESMA voz do Bira do Tempo, do @previsaorj: Kokoro
 Bira (`FILTRO_BIRA` abaixo, copiado de src/previsao_rj/render/characters/
 pipeline.py do previsao-rj). Antes era `pm_santa` a 1.05 com o FILTRO_LOCUTOR.
 O ritmo medido das duas vozes é o mesmo (~2,8-3,1 palavras/s nos roteiros de
-teste), então a faixa de 18-22 s não mudou.
+teste), a duração é recalculada para caberem cinco cidades completas.
 
 CUIDADO COM SIGLA: o espeak-ng (fonetizador do Kokoro) soletra letra por letra
 qualquer palavra toda em maiúscula — "PIX" vira "p-i-xis". Nas FALAS, escreva
@@ -71,12 +71,12 @@ from gerar_dia import (produzir, num_extenso, cenario_do_dia,
 from limiares import (alerta_do_dia, chove_de_verdade, conferir_gancho,
                       conferir_manchete, extremos, manchete, modo_do_dia)
 
-# Três, não cinco. Ver "POR QUE 18-22 SEGUNDOS" no topo.
-N_RESUMO_JUAREZ = 3
+# Cinco cidades distintas em TODOS os vídeos do Juarez, inclusive em alerta.
+N_RESUMO_JUAREZ = 5
 
 # Faixa-alvo do plano v3. `estimar_segundos()` avisa quando o roteiro sai fora;
 # não aborta, porque um dia com nome de cidade comprido não é um bug.
-DUR_MIN, DUR_MAX = 18.0, 22.0
+DUR_MIN, DUR_MAX = 23.0, 36.0
 
 # A voz do Bira do Tempo (@previsaorj), preset por preset.
 VOZ_BIRA = "pm_alex"
@@ -92,8 +92,7 @@ FILTRO_BIRA = ("highpass=f=80,"
 # 18,6s — a narração real gasta ~3% a mais que a estimativa.
 #
 # Baixar o número faz a conta ERRAR PRA CIMA, e é assim que ela tem que errar:
-# o teste do repositório trava a faixa de 18-22s, e é melhor ele reclamar de um
-# roteiro que caberia do que deixar passar um que estoura no ar.
+# o teste monitora a nova faixa, com as cinco cidades e suas temperaturas.
 PALAVRAS_POR_SEGUNDO = 2.82
 GAP_ENTRE_BATIDAS = 0.22     # o gap do Bira
 
@@ -103,7 +102,7 @@ GAP_ENTRE_BATIDAS = 0.22     # o gap do Bira
 # =====================================================================
 # Curtíssimas de propósito: o gancho é a batida mais cara do vídeo em atenção
 # e a mais barata em segundos. Cada palavra de cerimônia aqui sai de algum
-# lugar que informa — e o orçamento inteiro é de 18 a 22 segundos.
+# lugar que informa — prioridade para a previsão completa das cinco cidades.
 ABERTURAS = [
     "Plantão das seis.",
     "Boletim das seis.",
@@ -120,8 +119,8 @@ CONFIRMACOES = [
 ]
 
 INTRO_RESUMO_JUAREZ = [
-    "Nas três maiores:",
-    "Situação nas três maiores:",
+    "Previsão nas cinco cidades:",
+    "Temperaturas em cinco cidades:",
     "Acompanhem:",
 ]
 
@@ -240,14 +239,19 @@ def montar_roteiro(dados):
         # 2. a confirmação de plantão — o tom do personagem, em uma linha
         add(rnd.choice(CONFIRMACOES))
 
-    # --- 3. AS TRÊS MAIORES: o corpo do vídeo --------------------------
+    # --- 3. CINCO CIDADES: obrigatório mesmo em dia de alerta -----------
     resumo = resumo_cinco(cid, n=N_RESUMO_JUAREZ)
-    if len(resumo) > 1:
+    if len(resumo) != N_RESUMO_JUAREZ:
+        raise ValueError(
+            f"O Reel precisa de {N_RESUMO_JUAREZ} cidades distintas; "
+            f"recebidas {len(resumo)}. Abortado sem publicar previsão incompleta."
+        )
+    if len(resumo) == N_RESUMO_JUAREZ:
         corpo = " ".join(f"{c['nome']}, {num_extenso(c['min'])} a "
                          f"{num_extenso(c['max'])}." for c in resumo)
         legenda = " · ".join(f"{c['nome']} {c['min']}/{c['max']}°" for c in resumo)
         add(f"{rnd.choice(INTRO_RESUMO_JUAREZ)} {corpo}", legenda,
-            tipo="resumo", cidades=resumo, titulo="AS TRÊS MAIORES")
+            tipo="resumo", cidades=resumo, titulo="PREVISÃO EM 5 CIDADES")
 
     # --- 4. A LINHA DO DIA ---------------------------------------------
     if modo == "alerta":
@@ -320,7 +324,7 @@ def gerar(dados, saida, quality="m"):
     dur = estimar_segundos(batidas)
     for b in batidas:
         print(f'     [{b["tipo"]:9s}] {b["fala"]}')
-    aviso = "" if DUR_MIN <= dur <= DUR_MAX else "   <-- FORA DA FAIXA 18-22s"
+    aviso = "" if DUR_MIN <= dur <= DUR_MAX else "   <-- FORA DA FAIXA 23-36s"
     print(f"     duração estimada: {dur:.1f}s{aviso}")
     return produzir(
         batidas, saida,
@@ -341,6 +345,7 @@ DEMO = {
         {"nome": "Volta Redonda", "min": 16, "max": 28, "cond": "sol", "chuva_mm": 0.0},
         {"nome": "Barra Mansa", "min": 16, "max": 28, "cond": "sol", "chuva_mm": 0.0},
         {"nome": "Resende", "min": 14, "max": 26, "cond": "nublado", "chuva_mm": 0.4},
+        {"nome": "Itatiaia", "min": 13, "max": 25, "cond": "nublado", "chuva_mm": 0.2},
     ],
     "umidade_min": 55,
     "destaque": "Quatis",
