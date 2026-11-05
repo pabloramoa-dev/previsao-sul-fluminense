@@ -1,0 +1,62 @@
+name: SulFlu - Voz do Juarez para Plantao de Ofertas (SEM PUBLICAR)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sulflu-plantao-ofertas-voz.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  locucao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PREVISAO_TTS: edge
+      PREVISAO_TTS_FALLBACK: kokoro
+      PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
+      PREVISAO_EDGE_RATE: "+10%"
+      PREVISAO_EDGE_PITCH: "+6Hz"
+      PREVISAO_EDGE_VOLUME: "+6%"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Preparar voz oficial e reserva do personagem
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng
+          python -m pip install --disable-pip-version-check numpy edge-tts==7.2.8 kokoro-onnx soundfile
+
+      - name: Roteiro dos quatro carros enviados pelo anunciante
+        run: |
+          mkdir -p voz-ofertas
+          cat > voz-ofertas/roteiro.txt <<'FALAS'
+          Atenção, Sul Fluminense! O nosso plantão de ofertas chegou com quatro veículos para você conhecer. Confira!
+          Abrindo nosso giro: este Renault branco! Uma opção compacta para conhecer de perto. Consulte ano, quilometragem, valor e condições com o vendedor.
+          Agora, atenção para este Jeep preto! A foto mostra a marcação dezessete no para-brisa. Peça a ficha completa e todas as informações antes de comprar.
+          Também temos este Honda na cor vinho. Visual elegante e espaço de SUV. Quer saber mais? Solicite os detalhes de conservação, documentação e preço.
+          E confira este Chevrolet branco, com a marcação vinte e quatro no vidro. Uma oportunidade para comparar e conhecer pessoalmente.
+          Gostou de algum destes quatro veículos? Entre em contato com o vendedor e confira disponibilidade, valores, documentos e condições. Plantão de ofertas SulFlu!
+          FALAS
+
+      - name: Gerar voz do Juarez com o mesmo motor do boletim diario
+        run: |
+          python reels/gerar_voz_kokoro.py voz-ofertas/roteiro.txt --voz pm_alex --speed 1.04 --gap 0.22 --out voz-ofertas/narracao.wav --seg-json voz-ofertas/segs.json
+          ffmpeg -v error -i voz-ofertas/narracao.wav -f null -
+          ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 voz-ofertas/narracao.wav
+
+      - name: Disponibilizar narracao e tempos para montagem manual do video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: juarez-plantao-ofertas-voz-original
+          path: |
+            voz-ofertas/narracao.wav
+            voz-ofertas/segs.json
+            voz-ofertas/roteiro.txt
+          retention-days: 3
