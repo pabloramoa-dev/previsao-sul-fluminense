@@ -32,6 +32,7 @@ o Ranzinza (06h10) roda com deslocamento 0 e a Dona Maria (18h) com 5, então
 eles nunca destacam a mesma cidade no mesmo dia.
 """
 import argparse, json, sys, urllib.parse, urllib.request, urllib.error, datetime, time
+from zoneinfo import ZoneInfo
 
 API = "https://api.open-meteo.com/v1/forecast"
 TZ = "America/Sao_Paulo"
@@ -52,6 +53,12 @@ CIDADES = [
     ("Barra do Piraí", -22.4711, -43.8256),
     ("Itatiaia",      -22.4906, -44.5636),
 ]
+
+# Angra dos Reis entra como cidade convidada nos boletins PUBLICADOS na sexta
+# e no domingo, sem alterar o rodízio das dez cidades regulares. As mesmas
+# coordenadas já são usadas para Angra no serviço de previsão por DM.
+ANGRA_DOS_REIS = ("Angra dos Reis", -23.0067, -44.3181)
+DIAS_ANGRA = frozenset((4, 6))  # date.weekday(): sexta=4, domingo=6
 
 # Deslocamento do vídeo da tarde. Com 10 cidades, 5 é a metade exata da volta:
 # a Dona Maria fica sempre no lado oposto do rodízio, então nunca cai na mesma
@@ -75,6 +82,21 @@ def ordem_do_dia(cidades, data=None, desloca=0):
     d = data or datetime.date.today()
     n = (d.toordinal() + int(desloca)) % len(cidades)
     return cidades[n:] + cidades[:n]
+
+
+def cidades_para_publicacao(data=None, desloca=0, sem_rodizio=False):
+    """Seleciona as cidades conforme a data LOCAL de publicação do boletim.
+
+    Em sextas e domingos Angra entra como destaque, à frente das dez cidades
+    regulares. Nos demais dias não entra na coleta nem no resumo. Isto vale
+    tanto para o Reel de hoje quanto para o card de amanhã: os dois são
+    publicados no dia de execução, não na data prevista no card.
+    """
+    d = data or datetime.datetime.now(ZoneInfo(TZ)).date()
+    base = list(CIDADES) if sem_rodizio else ordem_do_dia(CIDADES, data=d, desloca=desloca)
+    if d.weekday() in DIAS_ANGRA:
+        return [ANGRA_DOS_REIS] + base
+    return base
 
 
 # As maiores audiências do perfil, em ordem. Entram no RESUMO de todo vídeo,
@@ -300,23 +322,22 @@ def main():
                     help="posições extras no rodízio. Padrão: 0 pra hoje (Ranzinza) "
                          f"e {DESLOCA_TARDE} pra amanhã (Dona Maria)")
     ap.add_argument("--sem-rodizio", action="store_true",
-                    help="mantém a ordem fixa da lista (Volta Redonda sempre primeiro)")
+                    help="mantém a ordem das dez cidades regulares; Angra abre sextas e domingos")
     a = ap.parse_args()
 
-    cidades = CIDADES
     if a.cidades:
         querido = [x.strip().lower() for x in a.cidades.split(",")]
-        por_nome = {c[0].lower(): c for c in CIDADES}
+        por_nome = {c[0].lower(): c for c in CIDADES + [ANGRA_DOS_REIS]}
         faltando = [n for n in querido if n not in por_nome]
         if faltando:
             sys.exit(f"cidade desconhecida: {', '.join(faltando)}\n"
-                     f"disponíveis: {', '.join(c[0] for c in CIDADES)}")
+                     f"disponíveis: {', '.join(c[0] for c in CIDADES + [ANGRA_DOS_REIS])}")
         cidades = [por_nome[n] for n in querido]
-    elif not a.sem_rodizio:
+    else:
         desloca = a.desloca
         if desloca is None:
             desloca = 0 if a.quando == "hoje" else DESLOCA_TARDE
-        cidades = ordem_do_dia(cidades, desloca=desloca)
+        cidades = cidades_para_publicacao(desloca=desloca, sem_rodizio=a.sem_rodizio)
 
     idx = 0 if a.quando == "hoje" else 1
     respostas = buscar(cidades, dias=idx + 1 + 1)
