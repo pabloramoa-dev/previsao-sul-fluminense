@@ -50,3 +50,7 @@ jobs:
       - name: Gestos, direção, dados intactos e checagem técnica
         working-directory: reels
         run: python teste_direcao.py
+
+      - name: Angra dos Reis nas sextas e domingos (5 cidades no boletim)
+        working-directory: reels
+        run: python teste_angra.py
