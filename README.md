@@ -1,8 +1,8 @@
 # Previsão Sul Fluminense — @previsaosulflu
 
-Automação de previsão do tempo para Instagram. O sistema coleta dados de **10 municípios** do Sul Fluminense e exibe **exatamente 5 cidades distintas por boletim principal**: a cidade do rodízio diário e as cidades de maior audiência, sem duplicação. As cinco têm mínima e máxima no Reel, no card e nas respectivas legendas.
+Automação de previsão do tempo para Instagram. O sistema coleta dados de **10 municípios fixos** do Sul Fluminense e, **às sextas-feiras e aos domingos**, inclui **Angra dos Reis** no boletim. Exibe **exatamente 5 cidades distintas por boletim principal**: a cidade em destaque e quatro municípios de maior audiência, sem duplicação. As cinco têm mínima e máxima no Reel, no card e nas respectivas legendas.
 
-Municípios monitorados: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra do Piraí, Piraí, Itatiaia, Quatis, Pinheiral e Rio Claro. Angra dos Reis **não** pertence à lista de coleta atual.
+Municípios regulares: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra do Piraí, Piraí, Itatiaia, Quatis, Pinheiral e Rio Claro. **Angra dos Reis** participa da coleta do Open-Meteo e abre a seleção de cinco cidades **nos boletins publicados na sexta-feira e no domingo** (Reel das 06h e card das 18h, ambos pelo dia de publicação, no horário de Brasília). Nos demais dias, a seleção mantém as dez cidades regulares.
 
 ## Programação ativa (horário de Brasília, UTC-3)
 
@@ -12,13 +12,13 @@ Municípios monitorados: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra 
 | Card da previsão de amanhã | Todos os dias por volta das 18h | `.github/workflows/card_amanha.yml` | Foto com cinco cidades, mesma seleção na legenda. |
 | Monitor de alertas | A cada 2h, das 07h às 19h | `.github/workflows/monitor_alertas.yml` | Só publica se houver gatilho; máximo de dois alertas por dia, sem repetição do mesmo tipo em 6h. |
 
-O detector de alertas monitora a região toda (10 cidades), inclusive cidades fora do resumo diário. **São previsões, não observações.** O quadro retrospectivo “Choveu quanto?” está suspenso até existir uma fonte de dados realmente observados para as últimas 24h. O monitor também pode ser testado sem publicar.
+O detector de alertas continua monitorando as dez cidades regulares, inclusive cidades fora do resumo diário. Angra é uma inclusão editorial no Reel e no card às sextas e domingos, não uma extensão do monitor de alertas. **São previsões, não observações.** O quadro retrospectivo “Choveu quanto?” está suspenso até existir uma fonte de dados realmente observados para as últimas 24h. O monitor também pode ser testado sem publicar.
 
 Os agendamentos antigos de Seu Ranzinza e Dona Maria (`ranzinza.yml`), carrosséis (`post_manha.yml`, `post_noite.yml`, `fim_de_semana.yml`) e formatos experimentais estão desligados; seus arquivos continuam disponíveis para execução manual.
 
 ## Como funciona
 
-1. `reels/coletar_tempo.py` consulta o Open-Meteo em lote para os dez municípios. Em falhas transitórias (incluindo 429 e 5xx), tenta até três vezes; dados com contagem incorreta de cidades são rejeitados.
+1. `reels/coletar_tempo.py` consulta o Open-Meteo em lote para os dez municípios regulares e adiciona Angra dos Reis na sexta e no domingo. Em falhas transitórias (incluindo 429 e 5xx), tenta até três vezes; dados com contagem incorreta de cidades são rejeitados.
 2. `reels/coletar_tempo.py:resumo_cinco()` seleciona as cinco cidades exibidas. `reels/gerar_juarez.py` exige cinco cidades mesmo em dia de alerta.
 3. `hyperframes/gerar_hf.py` produz áudio e vídeo, e `lab/remotion-juarez/finalizar.py` realiza acabamento e validação antes da publicação.
 4. `reels/postar_reel.py` e `reels/gerar_card_amanha.py` reutilizam a mesma seleção, mantendo legenda e quadro coerentes.
@@ -41,7 +41,7 @@ No GitHub, em **Settings → Secrets and variables → Actions**, configure `IG_
 
 ## Manutenção
 
-- Para ajustar a ordem do rodízio e a lista de cidades, edite `reels/coletar_tempo.py`. Mantenha também `src/clima.py` alinhado para a cobertura de alertas.
+- Para ajustar o rodízio e os dias fixos de Angra, edite `reels/coletar_tempo.py` (`DIAS_ANGRA` e `cidades_para_publicacao`). A lista de dez municípios para alertas continua em `src/clima.py`.
 - Para controlar os critérios de alerta, revise `limiares.py` e `src/alertas.py` e execute os testes antes de publicar.
 - Para suspender qualquer publicação automática, desabilite o workflow específico em **Actions → Workflow → ⋯ → Disable workflow**.
 - Use o arquivo de diagnóstico das execuções do GitHub Actions para confirmar o sucesso de cada publicação; código correto não comprova postagem já realizada.
