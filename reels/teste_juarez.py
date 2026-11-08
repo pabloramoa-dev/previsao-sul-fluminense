@@ -323,10 +323,7 @@ publicam_reel = sorted(f for f in os.listdir(WF)
                        and "postar_reel.py" in open(os.path.join(WF, f),
                                                     encoding="utf-8").read()
                        and crons_ativos(f))
-# So o juarez, e mais ninguem. Outro workflow publicando Reel agendado nao
-# quebra nada visivelmente — so contamina o skip rate que o experimento mede,
-# porque o numero passa a responder por dois formatos em vez de um.
-checar("so o juarez publica Reel por agendamento", publicam_reel, ["juarez.yml"])
+checar("Bira e Bia têm um turno cada", sorted(f for f in os.listdir(WF) if f.endswith(".yml") and crons_ativos(f) and "uses: ./.github/workflows/boletim-regional.yml" in open(os.path.join(WF, f), encoding="utf-8").read()), ["card_amanha.yml", "juarez.yml"])
 
 print("voz do Juarez = voz do Bira do Tempo (@previsaorj), desde 23/09/2026:")
 checar("voz", J.VOZ_BIRA, "pm_alex")

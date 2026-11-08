@@ -1,0 +1,157 @@
+--- a/hyperframes/compor.py
++++ b/hyperframes/compor.py
+@@ -29,9 +29,9 @@
+ OFF = "#f4f1e8"
+ PT = "#10202e"
+ 
+-TITULOS = {'rio_antes_de_sair': 'RIO ANTES DE SAIR', 'chove_onde': 'O TEMPO MUDA ONDE?',
++TITULOS = {'rio_antes_de_sair': 'MANHÃ NO SUL FLU', 'chove_onde': 'O TEMPO MUDA ONDE?',
+            'vai_dar_praia': 'VAI DAR PRAIA?', 'fim_de_semana': 'SEU FIM DE SEMANA',
+-           'vai_ao_jogo': 'VAI AO JOGO?', 'amanha_no_rio': 'AMANHÃ NO RIO'}
++           'vai_ao_jogo': 'VAI AO JOGO?', 'amanha_no_rio': 'AMANHÃ NO SUL FLU'}
+ 
+ CEUS = {  # topo, meio, morros, mar
+     "sol": ("#2f8fd8", "#bfe6f7", "#3f7a5c", "#2f9bc0"),
+@@ -44,10 +44,10 @@
+ MOUTH = {"X": 0.06, "A": 0.1, "B": 0.35, "C": 0.6, "D": 1.0, "E": 0.7,
+          "F": 0.3, "G": 0.3, "H": 0.45}
+ APRESENTADOR = {
+-    'bira': {'nome': 'BIRA DO TEMPO', 'cargo': 'TEMPO NO RIO E REGIÃO', 'pele': '#A96D49',
+-             'camisa': TEAL, 'logo': '#ffffff', 'kicker': 'PREVISÃO DAS 6H'},
+-    'bia': {'nome': 'BIA DA ORLA', 'cargo': 'O TEMPO DE AMANHÃ NO RIO', 'pele': '#C78359',
+-            'camisa': '#F0B94D', 'logo': INK, 'kicker': 'PREVISÃO DAS 18H'},
++    'bira': {'nome': 'BIRA DO TEMPO', 'cargo': 'TEMPO NO SUL FLUMINENSE', 'pele': '#A96D49',
++             'camisa': '#244E78', 'logo': '#ffffff', 'kicker': 'PREVISÃO DAS 6H'},
++    'bia': {'nome': 'BIA DA ORLA', 'cargo': 'AMANHÃ NO SUL FLUMINENSE', 'pele': '#C78359',
++            'camisa': '#943E59', 'logo': INK, 'kicker': 'PREVISÃO DAS 18H'},
+ }
+ 
+ 
+@@ -122,7 +122,7 @@
+   {braco["E"]}
+   {rect(0, -.38, 1.55, 1.65, .32, camisa)}
+   <path d="M{X(-.26):.1f} {Y(.42):.1f} L{X(0):.1f} {Y(.12):.1f} L{X(.26):.1f} {Y(.42):.1f}" fill="none" stroke="{INK}" stroke-width="7" stroke-linejoin="round"/>
+-  <text x="{X(.36):.1f}" y="{Y(-.24):.1f}" text-anchor="middle" font-family="BarlowC" font-size="44" fill="{c["logo"]}">RJ</text>
++  <text x="{X(.36):.1f}" y="{Y(-.24):.1f}" text-anchor="middle" font-family="BarlowC" font-size="44" fill="{c["logo"]}">SF</text>
+   {braco["D"]}
+  </g>
+  <g id="ap-cabeca">
+@@ -186,16 +186,6 @@
+             linhas.append(f'<line x1="{x}" y1="{y}" x2="{x - 14}" y2="{y + 52}" stroke="#dbe9f5" '
+                           f'stroke-width="4" stroke-linecap="round" opacity="0.75"/>')
+         chuva = f'<g class="{uid}-chuva">{"".join(linhas)}</g>'
+-    predios = []
+-    x = -10
+-    while x < 1090:
+-        w, h = rng.randint(60, 110), rng.randint(90, 230)
+-        cor = rng.choice(["#e9e2d3", "#d9d3c4", "#f2ede2", "#cfd6d8"])
+-        jan = "".join(f'<rect x="{x + 12 + j * 22}" y="{1290 - h + 16 + k * 30}" width="12" height="16" fill="#8fa9b8"/>'
+-                      for k in range(max(1, h // 30 - 1)) for j in range(max(1, (w - 16) // 22)))
+-        predios.append(f'<rect x="{x}" y="{1290 - h}" width="{w}" height="{h + 30}" fill="{cor}" stroke="{PT}" stroke-width="4"/>{jan}')
+-        x += w + rng.randint(-4, 6)
+-    onda = "M0 1395 " + " ".join(f"Q{45 + 90 * k} {1375 if k % 2 == 0 else 1415} {90 + 90 * k} 1395" for k in range(13))
+     return f'''
+ <svg class="paisagem" viewBox="0 0 1080 1920" width="1080" height="1920" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs><linearGradient id="{uid}-g" x1="0" y1="0" x2="0" y2="1">
+@@ -203,18 +193,10 @@
+  <rect width="1080" height="1920" fill="url(#{uid}-g)"/>
+  {sol}
+  {"".join(nuvens)}
+- <path d="M-20 1180 L60 1080 C110 1010 150 930 200 900 L226 892 C260 920 300 1010 360 1080 L470 1180 Z" fill="{morro}" stroke="{PT}" stroke-width="5"/>
+- <g transform="translate(213,846)" fill="{PT}"><rect x="-6" y="0" width="12" height="48"/><rect x="-30" y="10" width="60" height="9"/></g>
+- <path d="M640 1180 C660 1110 700 1080 760 1075 C800 1078 820 1110 832 1150 L850 1180 Z" fill="{morro}" stroke="{PT}" stroke-width="5"/>
+- <path d="M840 1180 C850 1050 880 930 950 905 C1010 900 1040 990 1060 1180 Z" fill="{morro}" stroke="{PT}" stroke-width="5"/>
+- <path d="M770 1078 L948 908" stroke="{PT}" stroke-width="3"/>
+- <g class="{uid}-bonde"><rect x="842" y="985" width="30" height="20" rx="4" fill="{RED}" stroke="{PT}" stroke-width="3"/></g>
+- <rect x="0" y="1170" width="1080" height="140" fill="{mar}"/>
+- <path class="{uid}-mar" d="M-60 1205 q30 -12 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0" fill="none" stroke="#e8f6fb" stroke-width="5" opacity="0.8"/>
+- {"".join(predios)}
+- <rect x="0" y="1310" width="1080" height="610" fill="#f7f3ea"/>
+- <path d="{onda}" fill="none" stroke="{PT}" stroke-width="22"/>
+- <path d="{onda.replace("1395", "1475").replace("1375", "1455").replace("1415", "1495")}" fill="none" stroke="{PT}" stroke-width="22"/>
++ <path d="M0 1080 L170 900 280 970 490 755 625 925 790 810 1080 1020 V1920 H0Z" fill="{morro}"/>
++ <path d="M0 1170 Q200 960 420 1090 T850 1050 L1080 990 V1920 H0Z" fill="#496F5A"/>
++ <path d="M0 1230 Q450 1160 750 1200 T1080 1110 V1250 Q800 1310 550 1250 T0 1330Z" fill="{mar}"/>
++ <g stroke="#253F4A" fill="none"><path d="M120 1170 H970 M160 1168 L270 1090 380 1168 490 1090 600 1168 710 1090 820 1168 930 1090" stroke-width="12"/><path d="M380 1170 V1230 M600 1170 V1240 M820 1170 V1220" stroke-width="18"/></g>
+  {chuva}
+ </svg>'''
+ 
+@@ -236,7 +218,7 @@
+ 
+ 
+ def cena_abertura(p, cena, bat):
+-    titulo = TITULOS.get(p["formato"], "PREVISÃO RJ")
++    titulo = TITULOS.get(p["formato"], "PREVISÃO SUL FLU")
+     palavras = "".join(f'<span class="ab-w">{esc(w)}</span> ' for w in titulo.split())
+     quando = "AMANHÃ" if p["formato"] == "amanha_no_rio" else "HOJE"
+     from datetime import date
+@@ -311,7 +293,7 @@
+  <div class="qd-veu"></div>
+  <div class="qd-topo"><span class="qd-check">✓</span><span class="qd-titulo">{esc(res["dados"].get("titulo", "NA REGIÃO"))}</span></div>
+  <div class="qd-painel">
+-  <div class="qd-head"><span>AS {len(cidades)} REGIÕES</span><span class="qd-cols"><b>MÍN</b><b>MÁX</b></span></div>
++  <div class="qd-head"><span>AS {len(cidades)} CIDADES</span><span class="qd-cols"><b>MÍN</b><b>MÁX</b></span></div>
+   {"".join(linhas)}
+   <div class="qd-dicas" data-qa-bounds="true">{esc(" · ".join(p.get("dicas_praticas", [])))}</div>
+  </div>'''
+@@ -366,8 +348,8 @@
+ def ticker(p):
+     itens = " &#9679; ".join(
+         f'{esc(c["nome"].upper())} <b>{round(c["min"])}°/{round(c["max"])}°</b>' for c in p["cidades"])
+-    itens += " &#9679; SIGA @PREVISAORJ"
+-    return (f'<div class="tk-faixa"><div class="tk-rot">RIO</div><div class="tk-janela">'
++    itens += " &#9679; SIGA @PREVISAOSULFLU"
++    return (f'<div class="tk-faixa"><div class="tk-rot">SUL FLU</div><div class="tk-janela">'
+             f'<div id="tk-trilho">{itens} &#9679; {itens}</div></div></div>')
+ 
+ 
+@@ -537,7 +519,7 @@
+ 
+  <div id="hud" class="clip" data-start="0" data-duration="{dur}" data-track-index="2">
+   <div class="hud-vivo"><span class="hud-ponto" id="hud-ponto"></span>PREVISÃO</div>
+-  <div class="hud-nome">PREVISÃO RJ · {esc(data_curta)}</div>
++  <div class="hud-nome">PREVISÃO SUL FLU · {esc(data_curta)}</div>
+   <div class="hud-rel">{esc(p["hora"])}</div>
+  </div>
+ 
+--- a/hyperframes/gerar_hf.py
++++ b/hyperframes/gerar_hf.py
+@@ -286,24 +286,12 @@
+     vendor.mkdir(parents=True, exist_ok=True)
+     shutil.copy(RAIZ / 'video/node_modules/gsap/dist/gsap.min.js', vendor)
+ 
+-    if snapshot is None:
+-        snap, formato, batidas = demo_batidas(personagem)
+-        demo = True
+-    else:
+-        from src.previsao_rj.editorial.formats import prepare
+-        snap, demo = snapshot, False
+-        batidas = prepare(snapshot, formato, topic=topico)['beats']
++    from regional import preparar_boletim
++    snap, cidades, batidas = preparar_boletim(snapshot, personagem, out.parent)
++    demo = False
+ 
+     # 1) voz -> linha do tempo real (com o mesmo corte editorial do Manim)
+     segs = narrar(batidas, personagem, work)
+-    if not demo:
+-        from src.previsao_rj.editorial.duracao import cortar_para_janela
+-        duracoes = [s['fim'] - s['ini'] for s in segs]
+-        restantes, cortadas = cortar_para_janela(batidas, duracoes)
+-        if cortadas:
+-            print(f'[duracao] {sum(duracoes):.1f}s excede a janela; cortando {len(cortadas)} batida(s)')
+-            batidas = restantes
+-            segs = narrar(batidas, personagem, work)
+     gap = PRESETS[personagem]['gap']
+     tempos = [(round(s['ini'], 3), round(max(s['ini'] + 0.2, s['fim'] - gap), 3)) for s in segs]
+     dur = round(segs[-1]['fim'] + CAUDA, 2)
+@@ -354,8 +342,8 @@
+         'data': data_iso, 'data_ext': data_extenso(data_iso),
+         'data_previsao': bloco.get('date') or data_iso,
+         'hora': f'{int(hora_alvo):02d}:00',
+-        'ceu': ceu_do_dia(locs),
+-        'cidades': cinco_regioes(locs),
++        'ceu': cidades[0]['cond'],
++        'cidades': cidades,
+         'batidas': [dict(b, ini=tempos[i][0], fim=tempos[i][1]) for i, b in enumerate(batidas)],
+         'cenas': cenas, 'cortes': cortes, 'transicoes': trans,
+         'palavras': palavras,

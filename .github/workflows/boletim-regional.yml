@@ -1,0 +1,66 @@
+name: Estúdio SulFlu
+on:
+  workflow_call:
+    inputs:
+      personagem: {required: true, type: string}
+      publicar: {required: true, type: boolean}
+jobs:
+  boletim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TZ: America/Sao_Paulo
+      PERSONAGEM: ${{ inputs.personagem }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pabloramoa-dev/previsao-rj
+          ref: 91e8aa72e9947575126a92b53cea8f3c5002fff9
+          path: motor
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Instalar estúdio do RJ
+        working-directory: motor
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config
+          pip install -r requirements/test.txt -r requirements/characters.txt num2words requests -r ../reels/requirements.txt
+          npm ci --prefix video
+          (cd video && npx --no-install hyperframes browser ensure)
+          git apply ../estudio/regional.patch
+          cp ../estudio/regional.py hyperframes/
+      - name: Gerar e validar o boletim regional
+        run: |
+          quando=hoje
+          formato=rio_antes_de_sair
+          if [[ "$PERSONAGEM" == bia ]]; then quando=amanha; formato=amanha_no_rio; fi
+          python reels/coletar_tempo.py --quando "$quando" --saida "$RUNNER_TEMP/dia.json"
+          PYTHONPATH="$GITHUB_WORKSPACE/reels" python motor/hyperframes/gerar_hf.py --snapshot "$RUNNER_TEMP/dia.json" --personagem "$PERSONAGEM" --format "$formato" --out "$GITHUB_WORKSPACE/saida/REEL.mp4"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boletim-${{ inputs.personagem }}
+          path: |
+            saida/REEL.mp4
+            saida/CAPA.jpg
+            saida/LEGENDA.txt
+            saida/REEL.quality.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publicar no Instagram do SulFlu
+        if: inputs.publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          tag="boletim-$PERSONAGEM-$GITHUB_RUN_ID"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" saida/REEL.mp4 saida/CAPA.jpg --title "$tag" --notes "Boletim do Sul Fluminense"
+          fi
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
+          python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --capa-ms "$(cat saida/capa_ms.txt)" --legenda-arquivo saida/LEGENDA.txt
+          gh release delete "$tag" --cleanup-tag --yes

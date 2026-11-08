@@ -1,191 +1,25 @@
-name: Reel diario — Juarez Plantao (06h)
-
-# O UNICO Reel do dia, no ar desde 2026-09-06 (plano v3).
-#
-# Substitui os dois do ranzinza.yml — Seu Ranzinza as 06h10 e Dona Maria as
-# 18h00 —, cujos crons ficaram comentados na mesma mudanca. O plano v3 mede o
-# skip rate de UM Reel por dia contra a linha de base anterior.
-#
-# O modo do Reel (rotina ou alerta) NAO se decide aqui: quem decide e o
-# modo_do_dia() do limiares.py, lendo o dia.json que o passo anterior baixou.
-#
-# VOZ APROVADA EM 30/09/2026:
-# Antonio Neural (pt-BR-AntonioNeural), rate +10%, pitch +6Hz, volume +6%.
-# Esse preset vale SOMENTE para o Juarez / boletim principal do Previsao Sulflu.
-# Ranzinza e Dona Maria continuam com seus motores/vozes separados.
-
+name: Bira do Tempo — manhã (06h)
 on:
+  schedule:
+    - cron: "0 9 * * *"
   push:
     branches: [main]
-    paths:
-      - "reels/gerar_voz_kokoro.py"
-      - "hyperframes/**"
-      - ".github/actions/setup-hyperframes/**"
-      - ".github/workflows/juarez.yml"
-      - "lab/remotion-juarez/**"
-  schedule:
-    # dispara cedo e o job espera ate a hora certa — mesma tecnica do
-    # ranzinza.yml: o runner do GitHub costuma atrasar dezenas de minutos
-    - cron: "0 5 * * *"       # espera ate 09:00 UTC (06:00 BRT)
+    paths: ['estudio/**', '.github/workflows/boletim-regional.yml', '.github/workflows/juarez.yml']
   workflow_dispatch:
     inputs:
       publicar:
-        description: "Publicar no Instagram? (desmarcado = so gera o video como artifact)"
+        description: Publicar no Instagram
         type: boolean
         default: false
-
 permissions:
   contents: write
-
+concurrency:
+  group: sulflu-bira
+  cancel-in-progress: false
 jobs:
-  juarez:
-    runs-on: ubuntu-latest
-    timeout-minutes: 330
-    defaults:
-      run:
-        working-directory: reels
-    env:
-      # Visual do Reel: colagem de papel (vox) por padrão, desde 16/09/2026.
-      PREVISAO_ESTILO: ${{ vars.PREVISAO_ESTILO || 'vox' }}
-
-      # Voz oficial do boletim principal — Antonio Neural, sem chave de API.
-      # O gerar_voz_kokoro.py mantém o mesmo contrato de WAV + segs.json, mas
-      # troca de backend apenas neste job quando PREVISAO_TTS=edge.
-      PREVISAO_TTS: edge
-      PREVISAO_TTS_FALLBACK: kokoro
-      PREVISAO_EDGE_VOICE: pt-BR-AntonioNeural
-      PREVISAO_EDGE_RATE: '+10%'
-      PREVISAO_EDGE_PITCH: '+6Hz'
-      PREVISAO_EDGE_VOLUME: '+6%'
-
-    steps:
-      - name: Aguardar o horario alvo (06:00 BRT)
-        if: github.event_name == 'schedule'
-        working-directory: .
-        run: |
-          ALVO=$(date -u -d "today 09:00" +%s)
-          AGORA=$(date -u +%s)
-          if [ "$AGORA" -lt "$ALVO" ]; then
-            echo "Runner iniciou cedo. Aguardando $(( (ALVO-AGORA)/60 )) min ate 09:00 UTC."
-            sleep $((ALVO - AGORA))
-          else
-            echo "Runner iniciou $(( (AGORA-ALVO)/60 )) min APOS o alvo. Seguindo imediatamente."
-          fi
-
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-hyperframes
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      # Mantido porque os outros geradores do repositorio continuam usando
-      # Kokoro e compartilham requirements. O Juarez, neste job, usa Edge.
-      - name: Cache do modelo Kokoro (~350MB)
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/dvh_kokoro
-          key: kokoro-v1.0
-
-      - name: Cache do pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('reels/requirements.txt') }}
-
-      - name: Dependencias de sistema
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg espeak-ng \
-            libpango1.0-dev libcairo2-dev pkg-config
-          sudo mkdir -p /usr/share/fonts/truetype/poppins
-          for f in Poppins-Bold.ttf Poppins-Regular.ttf; do
-            sudo curl -sL -o /usr/share/fonts/truetype/poppins/$f \
-              https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/$f
-          done
-          sudo fc-cache -f
-
-      - name: Dependencias Python
-        run: pip install -r requirements.txt
-
-      - name: Baixar previsao do Open-Meteo
-        run: python coletar_tempo.py --saida dia.json
-
-      - name: Conferir o roteiro e o modo do dia
-        run: python gerar_juarez.py --dados dia.json --so-roteiro
-
-      - name: Gerar o Reel (Juarez Plantao — Antonio Neural)
-        run: python ../hyperframes/gerar_hf.py --dados dia.json --render REEL.mp4
-
-      - name: Aplicar acabamento Remotion aprovado e validar antes de publicar
-        run: |
-          python ../lab/remotion-juarez/finalizar.py --video REEL.mp4 --pacote ../hyperframes/build/pacote.json --dados dia.json --production
-
-      - name: Medir a duracao do video
-        run: |
-          DUR=$(ffprobe -v error -show_entries format=duration \
-                -of default=noprint_wrappers=1:nokey=1 REEL.mp4)
-          echo "duracao real: ${DUR}s (alvo do plano v3: 18-22s)"
-          echo "### Reel do Juarez — ${DUR}s — Remotion + voz original (Antonio ou Kokoro reserva)" >> $GITHUB_STEP_SUMMARY
-
-      - name: Guardar o video como artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reel-juarez
-          path: |
-            reels/REEL.mp4
-            reels/REEL_preview_720p.mp4
-            reels/CAPA.jpg
-            lab/remotion-juarez/out/qa-probe.json
-          retention-days: 2
-
-      - name: Publicar o MP4 num Release
-        id: upload
-        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="reel-$(date +%Y-%m-%d)"
-          gh release create "$TAG" REEL.mp4 CAPA.jpg --title "$TAG" --notes "Reel automatico" || \
-            gh release upload "$TAG" REEL.mp4 CAPA.jpg --clobber
-          echo "url=https://github.com/${{ github.repository }}/releases/download/$TAG/REEL.mp4" >> $GITHUB_OUTPUT
-          echo "capa=https://github.com/${{ github.repository }}/releases/download/$TAG/CAPA.jpg" >> $GITHUB_OUTPUT
-
-      - name: Postar como Reels
-        if: ${{ github.event_name == 'schedule' || inputs.publicar }}
-        env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
-          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          VIDEO_URL: ${{ steps.upload.outputs.url }}
-          CAPA_URL: ${{ steps.upload.outputs.capa }}
-        run: |
-          CAPA_MS=$(cat capa_ms.txt 2>/dev/null || echo 0)
-          python postar_reel.py --video "$VIDEO_URL" --dados dia.json --voz juarez \
-            --capa-url "$CAPA_URL" --capa-ms "$CAPA_MS"
-
-      - name: Apagar Release após publicação confirmada
-        if: ${{ (github.event_name == 'schedule' || inputs.publicar) && success() }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="reel-$(date +%Y-%m-%d)"
-          gh release delete "$TAG" --cleanup-tag --yes || true
-
-      - name: Avisar falha por e-mail
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "[Previsao Sul Fluminense] FALHOU: Reel do Juarez"
-          to: pablo.ramoa@gmail.com
-          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
-          body: |
-            O Reel das 06h (Juarez Plantao) falhou e NAO foi publicado.
-            Este e o unico Reel diario principal do perfil.
-
-            Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  gerar:
+    uses: ./.github/workflows/boletim-regional.yml
+    with:
+      personagem: bira
+      publicar: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.publicar) }}
+    secrets: inherit
