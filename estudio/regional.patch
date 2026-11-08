@@ -155,3 +155,34 @@
          'batidas': [dict(b, ini=tempos[i][0], fim=tempos[i][1]) for i, b in enumerate(batidas)],
          'cenas': cenas, 'cortes': cortes, 'transicoes': trans,
          'palavras': palavras,
+--- a/hyperframes/compositions/instagram-follow.html
++++ b/hyperframes/compositions/instagram-follow.html
+@@ -1,4 +1,4 @@
+-<!-- hyperframes-registry-item: instagram-follow (adaptado: @previsaorj, pt-BR, fonte local) -->
++<!-- hyperframes-registry-item: instagram-follow (adaptado: @previsaosulflu, pt-BR, fonte local) -->
+ <template id="instagram-follow-template">
+   <div data-composition-id="instagram-follow" data-width="1080" data-height="1920">
+     <style>
+@@ -15,10 +15,10 @@
+     </style>
+     <div class="ig-linha">
+       <div id="ig-card" class="ig-card">
+-        <img class="ig-avatar" src="assets/avatar.svg" alt="Previsão RJ" />
++        <img class="ig-avatar" src="assets/avatar.svg" alt="Previsão SulFlu" />
+         <div class="ig-info">
+-          <div class="ig-nome">Previsão RJ</div>
+-          <div class="ig-handle">@previsaorj</div>
++          <div class="ig-nome">Previsão SulFlu</div>
++          <div class="ig-handle">@previsaosulflu</div>
+         </div>
+         <div id="ig-btn" class="ig-btn">
+           <span id="ig-seguir" class="ig-txt">Seguir</span>
+--- a/hyperframes/assets/avatar.svg
++++ b/hyperframes/assets/avatar.svg
+@@ -4,5 +4,5 @@
+  <g fill="#F4FAFD" stroke="#0b1a28" stroke-width="5" stroke-linejoin="round"><path d="M30 104 a20 20 0 0 1 20 -22 a26 26 0 0 1 48 6 a18 18 0 0 1 4 36 H40 a18 18 0 0 1 -10 -20 z"/></g>
+  <circle cx="58" cy="100" r="4" fill="#122E43"/><circle cx="80" cy="100" r="4" fill="#122E43"/>
+  <path d="M62 110 Q69 116 76 110" fill="none" stroke="#122E43" stroke-width="3.5" stroke-linecap="round"/>
+- <text x="80" y="152" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="26" fill="#FFD166">RJ</text>
++ <text x="80" y="152" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="26" fill="#FFD166">SF</text>
+ </svg>
