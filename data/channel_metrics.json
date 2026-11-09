@@ -1273,10 +1273,66 @@
         "comments": 1,
         "shares_per_1000_reached": 0.0
       }
+    },
+    {
+      "media_id": "17964756798215948",
+      "window": "24h",
+      "age_hours": 47.69,
+      "collected_at": "2026-11-09T23:46:42.754762+00:00",
+      "metrics": {
+        "reach": 7,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "17876881068592552",
+      "window": "72h",
+      "age_hours": 73.12,
+      "collected_at": "2026-11-09T23:46:42.754762+00:00",
+      "metrics": {
+        "reach": 3,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "17936033379145323",
+      "window": "72h",
+      "age_hours": 82.84,
+      "collected_at": "2026-11-09T23:46:42.754762+00:00",
+      "metrics": {
+        "reach": 28,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
+    },
+    {
+      "media_id": "18171370798466997",
+      "window": "72h",
+      "age_hours": 94.52,
+      "collected_at": "2026-11-09T23:46:42.754762+00:00",
+      "metrics": {
+        "reach": 5,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-08T19:41:00.103813+00:00",
+  "updated_at": "2026-11-09T23:46:42.754762+00:00",
   "account": "previsaosulflu"
 }
