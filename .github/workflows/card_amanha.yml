@@ -1,4 +1,4 @@
-name: Bia da Orla — tarde (18h)
+name: Bia — tarde (18h)
 on:
   schedule:
     - cron: "0 21 * * *"
