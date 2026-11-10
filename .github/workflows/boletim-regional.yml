@@ -83,8 +83,27 @@ jobs:
             saida/REEL.metadata.json
           if-no-files-found: error
           retention-days: 7
+      - name: Validar horario do boletim automatico
+        id: janela_turno
+        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true' && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+        run: |
+          python - <<'PY'
+          import os, time
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          agora = datetime.now(ZoneInfo("America/Sao_Paulo"))
+          alvo = agora.replace(hour=6 if os.environ["PERSONAGEM"] == "bira" else 18, minute=0, second=0, microsecond=0)
+          atraso = (alvo-agora).total_seconds()
+          valido = -14400 <= atraso <= 3600
+          if valido:
+              time.sleep(max(0, atraso))
+          else:
+              print(f"Turno atrasado ou cedo demais ({agora:%H:%M}); nao publicar previsao vencida.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as saida:
+              print(f"ok={'true' if valido else 'false'}", file=saida)
+          PY
       - name: Publicar no Instagram do SulFlu
-        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true'
+        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true' && steps.janela_turno.outputs.ok != 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -98,7 +117,7 @@ jobs:
           python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --metadata-arquivo saida/REEL.metadata.json --legenda-arquivo saida/LEGENDA.txt
           gh release delete "$tag" --cleanup-tag --yes
       - name: Registrar formato, gancho e ID confirmado
-        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true'
+        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true' && steps.janela_turno.outputs.ok != 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
