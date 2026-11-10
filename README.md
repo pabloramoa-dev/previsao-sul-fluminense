@@ -30,7 +30,7 @@ O sistema bloqueia a geração do boletim quando faltam cidades ou dados essenci
 
 - Em **GitHub Actions → Testes**, rode o workflow `testes.yml`, que valida os roteiros e as regras sem rede.
 - Em **Actions → Bira do Tempo — manhã (06h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado. O MP4 aparece como artifact temporário para avaliação visual.
-- Em **Actions → Bia da Orla — tarde (18h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado.
+- Em **Actions → Bia — tarde (18h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado.
 - Em **Actions → Monitor de Alertas → Run workflow**, deixe **dry_run = true** (padrão manual). O cron automático permite publicação quando há alerta.
 
 Não acione o modo de publicação manual para testar se você não quer enviar conteúdo à conta.
