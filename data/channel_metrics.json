@@ -11,7 +11,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -25,7 +28,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -39,7 +45,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -53,7 +62,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -67,7 +79,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -81,7 +96,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -95,7 +113,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -109,7 +130,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -123,7 +147,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -137,7 +164,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -151,7 +181,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -165,7 +198,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -179,7 +215,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -193,7 +232,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -207,7 +249,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -221,7 +266,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -235,7 +283,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -249,7 +300,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -263,7 +317,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -277,7 +334,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -291,7 +351,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -305,7 +368,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -319,7 +385,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -333,7 +402,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -347,7 +419,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -361,7 +436,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -375,7 +453,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -389,7 +470,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -403,7 +487,10 @@
         "saved": 0,
         "likes": 14,
         "comments": 1,
-        "shares_per_1000_reached": 1.18
+        "shares_per_1000_reached": 1.18,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -417,7 +504,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -431,7 +521,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -445,7 +538,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -459,7 +555,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -473,7 +572,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -487,7 +589,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -501,7 +606,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -515,7 +623,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -529,7 +640,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -543,7 +657,10 @@
         "saved": 0,
         "likes": 14,
         "comments": 1,
-        "shares_per_1000_reached": 1.18
+        "shares_per_1000_reached": 1.18,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -557,7 +674,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -571,7 +691,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -585,7 +708,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -599,7 +725,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -613,7 +742,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -627,7 +759,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -641,7 +776,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -655,7 +793,10 @@
         "saved": 0,
         "likes": 2,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -669,7 +810,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -683,7 +827,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -697,7 +844,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -711,7 +861,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -725,7 +878,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -739,7 +895,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -753,7 +912,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -767,7 +929,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -781,7 +946,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -795,7 +963,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -809,7 +980,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -823,7 +997,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -837,7 +1014,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -851,7 +1031,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -865,7 +1048,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -879,7 +1065,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -893,7 +1082,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -907,7 +1099,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -921,7 +1116,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -935,7 +1133,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -949,7 +1150,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -963,7 +1167,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -977,7 +1184,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -991,7 +1201,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1005,7 +1218,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1019,7 +1235,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1033,7 +1252,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1047,7 +1269,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1061,7 +1286,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1075,7 +1303,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1089,7 +1320,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1103,7 +1337,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1117,7 +1354,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1131,7 +1371,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1145,7 +1388,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1159,7 +1405,10 @@
         "saved": 0,
         "likes": 1,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1173,7 +1422,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1187,7 +1439,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1201,7 +1456,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1215,7 +1473,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1229,7 +1490,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1243,7 +1507,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1257,7 +1524,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1271,7 +1541,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1285,7 +1558,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1299,7 +1575,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1313,7 +1592,10 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     },
     {
@@ -1327,12 +1609,118 @@
         "saved": 0,
         "likes": 0,
         "comments": 1,
-        "shares_per_1000_reached": 0.0
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18135311458787345",
+      "window": "24h",
+      "age_hours": 25.75,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 44,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18119697917275231",
+      "window": "24h",
+      "age_hours": 44.74,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 115,
+        "shares": 0,
+        "saved": 0,
+        "likes": 4,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18086152790363215",
+      "window": "72h",
+      "age_hours": 77.2,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 12,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18107036783646927",
+      "window": "72h",
+      "age_hours": 77.2,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 6,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "17910415515657536",
+      "window": "72h",
+      "age_hours": 81.56,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 155,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18648443413023393",
+      "window": "72h",
+      "age_hours": 92.47,
+      "collected_at": "2026-11-10T21:17:37.148689+00:00",
+      "metrics": {
+        "reach": 4,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-09T23:46:42.754762+00:00",
-  "account": "previsaosulflu"
+  "updated_at": "2026-11-10T21:17:37.148689+00:00",
+  "account": "previsaosulflu",
+  "organicos_atualizados_em_utc": "2026-11-10T21:17:40.965873+00:00"
 }
