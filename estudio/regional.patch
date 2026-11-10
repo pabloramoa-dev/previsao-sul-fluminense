@@ -18,7 +18,7 @@
  APRESENTADOR = {
 -    'bira': {'nome': 'BIRA DO TEMPO', 'cargo': 'TEMPO NO RIO E REGIÃO', 'pele': '#A96D49',
 -             'camisa': TEAL, 'logo': '#ffffff', 'kicker': 'PREVISÃO DAS 6H'},
--    'bia': {'nome': 'BIA DA ORLA', 'cargo': 'O TEMPO DE AMANHÃ NO RIO', 'pele': '#C78359',
+-    'bia': {'nome': 'BIA', 'cargo': 'O TEMPO DE AMANHÃ NO RIO', 'pele': '#C78359',
 -            'camisa': '#F0B94D', 'logo': INK, 'kicker': 'PREVISÃO DAS 18H'},
 +    'bira': {'nome': 'BIRA DO TEMPO', 'cargo': 'TEMPO NO SUL FLUMINENSE', 'pele': '#A96D49',
 +             'camisa': '#244E78', 'logo': '#ffffff', 'kicker': 'PREVISÃO DAS 6H'},

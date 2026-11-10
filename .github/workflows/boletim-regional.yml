@@ -40,6 +40,8 @@ jobs:
           if [[ "$PERSONAGEM" == bia ]]; then quando=amanha; formato=amanha_no_rio; fi
           python reels/coletar_tempo.py --quando "$quando" --saida "$RUNNER_TEMP/dia.json"
           PYTHONPATH="$GITHUB_WORKSPACE/reels" python motor/hyperframes/gerar_hf.py --snapshot "$RUNNER_TEMP/dia.json" --personagem "$PERSONAGEM" --format "$formato" --out "$GITHUB_WORKSPACE/saida/REEL.mp4"
+      - name: Garantir 20–25s, abertura com cidade e capa segura
+        run: python tools/finalizar_reel_sulflu.py --video saida/REEL.mp4 --meta saida/REEL.metadata.json
       - uses: actions/upload-artifact@v4
         with:
           name: boletim-${{ inputs.personagem }}
@@ -48,6 +50,8 @@ jobs:
             saida/CAPA.jpg
             saida/LEGENDA.txt
             saida/REEL.quality.json
+            saida/REEL.sulflu_quality.json
+            saida/REEL.metadata.json
           if-no-files-found: error
           retention-days: 7
       - name: Publicar no Instagram do SulFlu
@@ -62,5 +66,14 @@ jobs:
             gh release create "$tag" saida/REEL.mp4 saida/CAPA.jpg --title "$tag" --notes "Boletim do Sul Fluminense"
           fi
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
-          python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --capa-ms "$(cat saida/capa_ms.txt)" --legenda-arquivo saida/LEGENDA.txt
+          python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --metadata-arquivo saida/REEL.metadata.json --legenda-arquivo saida/LEGENDA.txt
           gh release delete "$tag" --cleanup-tag --yes
+      - name: Registrar formato, gancho e ID confirmado
+        if: inputs.publicar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/registro_formatos.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Registro de formato e gancho [skip ci]"
+          git pull --rebase && git push

@@ -39,6 +39,8 @@ Por isso `--capa-ms` vem 0 (não manda o parâmetro, o Instagram usa o frame 0).
 Passar um valor continua funcionando, se um dia a capa tiver que ser outra.
 """
 import argparse, json, os, sys, time, urllib.parse, urllib.request, urllib.error
+from datetime import datetime, timezone
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import engajamento
@@ -327,8 +329,8 @@ def texto_primeiro_comentario(dia: dict, voz: str = "ranzinza") -> str:
     cidade = (dia.get("destaque") or
               (cidades[0].get("nome") if cidades else "sua cidade"))
     if voz == "maria":
-        return f"📌 Você vai sair cedo amanhã em {cidade}? Salva o Reel e conta aqui."
-    return f"📍 Como está o tempo agora em {cidade}? Conta aqui em uma palavra."
+        return "Choveu aí no seu bairro? Qual?"
+    return "Choveu aí no seu bairro? Qual?"
 
 
 def publicar_primeiro_comentario(media_id: str, token: str, texto: str) -> None:
@@ -375,6 +377,7 @@ def main():
     ap.add_argument("--capa-ms", type=int, default=0,
                     help="milissegundo do vídeo usado como capa na grade. "
                          "0 (padrão) = primeiro frame, que já traz o selo da cidade")
+    ap.add_argument("--metadata-arquivo", help="JSON de formato/gancho da publicação")
     ap.add_argument("--capa-url", default="",
                     help="URL pública de uma imagem JPG usada como capa (cover_url)")
     a = ap.parse_args()
@@ -435,8 +438,18 @@ def main():
     pub = publicar_com_retentativa(ig_user, cid, token)
     media_id = pub.get("id")
     print(f"publicado: media id {media_id}")
+    if a.metadata_arquivo and media_id:
+        ficha = json.loads(Path(a.metadata_arquivo).read_text(encoding="utf-8"))
+        local = Path("data/registro_formatos.json")
+        local.parent.mkdir(parents=True, exist_ok=True)
+        registros = json.loads(local.read_text(encoding="utf-8")) if local.exists() else []
+        if not any(r.get("media_id") == media_id for r in registros):
+            registros.append({**ficha, "media_id": media_id,
+                              "publicado_em_utc": datetime.now(timezone.utc).isoformat()})
+            local.write_text(json.dumps(registros, ensure_ascii=False, indent=2)+"\n",
+                             encoding="utf-8")
     if a.legenda_arquivo:
-        comentario = "🌦️ Qual cidade do Sul Fluminense você quer ver no próximo vídeo?"
+        comentario = "Choveu aí no seu bairro? Qual?"
     else:
         comentario = texto_primeiro_comentario(dia, voz=a.voz)
     publicar_primeiro_comentario(media_id, token, comentario)

@@ -21,7 +21,9 @@ jobs:
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-        run: python tools/channel_ops.py --account previsaosulflu
+        run: |
+          python tools/channel_ops.py --account previsaosulflu
+          python tools/metricas_organicas.py
       - name: Preservar medições
         run: |
           [ -f data/channel_metrics.json ] || exit 0
