@@ -31,9 +31,9 @@ jobs:
       - name: Detectar gatilhos reais e produzir Reels de 14s
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
-            python tools/alertas_reel.py --saida saida/alertas --dry-run
+            python -m tools.alertas_reel --saida saida/alertas --dry-run
           else
-            python tools/alertas_reel.py --saida saida/alertas
+            python -m tools.alertas_reel --saida saida/alertas
           fi
       - name: Preservar MP4, capa, legenda e metadados
         uses: actions/upload-artifact@v4
