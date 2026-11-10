@@ -292,7 +292,7 @@ checar("e o piloto protege o que ele nao tem",
 checar("estudio_juarez() devolve o piso onde o personagem pisa",
        "piso_y" in chaves_do_dict("juarez_lib.py", "estudio_juarez"), True)
 
-print("UM Reel por dia, e um so — o que o experimento mede:")
+print("Dois Reels diarios: 06h e 18h, mais alertas sob demanda:")
 # A invariante mais importante deste arquivo, e a que nenhum outro teste pega.
 # Nao usa PyYAML de proposito: o job dos testes roda sem `pip install` (fecha em
 # menos de 30s por causa disso), entao a leitura e por texto mesmo. Basta: um
@@ -314,9 +314,9 @@ def crons_ativos(arquivo):
 # manda e-mail, so nao acontece. E este teste que percebe.
 checar("o juarez.yml tem exatamente um cron",
        len(crons_ativos("juarez.yml")), 1)
-checar("e o ranzinza.yml nenhum", crons_ativos("ranzinza.yml"), [])
+checar("Ranzinza foi arquivado", os.path.exists(os.path.join(os.path.dirname(WF), "..", "arquivo", "workflows", "ranzinza.yml")), True)
 checar("o monitor de alertas voltou a rodar em horario comercial",
-       crons_ativos("monitor_alertas.yml"), ['- cron: "0 10-22/2 * * *"   # 07h-19h de Brasilia, a cada 2h'])
+       crons_ativos("monitor_alertas.yml"), ['- cron: "0 10-22/2 * * *"'])
 # quem publica Reel no perfil do experimento
 publicam_reel = sorted(f for f in os.listdir(WF)
                        if f.endswith(".yml")

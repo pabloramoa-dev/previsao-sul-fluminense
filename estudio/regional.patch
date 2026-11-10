@@ -22,7 +22,7 @@
 -            'camisa': '#F0B94D', 'logo': INK, 'kicker': 'PREVISÃO DAS 18H'},
 +    'bira': {'nome': 'BIRA DO TEMPO', 'cargo': 'TEMPO NO SUL FLUMINENSE', 'pele': '#A96D49',
 +             'camisa': '#244E78', 'logo': '#ffffff', 'kicker': 'PREVISÃO DAS 6H'},
-+    'bia': {'nome': 'BIA DA ORLA', 'cargo': 'AMANHÃ NO SUL FLUMINENSE', 'pele': '#C78359',
++    'bia': {'nome': 'BIA', 'cargo': 'AMANHÃ NO SUL FLUMINENSE', 'pele': '#C78359',
 +            'camisa': '#943E59', 'logo': INK, 'kicker': 'PREVISÃO DAS 18H'},
  }
  

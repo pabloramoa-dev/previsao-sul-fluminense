@@ -126,19 +126,10 @@ def rodar_noite(dry_run: bool) -> None:
 
 
 def rodar_alertas(dry_run: bool) -> None:
-    from . import alertas
-    cidades, _ = _coletar()
-
-    for a in alertas.detectar_alertas(cidades):
-        img = gc.gerar_card_alerta(
-            a["tipo"], a["titulo"], a["detalhe"], a["cidades"])
-        cap = captions.caption_alerta(a["tipo"], a["detalhe"], a["cidades"])
-        publicar.publicar_imagem(img, cap, dry_run=dry_run)
-
-    # O antigo quadro "CHOVEU QUANTO?" somava horas da PREVISAO e as
-    # anunciava como chuva OBSERVADA nas ultimas 24h. Deixa-lo suspenso ate
-    # existir uma fonte de observacoes reais, para nao publicar dado enganoso.
-    # Alertas de chuva futura continuam ativos em detectar_alertas().
+    """Entrada manual legada: não publicar mais alertas como foto."""
+    from pathlib import Path
+    from tools.alertas_reel import gerar
+    gerar(saida=Path("saida/alertas"), dry_run=dry_run)
 
 
 def rodar_fim_semana(dry_run: bool) -> None:
