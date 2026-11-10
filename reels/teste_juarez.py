@@ -307,13 +307,13 @@ def crons_ativos(arquivo):
             if l.strip().startswith("- cron:")]
 
 
-# EXATAMENTE um, desde 05/09/2026. Antes eram "no maximo um", porque o cron
+# Um agendamento por turno era suficiente ate os atrasos de 10/11/2026; com
 # ficou comentado entre a mesclagem e a conferencia do primeiro MP4. Agora que
 # o perfil publica de verdade, zero cron e tao errado quanto dois: significa um
 # dia sem post, e um dia sem post nao aparece em lugar nenhum — nao quebra, nao
 # manda e-mail, so nao acontece. E este teste que percebe.
-checar("o juarez.yml tem exatamente um cron",
-       len(crons_ativos("juarez.yml")), 1)
+checar("o juarez.yml tem tres crons redundantes de manha",
+       crons_ativos("juarez.yml"), ['- cron: "0 9 * * *"', '- cron: "19 9 * * *"', '- cron: "42 9 * * *"'])
 checar("Ranzinza foi arquivado", os.path.exists(os.path.join(os.path.dirname(WF), "..", "arquivo", "workflows", "ranzinza.yml")), True)
 checar("o monitor de alertas voltou a rodar em horario comercial",
        crons_ativos("monitor_alertas.yml"), ['- cron: "0 10-22/2 * * *"'])
@@ -354,7 +354,8 @@ checar("a legenda diz amanha", "amanhã" in cap_c.casefold(), True)
 checar("a linha da chuva usa virgula", "6,4 mm" in cap_c, True)
 checar("dia seco nao inventa chuva",
        CA.linha_chuva(COMUM["cidades"]), "Amanhã: sem chuva prevista.")
-checar("o card.yml tem um cron", len(crons_ativos("card_amanha.yml")), 1)
+checar("o card.yml tem tres crons redundantes da tarde",
+       crons_ativos("card_amanha.yml"), ['- cron: "0 21 * * *"', '- cron: "19 21 * * *"', '- cron: "42 21 * * *"'])
 checar("e nao publica Reel",
        "postar_reel.py" in open(os.path.join(WF, "card_amanha.yml"), encoding="utf-8").read(),
        False)
