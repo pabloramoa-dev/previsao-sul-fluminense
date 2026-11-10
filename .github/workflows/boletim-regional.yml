@@ -33,7 +33,34 @@ jobs:
           (cd video && npx --no-install hyperframes browser ensure)
           git apply ../estudio/regional.patch
           cp ../estudio/regional.py hyperframes/
+      - name: Impedir Reel duplicado do mesmo turno
+        id: trava_turno
+        if: inputs.publicar
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          path = Path("data/registro_formatos.json")
+          registros = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+          dia = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
+          turno = "hoje" if os.environ["PERSONAGEM"] == "bira" else "amanha"
+          publicado = False
+          for registro in registros:
+              try:
+                  horario = datetime.fromisoformat(registro["publicado_em_utc"]).astimezone(ZoneInfo("America/Sao_Paulo"))
+                  if horario.date() == dia and registro.get("quando") == turno and registro.get("media_id"):
+                      publicado = True
+                      print("Reel do turno ja registrado na Meta:", registro["media_id"])
+                      break
+              except (KeyError, ValueError, TypeError):
+                  continue
+          with open(os.environ["GITHUB_OUTPUT"], "a") as saida:
+              print(f"pular={'true' if publicado else 'false'}", file=saida)
+          PY
       - name: Gerar e validar o boletim regional
+        if: steps.trava_turno.outputs.pular != 'true'
         run: |
           quando=hoje
           formato=rio_antes_de_sair
@@ -41,8 +68,10 @@ jobs:
           python reels/coletar_tempo.py --quando "$quando" --saida "$RUNNER_TEMP/dia.json"
           PYTHONPATH="$GITHUB_WORKSPACE/reels" python motor/hyperframes/gerar_hf.py --snapshot "$RUNNER_TEMP/dia.json" --personagem "$PERSONAGEM" --format "$formato" --out "$GITHUB_WORKSPACE/saida/REEL.mp4"
       - name: Garantir 20–25s, abertura com cidade e capa segura
+        if: steps.trava_turno.outputs.pular != 'true'
         run: python tools/finalizar_reel_sulflu.py --video saida/REEL.mp4 --meta saida/REEL.metadata.json
       - uses: actions/upload-artifact@v4
+        if: steps.trava_turno.outputs.pular != 'true'
         with:
           name: boletim-${{ inputs.personagem }}
           path: |
@@ -55,7 +84,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Publicar no Instagram do SulFlu
-        if: inputs.publicar
+        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -69,7 +98,7 @@ jobs:
           python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --metadata-arquivo saida/REEL.metadata.json --legenda-arquivo saida/LEGENDA.txt
           gh release delete "$tag" --cleanup-tag --yes
       - name: Registrar formato, gancho e ID confirmado
-        if: inputs.publicar
+        if: inputs.publicar && steps.trava_turno.outputs.pular != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
