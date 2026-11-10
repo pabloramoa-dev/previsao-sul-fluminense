@@ -10,9 +10,9 @@ Municípios regulares: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra do
 |---|---|---|---|
 | Reel do Bira — previsão de hoje | Todos os dias às 06h | `.github/workflows/juarez.yml` | Motor visual do RJ; abre com cidade de destaque, capa informativa, duração-alvo 20–25 s. |
 | Reel “amanhã” da Bia | Todos os dias por volta das 18h | `.github/workflows/card_amanha.yml` | Vídeo de 20–25 s com cidade e temperatura em destaque, capa própria e legenda regional. |
-| Monitor de alertas | A cada 2h, das 07h às 19h | `.github/workflows/monitor_alertas.yml` | Só publica se houver gatilho; máximo de dois alertas por dia, sem repetição do mesmo tipo em 6h. |
+| Monitor de alertas | A cada 2h, das 07h às 19h | `.github/workflows/monitor_alertas.yml` | Reels de 14 segundos com cidade e hora de emissão no primeiro quadro; só com gatilho, máximo de dois alertas/dia. |
 
-O detector de alertas continua monitorando as dez cidades regulares, inclusive cidades fora do resumo diário. Angra é uma inclusão editorial no Reel e no card às sextas e domingos, não uma extensão do monitor de alertas. **São previsões, não observações.** O quadro retrospectivo “Choveu quanto?” está suspenso até existir uma fonte de dados realmente observados para as últimas 24h. O monitor também pode ser testado sem publicar.
+O detector de alertas continua monitorando as dez cidades regulares, inclusive cidades fora do resumo diário. Angra é uma inclusão editorial no Reel e no card às sextas e domingos, não uma extensão do monitor de alertas. **São previsões, não observações.** O quadro retrospectivo “Choveu quanto?” está suspenso até existir uma fonte de dados realmente observados para as últimas 24h. O monitor também pode ser testado sem publicar: gera MP4, JPG de capa e legenda no artifact. O horário destacado é o da emissão do boletim, não a hora exata da ocorrência prevista.
 
 Os workflows antigos, carrosséis e pilotos fora de produção foram movidos para `arquivo/workflows/`. Para reativar um experimento, faça revisão e restaure-o deliberadamente em `.github/workflows/`.
 
@@ -29,8 +29,8 @@ O sistema bloqueia a geração do boletim quando faltam cidades ou dados essenci
 ## Testes seguros (sem publicar)
 
 - Em **GitHub Actions → Testes**, rode o workflow `testes.yml`, que valida os roteiros e as regras sem rede.
-- Em **Actions → Reel diario — Juarez Plantao (06h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado. O MP4 aparece como artifact temporário para avaliação visual.
-- Em **Actions → Card das 18h → Run workflow**, mantenha **Publicar no Instagram?** desmarcado.
+- Em **Actions → Bira do Tempo — manhã (06h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado. O MP4 aparece como artifact temporário para avaliação visual.
+- Em **Actions → Bia da Orla — tarde (18h) → Run workflow**, mantenha **Publicar no Instagram?** desmarcado.
 - Em **Actions → Monitor de Alertas → Run workflow**, deixe **dry_run = true** (padrão manual). O cron automático permite publicação quando há alerta.
 
 Não acione o modo de publicação manual para testar se você não quer enviar conteúdo à conta.

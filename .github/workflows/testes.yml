@@ -54,3 +54,6 @@ jobs:
       - name: Angra dos Reis nas sextas e domingos (5 cidades no boletim)
         working-directory: reels
         run: python teste_angra.py
+
+      - name: Validação do layout seguro e comentários orgânicos
+        run: python -m unittest discover -s tools -p test_sulflu_reels.py -v

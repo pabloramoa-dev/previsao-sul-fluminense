@@ -1,152 +1,85 @@
-name: Monitor de Alertas (a cada 2h, 7h-19h BRT)
-
+name: Monitor de Alertas — Reel regional (7h–19h BRT)
 on:
-  # Experimento de setembro encerrado: volta a verificar alertas durante o dia.
-  # O monitor publica apenas quando ha gatilho, respeitando antispam (2/dia).
   schedule:
-    - cron: "0 10-22/2 * * *"   # 07h-19h de Brasilia, a cada 2h
+    - cron: "0 10-22/2 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Rodar em modo dry-run (nao publica)"
+        description: "Gerar MP4 e capa sem publicar"
         type: boolean
         default: true
-
 permissions:
   contents: write
-
-# Evita dois jobs simultaneos consumirem o mesmo estado de antispam.
 concurrency:
   group: monitor-alertas-sulflu
   cancel-in-progress: false
-
 jobs:
   monitorar:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: pip install -r requirements.txt
-
-      - name: Cache do Chromium do Playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-v1
-
-      - name: Dependencias de sistema do Chromium (tolerante a falha)
-        id: deps
+          python-version: "3.12"
+      - name: Dependências para previsão, card e Reel
         run: |
-          python -m playwright install-deps chromium \
-            || echo "::warning::playwright install-deps falhou; seguindo com as libs da imagem do runner"
-
-      - name: Baixar o Chromium (renderiza os cards em HTML)
-        id: chromium
-        run: python -m playwright install chromium
-
-      # Ate 21/08/2026 este passo gerava o card E mandava o Instagram busca-lo
-      # em raw.githubusercontent.com na mesma execucao - mas o commit das
-      # imagens so acontecia no fim do job. O Instagram batia numa URL que
-      # ainda nao existia e devolvia "The media could not be fetched from this
-      # URI", derrubando o job toda vez que um alerta disparava. Agora o
-      # monitor segue o mesmo desenho dos outros quatro workflows do repo:
-      # gera -> commita -> espera propagar -> publica.
-      - name: Detectar alertas e gerar os cards (sem publicar)
-        id: detectar
-        env:
-          PUBLICAR_FASE: gerar
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg espeak-ng fonts-dejavu-core
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Detectar gatilhos reais e produzir Reels de 14s
         run: |
-          set -o pipefail
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python -m src.main alertas --dry-run 2>&1 | tee /tmp/alertas.log
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            python tools/alertas_reel.py --saida saida/alertas --dry-run
           else
-            python -m src.main alertas 2>&1 | tee /tmp/alertas.log
+            python tools/alertas_reel.py --saida saida/alertas
           fi
-
-      # So as imagens. O src/estado.json (anti-spam) fica de fora de proposito:
-      # se a publicacao falhar depois, o alerta NAO pode ficar marcado como ja
-      # enviado - ele precisa poder tentar de novo no ciclo seguinte.
-      - name: Commit e push dos cards (antes de publicar)
-        if: ${{ inputs.dry_run != true }}
+      - name: Preservar MP4, capa, legenda e metadados
+        uses: actions/upload-artifact@v4
+        with:
+          name: alertas-sulflu-${{ github.run_id }}
+          path: saida/alertas/
+          if-no-files-found: error
+          retention-days: 3
+      - name: Publicar somente alertas disparados
+        if: "${{ github.event_name == 'schedule' || inputs.dry_run != true }}"
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          IG_USER_ID: "${{ secrets.IG_USER_ID }}"
+          IG_TOKEN: "${{ secrets.IG_ACCESS_TOKEN }}"
+        run: |
+          shopt -s nullglob
+          metadados=(saida/alertas/alerta_*.json)
+          if (( ${#metadados[@]} == 0 )); then
+            echo "Nenhum alerta válido; nada a publicar"
+            exit 0
+          fi
+          tag="alerta-sulflu-${{ github.run_id }}"
+          arquivos=(saida/alertas/alerta_*.mp4 saida/alertas/alerta_*.jpg)
+          gh release create "$tag" "${arquivos[@]}" --title "$tag" --notes "Reel de alerta Sul Fluminense"
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
+          for meta in "${metadados[@]}"; do
+            nome="$(basename "$meta" .json)"
+            python reels/postar_reel.py \
+              --video "$url/$nome.mp4" \
+              --capa-url "$url/$nome.jpg" \
+              --legenda-arquivo "saida/alertas/$nome.txt" \
+              --metadata-arquivo "$meta" \
+              --sem-stories
+          done
+          gh release delete "$tag" --cleanup-tag --yes
+      - name: Salvar antispam e recibos após publicação confirmada
+        if: "${{ success() && (github.event_name == 'schedule' || inputs.dry_run != true) }}"
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/output || true
-          git commit -m "chore: cards de alerta $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
-          git push || echo "Nada para enviar"
-
-      - name: Aguardar propagacao do raw.githubusercontent
-        if: ${{ inputs.dry_run != true }}
-        run: sleep 45
-
-      - name: Publicar no Instagram
-        id: publicar
-        if: ${{ inputs.dry_run != true }}
-        env:
-          PUBLICAR_FASE: publicar
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
-        run: |
-          set -o pipefail
-          python -c "from src import publicar; publicar.publicar_fila()" 2>&1 | tee -a /tmp/alertas.log
-
-      - name: Coletar motivo da falha
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/estado.json data/registro_formatos.json || true
+          git diff --cached --quiet && exit 0
+          git commit -m "Estado e recibos de alertas [skip ci]"
+          git pull --rebase && git push
+      - name: Diagnóstico da falha
         if: failure()
-        id: motivo
         run: |
-          if [ "${{ steps.chromium.outcome }}" = "failure" ]; then
-            echo "passo=Baixar o Chromium" >> "$GITHUB_OUTPUT"
-          elif [ "${{ steps.detectar.outcome }}" = "failure" ]; then
-            echo "passo=Detectar alertas e gerar os cards" >> "$GITHUB_OUTPUT"
-          elif [ "${{ steps.publicar.outcome }}" = "failure" ]; then
-            echo "passo=Publicar no Instagram" >> "$GITHUB_OUTPUT"
-          else
-            echo "passo=(anterior ao detector - ver log)" >> "$GITHUB_OUTPUT"
-          fi
-          {
-            echo "trecho<<FIM"
-            tail -n 25 /tmp/alertas.log 2>/dev/null || echo "(sem saida capturada)"
-            echo "FIM"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Commit estado (anti-spam)
-        if: ${{ success() && inputs.dry_run != true }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/output src/estado.json || true
-          git commit -m "chore: monitor alertas $(date -u +%Y-%m-%dT%H:%MZ)" || echo "Nada para commitar"
-          git push || echo "Nada para enviar"
-
-      - name: Avisar falha por e-mail
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "[Previsao Sul Fluminense] FALHOU: ${{ github.workflow }}"
-          to: pablo.ramoa@gmail.com
-          from: Bot Previsao Sul Fluminense <${{ secrets.MAIL_USERNAME }}>
-          body: |
-            O workflow "${{ github.workflow }}" falhou e NAO publicou.
-
-            PASSO QUE FALHOU: ${{ steps.motivo.outputs.passo }}
-
-            Ultimas linhas da saida:
-            ---------------------------------------------
-            ${{ steps.motivo.outputs.trecho }}
-            ---------------------------------------------
-
-            Repositorio: ${{ github.repository }}
-            Disparo....: ${{ github.event_name }}
-            Log completo: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          echo "Alerta não concluído: veja as etapas e os artifacts desta execução." >> "$GITHUB_STEP_SUMMARY"
+          echo "Nenhum alerta é marcado como publicado sem confirmação da Meta." >> "$GITHUB_STEP_SUMMARY"
