@@ -19,7 +19,7 @@ permissions:
   contents: write
 concurrency:
   group: sulflu-bira
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'push' && github.event.head_commit.message == 'RECUPERAR_BIRA_20261110' }}
 jobs:
   gerar:
     uses: ./.github/workflows/boletim-regional.yml
