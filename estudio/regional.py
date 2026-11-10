@@ -7,13 +7,6 @@ from num2words import num2words
 from coletar_tempo import resumo_cinco, MAIORES
 
 TZ = ZoneInfo("America/Sao_Paulo")
-CHAMADAS = (
-    "Manda pra quem pega a Dutra amanhã cedo.",
-    "Manda no grupo da família de Barra Mansa.",
-    "Compartilha com quem sai cedo de Volta Redonda.",
-    "Manda pra quem trabalha em Resende.",
-    "Compartilha com a família do Sul Fluminense.",
-)
 
 def escolher_destaque(cidades, data_publicacao=None):
     """Cinco maiores do cadastro editorial; gira por data local, sem inventar audiência."""
@@ -48,9 +41,7 @@ def preparar_boletim(dia, personagem, destino):
         mx = num2words(round(c["max"]), lang="pt_BR")
         outras.append(f"{c['nome']}, {mn} a {mx}.")
     previsoes = " ".join(outras)
-    chamada = CHAMADAS[datetime.now(TZ).date().toordinal() % len(CHAMADAS)]
-    if manha:
-        chamada = chamada.replace("amanhã cedo", "hoje cedo")
+    chamada = f"Manda pra quem passa por {destaque['nome']} {quando}."
     def batida(tipo, fala, **dados):
         return {"tipo": tipo, "fala": fala, "legenda": fala, "dados": dados}
     batidas = [

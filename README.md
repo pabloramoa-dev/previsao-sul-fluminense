@@ -46,3 +46,8 @@ No GitHub, em **Settings → Secrets and variables → Actions**, configure `IG_
 - Para suspender qualquer publicação automática, desabilite o workflow específico em **Actions → Workflow → ⋯ → Disable workflow**.
 - Use o arquivo de diagnóstico das execuções do GitHub Actions para confirmar o sucesso de cada publicação; código correto não comprova postagem já realizada.
 \n## Experimento de retenção / mensuração\n\nOs Reels das 06h e 18h convivem; não substituir a manhã. Cada publicação registra cidade de abertura, gancho, CTA, formato e ID. O workflow `channel-metrics.yml` associa os dados aos recibos. O campo original `comments` é preservado; `comments_organic_estimate` desconta até um comentário automático por post, **como estimativa** (não é uma identificação verificada do autor do comentário).\n\nA política atual exige duração de 20 a 25 segundos, capa e destaque dentro de área segura. A geração falha, sem publicar, se o vídeo não passar no QA. Não publicar números sem previsão válida.\n
+## Vozes e encerramento dos Reels
+
+Bira usa `pm_alex:0.82+pm_santa:0.18` e Bia usa `pf_dora:0.85+af_heart:0.15`. Cada apresentador mantém seu timbre quando aparece nos dois canais.
+
+A narração termina com um único convite de envio ligado ao assunto do vídeo.

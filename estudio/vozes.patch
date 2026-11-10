@@ -1,0 +1,69 @@
+diff --git a/hyperframes/compor.py b/hyperframes/compor.py
+index 87476ce..59236dd 100644
+--- a/hyperframes/compor.py
++++ b/hyperframes/compor.py
+@@ -348,7 +348,7 @@ FAB = {"abertura": cena_abertura, "numero": cena_numero, "quadro": cena_quadro,
+ def ticker(p):
+     itens = " &#9679; ".join(
+         f'{esc(c["nome"].upper())} <b>{round(c["min"])}°/{round(c["max"])}°</b>' for c in p["cidades"])
+-    itens += " &#9679; SIGA @PREVISAOSULFLU"
++    itens += " &#9679; @PREVISAOSULFLU"
+     return (f'<div class="tk-faixa"><div class="tk-rot">SUL FLU</div><div class="tk-janela">'
+             f'<div id="tk-trilho">{itens} &#9679; {itens}</div></div></div>')
+ 
+@@ -537,8 +537,6 @@ html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: {NAVY
+ 
+  <div id="legenda" class="clip" data-start="0" data-duration="{dur}" data-track-index="6">{legenda_html(p)}</div>
+ 
+- <div id="follow-slot" data-composition-id="instagram-follow" data-composition-src="compositions/instagram-follow.html"
+-      data-start="{t_siga}" data-duration="{dur_follow}" data-width="1080" data-height="1920" data-track-index="7"></div>
+ 
+  <div id="grao" class="clip" data-start="0" data-duration="{dur}" data-track-index="8"></div>
+  <div id="vinheta" class="clip" data-start="0" data-duration="{dur}" data-track-index="9"></div>
+diff --git a/src/previsao_rj/render/characters/kokoro.py b/src/previsao_rj/render/characters/kokoro.py
+index 62f9983..545d5e1 100644
+--- a/src/previsao_rj/render/characters/kokoro.py
++++ b/src/previsao_rj/render/characters/kokoro.py
+@@ -68,6 +68,14 @@ def resample_44100(s, sr):
+     return np.interp(x, xp, s).astype(np.float32)
+ 
+ 
++def estilo(modelo, voz):
++    """Aceita um nome simples ou dois estilos com pesos explícitos."""
++    if "+" not in voz:
++        return voz
++    termos = [termo.split(":") for termo in voz.split("+")]
++    return sum(modelo.get_voice_style(nome) * float(peso) for nome, peso in termos)
++
++
+ def main():
+     ap = argparse.ArgumentParser()
+     ap.add_argument("roteiro", help="txt: uma batida de narração por linha")
+@@ -93,7 +101,7 @@ def main():
+     segs = []
+     t = 0.0
+     for i, txt in enumerate(linhas):
+-        s, sr = k.create(txt, voice=a.voz, speed=a.speed, lang="pt-br")
++        s, sr = k.create(txt, voice=estilo(k, a.voz), speed=a.speed, lang="pt-br")
+         s = resample_44100(np.asarray(s, dtype=np.float32), sr)
+         ini = t
+         buf.append(s); buf.append(gap)
+diff --git a/src/previsao_rj/render/characters/pipeline.py b/src/previsao_rj/render/characters/pipeline.py
+index b4b4f74..fb5c7d6 100644
+--- a/src/previsao_rj/render/characters/pipeline.py
++++ b/src/previsao_rj/render/characters/pipeline.py
+@@ -10,10 +10,10 @@ import sys
+ ROOT = Path(__file__).resolve().parents[4]
+ PACKAGE = 'src.previsao_rj.render.characters'
+ PRESETS = {
+-    'bira': {'voice': 'pm_alex', 'pitch': 1.0, 'speed': 1.04, 'gap': 0.22},
+-    'bia': {'voice': 'pf_dora', 'pitch': 1.0, 'speed': 1.02, 'gap': 0.24},
+-    'ranzinza': {'voice': 'pm_alex', 'pitch': 0.88, 'speed': 0.95, 'gap': 0.30},
+-    'maria': {'voice': 'pf_dora', 'pitch': 0.94, 'speed': 0.95, 'gap': 0.30},
++    'bira': {'voice': 'pm_alex:0.82+pm_santa:0.18', 'pitch': 1.0, 'speed': 1.04, 'gap': 0.22},
++    'bia': {'voice': 'pf_dora:0.85+af_heart:0.15', 'pitch': 1.0, 'speed': 1.02, 'gap': 0.24},
++    'ranzinza': {'voice': 'pm_santa:0.75+pm_alex:0.25', 'pitch': 0.88, 'speed': 0.95, 'gap': 0.30},
++    'maria': {'voice': 'pf_dora:0.72+bf_emma:0.28', 'pitch': 0.94, 'speed': 0.95, 'gap': 0.30},
+ }
+ FILTER = ('asetrate=44100*{pitch},aresample=44100,atempo={inv:.5f},'
+           'vibrato=f=5.5:d=0.09,highpass=f=90,'
