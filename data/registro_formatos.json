@@ -10,5 +10,17 @@
     "horario_brt": "06:00",
     "media_id": "17911299177578537",
     "publicado_em_utc": "2026-11-10T13:33:38.262410+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Volta Redonda: 26 graus amanhã.",
+    "cidade_destaque": "Volta Redonda",
+    "temperatura_destaque": 26,
+    "dia_previsao": "2026-11-11",
+    "quando": "amanhã",
+    "cta": "Manda pra quem passa por Volta Redonda amanhã.",
+    "horario_brt": "18:00",
+    "media_id": "18017165714971544",
+    "publicado_em_utc": "2026-11-10T21:00:38.539287+00:00"
   }
 ]
