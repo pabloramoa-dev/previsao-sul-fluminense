@@ -2,6 +2,10 @@ name: Bia da Orla — tarde (18h)
 on:
   schedule:
     - cron: "0 21 * * *"
+    - cron: "19 21 * * *"
+    - cron: "42 21 * * *"
+  repository_dispatch:
+    types: [sulflu_bia]
   push:
     branches: [main]
     paths: ['estudio/**', '.github/workflows/boletim-regional.yml', '.github/workflows/card_amanha.yml']
@@ -21,5 +25,5 @@ jobs:
     uses: ./.github/workflows/boletim-regional.yml
     with:
       personagem: bia
-      publicar: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.publicar) }}
+      publicar: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && inputs.publicar) }}
     secrets: inherit
