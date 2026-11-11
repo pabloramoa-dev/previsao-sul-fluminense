@@ -1716,11 +1716,93 @@
         "auto_comments_estimate": 1,
         "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
+    },
+    {
+      "media_id": "18017165714971544",
+      "window": "24h",
+      "age_hours": 24.95,
+      "collected_at": "2026-11-11T21:57:18.094669+00:00",
+      "metrics": {
+        "reach": 29,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Volta Redonda: 26 graus amanhã.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem passa por Volta Redonda amanhã."
+      }
+    },
+    {
+      "media_id": "17911299177578537",
+      "window": "24h",
+      "age_hours": 32.4,
+      "collected_at": "2026-11-11T21:57:18.094669+00:00",
+      "metrics": {
+        "reach": 5,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Volta Redonda: 21 graus hoje.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem pega a Dutra hoje cedo."
+      }
+    },
+    {
+      "media_id": "18070153688790382",
+      "window": "24h",
+      "age_hours": 42.75,
+      "collected_at": "2026-11-11T21:57:18.094669+00:00",
+      "metrics": {
+        "reach": 4,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "17964756798215948",
+      "window": "72h",
+      "age_hours": 93.87,
+      "collected_at": "2026-11-11T21:57:18.094669+00:00",
+      "metrics": {
+        "reach": 8,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-10T21:17:37.148689+00:00",
+  "updated_at": "2026-11-11T21:57:18.094669+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-10T21:17:40.965873+00:00"
+  "organicos_atualizados_em_utc": "2026-11-11T21:57:21.725062+00:00"
 }
