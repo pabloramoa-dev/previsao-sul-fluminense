@@ -57,3 +57,6 @@ jobs:
 
       - name: Validação do layout seguro e comentários orgânicos
         run: python -m unittest discover -s tools -p test_sulflu_reels.py -v
+
+      - name: Rodizio de bairros com nomes validos e turnos distintos
+        run: python estudio/test_bairros_foco.py
