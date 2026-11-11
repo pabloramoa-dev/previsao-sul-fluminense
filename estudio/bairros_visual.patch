@@ -1,0 +1,7 @@
+--- a/hyperframes/compor.py
++++ b/hyperframes/compor.py
+@@ -300,3 +300,3 @@
+    <div class="qd-barra"></div>
+-   <div class="qd-main"><div class="qd-cidade">{esc(c["nome"].upper())}</div>
++   <div class="qd-main"><div class="qd-cidade">{esc(c["nome"].upper())}<div style="font-size:22px;line-height:1.1;color:#FFE9AA">BAIRRO: {esc(c.get("bairro", "").upper())}</div></div>
+    <div class="qd-cels"><span class="qd-min">{metric(c, "min", "°")}</span><span class="qd-max">{metric(c, "max", "°")}</span></div></div>
