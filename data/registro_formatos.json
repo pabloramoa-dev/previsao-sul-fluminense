@@ -22,5 +22,17 @@
     "horario_brt": "18:00",
     "media_id": "18017165714971544",
     "publicado_em_utc": "2026-11-10T21:00:38.539287+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Barra Mansa: 26 graus hoje.",
+    "cidade_destaque": "Barra Mansa",
+    "temperatura_destaque": 26,
+    "dia_previsao": "2026-11-11",
+    "quando": "hoje",
+    "cta": "Manda pra quem passa por Barra Mansa hoje.",
+    "horario_brt": "06:00",
+    "media_id": "18181006084449185",
+    "publicado_em_utc": "2026-11-11T09:00:42.147590+00:00"
   }
 ]
