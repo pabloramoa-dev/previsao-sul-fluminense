@@ -40,6 +40,9 @@ def finalizar(video, metadata):
     numero = video.parent / "temperatura_destaque.txt"
     titulo.write_text(info["cidade_destaque"].upper(), encoding="utf-8")
     numero.write_text(f'{info["temperatura_destaque"]}° {info["quando"].upper()}', encoding="utf-8")
+    bairro = (info.get("bairro_destaque") or "").strip()
+    bairro_txt = video.parent / "bairro_destaque.txt"
+    bairro_txt.write_text(f"BAIRRO: {bairro.upper()}" if bairro else "", encoding="utf-8")
     # Textfile elimina escapamento de acentos, dois-pontos e símbolos.
     def visual():
         fx = [f"setpts=(PTS-STARTPTS)/{fator:.5f}", "fps=25"]
@@ -49,6 +52,12 @@ def finalizar(video, metadata):
             "drawbox=x=64:y=320:w=952:h=338:color=0x0B2039@0.92:t=fill:enable='lt(t,3.6)'",
             f"drawtext=fontfile={fonte}:textfile={titulo}:fontcolor=white:fontsize=57:x=90:y=365:enable='lt(t,3.6)'",
             f"drawtext=fontfile={fonte}:textfile={numero}:fontcolor=0xFFD166:fontsize=95:x=90:y=462:enable='lt(t,3.6)'",
+        ]
+        if bairro:
+            fx.append(
+                f"drawtext=fontfile={fonte}:textfile={bairro_txt}:fontcolor=white:fontsize=37:x=90:y=585:enable='lt(t,3.6)'"
+            )
+        fx += [
         ]
         return ",".join(fx)
     tmp = video.with_name("REEL.final.mp4")
