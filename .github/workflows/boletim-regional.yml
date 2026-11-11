@@ -32,9 +32,11 @@ jobs:
           npm ci --prefix video
           (cd video && npx --no-install hyperframes browser ensure)
           git apply ../estudio/regional.patch
+          git apply --check ../estudio/bairros_visual.patch
+          git apply ../estudio/bairros_visual.patch
           grep -Fq "'bia': {'nome': 'BIA'," hyperframes/compor.py || { echo 'Nome da apresentadora deve ser somente BIA'; exit 1; }
           git apply ../estudio/vozes.patch
-          cp ../estudio/regional.py hyperframes/
+          cp ../estudio/regional.py ../estudio/bairros_foco.py hyperframes/
       - name: Impedir Reel duplicado do mesmo turno
         id: trava_turno
         if: inputs.publicar
