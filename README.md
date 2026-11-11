@@ -4,6 +4,34 @@ Automação de previsão do tempo para Instagram. O sistema coleta dados de **10
 
 Municípios regulares: Volta Redonda, Barra Mansa, Resende, Porto Real, Barra do Piraí, Piraí, Itatiaia, Quatis, Pinheiral e Rio Claro. **Angra dos Reis** participa da coleta do Open-Meteo e abre a seleção de cinco cidades **nos boletins publicados na sexta-feira e no domingo** (Reel das 06h e card das 18h, ambos pelo dia de publicação, no horário de Brasília). Nos demais dias, a seleção mantém as dez cidades regulares.
 
+## Bairros em foco nos Reels (rodízio por dia e turno)
+
+Os cinco municípios do quadro permanecem identificados pelo nome da cidade,
+com **um bairro ou localidade real em destaque por cidade**. O catálogo
+`estudio/bairros_foco.py` utiliza nomes já presentes em `dm/dm_bairro.py`.
+O sorteio não é aleatório: segue a **data local de publicação** e diferencia
+Bira (06h) e Bia (18h), permitindo reproduzir um boletim sem mudar os bairros.
+Cada município gira apenas entre os nomes validados do seu próprio cadastro.
+
+A apresentação traz o bairro principal na abertura, identifica o bairro
+junto à cidade nas cinco linhas do quadro e lista os bairros na legenda.
+O narrador também destaca o município com **maior volume diário de chuva previsto
+entre todas as cidades efetivamente coletadas**, inclusive quando não está no
+quadro das cinco. Nessa fala, menciona o bairro editorial da vez desse município.
+Se não houver ao menos 1 mm previsto, não inventa uma maior chuva.
+
+**Precisão:** os valores meteorológicos atuais são os do Open-Meteo para
+as coordenadas **dos municípios**. Bairros são referências de identificação
+local, não medições independentes e não significam que aquele bairro terá
+mais chuva que os demais do município. Não publicar rankings de bairros
+mais chuvosos até existir uma previsão verificável por coordenadas de bairro.
+Municípios com apenas um nome local confirmado (por exemplo, Pinheiral no
+cadastro atual) não ganham bairros fictícios para forçar alternância.
+
+Validação sem publicar: `python estudio/test_bairros_foco.py`; o mesmo
+teste integra `.github/workflows/testes.yml`. A renderização também aplica
+`estudio/bairros_visual.patch`, sobre o motor visual do Previsão RJ.
+
 ## Programação ativa (horário de Brasília, UTC-3)
 
 | Conteúdo | Horário | Workflow | Observações |
