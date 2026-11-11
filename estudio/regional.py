@@ -5,6 +5,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from num2words import num2words
 from coletar_tempo import resumo_cinco, MAIORES
+from bairros_foco import bairro_do_dia
 
 TZ = ZoneInfo("America/Sao_Paulo")
 
@@ -27,26 +28,44 @@ def escolher_destaque(cidades, data_publicacao=None):
 def preparar_boletim(dia, personagem, destino):
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
-    cidades = escolher_destaque(dia["cidades"])
+    data_publicacao = datetime.now(TZ).date()
+    cidades = escolher_destaque(dia["cidades"], data_publicacao)
     manha = personagem == "bira"
+    for cidade in cidades:
+        cidade["bairro"] = bairro_do_dia(cidade["nome"], data_publicacao, personagem)
     quando = "hoje" if manha else "amanhã"
     nome = "Bira do Tempo" if manha else "Bia"
     destaque = cidades[0]
     temperatura = round(destaque["max"])
-    abertura = f"{destaque['nome']}: {temperatura} graus {quando}."
-    # Narrar em blocos curtos, preservando os cinco municípios na tela.
-    outras = []
-    for c in cidades[1:]:
-        mn = num2words(round(c["min"]), lang="pt_BR")
-        mx = num2words(round(c["max"]), lang="pt_BR")
-        outras.append(f"{c['nome']}, {mn} a {mx}.")
-    previsoes = " ".join(outras)
-    chamada = f"Manda pra quem passa por {destaque['nome']} {quando}."
+    bairro = destaque.get("bairro")
+    abertura = (f"{destaque['nome']}, bairro {bairro}: {temperatura} graus {quando}."
+                if bairro else f"{destaque['nome']}: {temperatura} graus {quando}.")
+    # Minima e maxima continuam visiveis; fala resumida abre espaco para os bairros.
+    outras = [f"{c['nome']}, {num2words(round(c['max']), lang='pt_BR')}"
+              for c in cidades[1:]]
+    previsoes = "; ".join(outras) + " graus."
+    # Compara TODAS as cidades coletadas, nao apenas as cinco mostradas.
+    # Um bairro em foco nao e uma estacao meteorologica: o dado e municipal.
+    valores = [(c, float(c.get("chuva_mm") or 0)) for c in dia["cidades"]]
+    pico, chuva_max = max(valores, key=lambda v: v[1])
+    bairro_chuva = bairro_do_dia(pico["nome"], data_publicacao, personagem)
+    tem_chuva = chuva_max >= 1.0
+    mm = int(round(chuva_max))
+    if tem_chuva:
+        frase_chuva = (f"Maior chuva prevista: {pico['nome']}, cerca de "
+                       f"{num2words(mm, lang='pt_BR')} milímetros.")
+        texto_chuva = (f"Maior volume municipal previsto: {pico['nome']}, "
+                       f"cerca de {mm} mm. Bairro em foco: {bairro_chuva}.")
+    else:
+        frase_chuva = "Sem chuva significativa prevista entre as cidades monitoradas."
+        texto_chuva = frase_chuva
+    chamada = f"Manda pra quem mora em {destaque['nome']}."
     def batida(tipo, fala, **dados):
         return {"tipo": tipo, "fala": fala, "legenda": fala, "dados": dados}
     batidas = [
         batida("frase", abertura),
-        batida("resumo", previsoes, cidades=cidades, titulo="CINCO CIDADES"),
+        batida("resumo", previsoes, cidades=cidades, titulo="CIDADES E BAIRROS"),
+        batida("frase", frase_chuva),
         batida("cta", chamada, chamada="ENVIE PARA A REGIÃO"),
     ]
     bloco = {"date": dia["data"], "locations": [
@@ -59,13 +78,23 @@ def preparar_boletim(dia, personagem, destino):
         f"{nome} | Previsão de {quando}, {data}",
         "",
     ]
-    legenda.extend(f"{c['nome']}: {round(c['min'])}° a {round(c['max'])}°" for c in cidades)
+    legenda.extend(
+        f"{c['nome']} — {c['bairro']}: {round(c['min'])}° a {round(c['max'])}°"
+        if c.get("bairro") else f"{c['nome']}: {round(c['min'])}° a {round(c['max'])}°"
+        for c in cidades
+    )
+    legenda.extend(["", "☔ " + texto_chuva,
+                    "Bairros são referências locais; a chuva é prevista para o município."])
     legenda += ["", chamada, "", "@previsaosulflu #SulFluminense #PrevisãoDoTempo"]
     (destino / "LEGENDA.txt").write_text("\n".join(legenda) + "\n", encoding="utf-8")
     ficha = {
         "formato": "manha_sulflu_20_25" if manha else "amanha_sulflu_20_25",
         "gancho": abertura,
         "cidade_destaque": destaque["nome"],
+        "bairro_destaque": bairro,
+        "cidade_maior_chuva": pico["nome"] if tem_chuva else None,
+        "bairro_maior_chuva": bairro_chuva if tem_chuva else None,
+        "maior_chuva_mm": round(chuva_max, 1),
         "temperatura_destaque": temperatura,
         "dia_previsao": dia["data"],
         "quando": quando,
