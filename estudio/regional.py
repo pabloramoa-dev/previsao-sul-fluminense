@@ -52,8 +52,9 @@ def preparar_boletim(dia, personagem, destino):
     tem_chuva = chuva_max >= 1.0
     mm = int(round(chuva_max))
     if tem_chuva:
-        frase_chuva = (f"Maior chuva prevista: {pico['nome']}, cerca de "
-                       f"{num2words(mm, lang='pt_BR')} milímetros.")
+        frase_chuva = (f"Maior chuva prevista em {pico['nome']}: "
+                       f"{num2words(mm, lang='pt_BR')} milímetros. "
+                       f"Bairro da vez: {bairro_chuva}.")
         texto_chuva = (f"Maior volume municipal previsto: {pico['nome']}, "
                        f"cerca de {mm} mm. Bairro em foco: {bairro_chuva}.")
     else:
