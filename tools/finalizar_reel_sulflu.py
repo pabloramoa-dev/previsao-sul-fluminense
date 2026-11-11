@@ -57,8 +57,6 @@ def finalizar(video, metadata):
             fx.append(
                 f"drawtext=fontfile={fonte}:textfile={bairro_txt}:fontcolor=white:fontsize=37:x=90:y=585:enable='lt(t,3.6)'"
             )
-        fx += [
-        ]
         return ",".join(fx)
     tmp = video.with_name("REEL.final.mp4")
     limite = max(20.5, alvo)
