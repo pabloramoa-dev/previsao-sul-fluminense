@@ -1798,11 +1798,69 @@
         "auto_comments_estimate": 1,
         "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
+    },
+    {
+      "media_id": "18181006084449185",
+      "window": "24h",
+      "age_hours": 36.83,
+      "collected_at": "2026-11-12T21:50:38.847674+00:00",
+      "metrics": {
+        "reach": 48,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra Mansa: 26 graus hoje.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem passa por Barra Mansa hoje."
+      }
+    },
+    {
+      "media_id": "18135311458787345",
+      "window": "72h",
+      "age_hours": 74.3,
+      "collected_at": "2026-11-12T21:50:38.847674+00:00",
+      "metrics": {
+        "reach": 45,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18119697917275231",
+      "window": "72h",
+      "age_hours": 93.29,
+      "collected_at": "2026-11-12T21:50:38.847674+00:00",
+      "metrics": {
+        "reach": 117,
+        "shares": 0,
+        "saved": 0,
+        "likes": 4,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-11T21:57:18.094669+00:00",
+  "updated_at": "2026-11-12T21:50:38.847674+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-11T21:57:21.725062+00:00"
+  "organicos_atualizados_em_utc": "2026-11-12T21:50:41.423271+00:00"
 }
