@@ -50,5 +50,21 @@
     "horario_brt": "06:00",
     "media_id": "18440884096197710",
     "publicado_em_utc": "2026-11-12T09:01:00.700826+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Resende, bairro Paraíso: 27 graus amanhã.",
+    "cidade_destaque": "Resende",
+    "bairro_destaque": "Paraíso",
+    "cidade_maior_chuva": "Pinheiral",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 18.6,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-13",
+    "quando": "amanhã",
+    "cta": "Manda pra quem mora em Resende.",
+    "horario_brt": "18:00",
+    "media_id": "18120632786007006",
+    "publicado_em_utc": "2026-11-12T21:01:35.913178+00:00"
   }
 ]
