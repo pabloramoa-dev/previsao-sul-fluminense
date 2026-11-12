@@ -34,5 +34,21 @@
     "horario_brt": "06:00",
     "media_id": "18181006084449185",
     "publicado_em_utc": "2026-11-11T09:00:42.147590+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Resende, bairro Itapuca: 27 graus hoje.",
+    "cidade_destaque": "Resende",
+    "bairro_destaque": "Itapuca",
+    "cidade_maior_chuva": "Barra Mansa",
+    "bairro_maior_chuva": "Vila Coringa",
+    "maior_chuva_mm": 2.7,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-12",
+    "quando": "hoje",
+    "cta": "Manda pra quem mora em Resende.",
+    "horario_brt": "06:00",
+    "media_id": "18440884096197710",
+    "publicado_em_utc": "2026-11-12T09:01:00.700826+00:00"
   }
 ]
