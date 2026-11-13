@@ -82,5 +82,21 @@
     "horario_brt": "06:00",
     "media_id": "18059859740801319",
     "publicado_em_utc": "2026-11-13T09:01:14.934788+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Barra do Piraí, bairro Centro: 26 graus amanhã.",
+    "cidade_destaque": "Barra do Piraí",
+    "bairro_destaque": "Centro",
+    "cidade_maior_chuva": "Angra dos Reis",
+    "bairro_maior_chuva": "Balneário",
+    "maior_chuva_mm": 4.5,
+    "temperatura_destaque": 26,
+    "dia_previsao": "2026-11-14",
+    "quando": "amanhã",
+    "cta": "Manda pra quem mora em Barra do Piraí.",
+    "horario_brt": "18:00",
+    "media_id": "17919817608531189",
+    "publicado_em_utc": "2026-11-13T21:00:58.608589+00:00"
   }
 ]
