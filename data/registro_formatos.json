@@ -98,5 +98,21 @@
     "horario_brt": "18:00",
     "media_id": "17919817608531189",
     "publicado_em_utc": "2026-11-13T21:00:58.608589+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Itatiaia, bairro Vila de Maringá: 30 graus hoje.",
+    "cidade_destaque": "Itatiaia",
+    "bairro_destaque": "Vila de Maringá",
+    "cidade_maior_chuva": "Piraí",
+    "bairro_maior_chuva": "Ribeirão das Lajes",
+    "maior_chuva_mm": 2.3,
+    "temperatura_destaque": 30,
+    "dia_previsao": "2026-11-14",
+    "quando": "hoje",
+    "cta": "Manda pra quem mora em Itatiaia.",
+    "horario_brt": "06:00",
+    "media_id": "17973353187192064",
+    "publicado_em_utc": "2026-11-14T09:01:14.350023+00:00"
   }
 ]
