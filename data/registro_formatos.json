@@ -114,5 +114,21 @@
     "horario_brt": "06:00",
     "media_id": "17973353187192064",
     "publicado_em_utc": "2026-11-14T09:01:14.350023+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Itatiaia, bairro Vila Odete: 28 graus amanhã.",
+    "cidade_destaque": "Itatiaia",
+    "bairro_destaque": "Vila Odete",
+    "cidade_maior_chuva": "Piraí",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 15.7,
+    "temperatura_destaque": 28,
+    "dia_previsao": "2026-11-15",
+    "quando": "amanhã",
+    "cta": "Manda pra quem mora em Itatiaia.",
+    "horario_brt": "18:00",
+    "media_id": "18122817725092816",
+    "publicado_em_utc": "2026-11-14T21:00:40.513224+00:00"
   }
 ]
