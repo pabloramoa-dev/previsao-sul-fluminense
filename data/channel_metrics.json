@@ -1969,11 +1969,59 @@
         "auto_comments_estimate": 1,
         "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
       }
+    },
+    {
+      "media_id": "18059859740801319",
+      "window": "24h",
+      "age_hours": 34.91,
+      "collected_at": "2026-11-14T19:55:48.533495+00:00",
+      "metrics": {
+        "reach": 108,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra do Piraí, bairro Roseira: 28 graus hoje.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18181006084449185",
+      "window": "72h",
+      "age_hours": 82.92,
+      "collected_at": "2026-11-14T19:55:48.533495+00:00",
+      "metrics": {
+        "reach": 48,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra Mansa: 26 graus hoje.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem passa por Barra Mansa hoje."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-13T21:25:36.346626+00:00",
+  "updated_at": "2026-11-14T19:55:48.533495+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-13T21:25:39.899973+00:00"
+  "organicos_atualizados_em_utc": "2026-11-14T19:55:50.349763+00:00"
 }
