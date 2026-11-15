@@ -146,5 +146,21 @@
     "horario_brt": "06:00",
     "media_id": "18019893263976126",
     "publicado_em_utc": "2026-11-15T09:00:37.282858+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Volta Redonda, bairro Santo Agostinho: 27 graus amanhã.",
+    "cidade_destaque": "Volta Redonda",
+    "bairro_destaque": "Santo Agostinho",
+    "cidade_maior_chuva": "Barra Mansa",
+    "bairro_maior_chuva": "Vista Alegre",
+    "maior_chuva_mm": 34.8,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-16",
+    "quando": "amanhã",
+    "cta": "Manda pra quem mora em Volta Redonda.",
+    "horario_brt": "18:00",
+    "media_id": "18024069440939598",
+    "publicado_em_utc": "2026-11-15T21:00:34.720347+00:00"
   }
 ]
