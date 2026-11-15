@@ -130,5 +130,21 @@
     "horario_brt": "18:00",
     "media_id": "18122817725092816",
     "publicado_em_utc": "2026-11-14T21:00:40.513224+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Volta Redonda, bairro Jardim Amália: 30 graus hoje.",
+    "cidade_destaque": "Volta Redonda",
+    "bairro_destaque": "Jardim Amália",
+    "cidade_maior_chuva": "Angra dos Reis",
+    "bairro_maior_chuva": "Camorim",
+    "maior_chuva_mm": 10.0,
+    "temperatura_destaque": 30,
+    "dia_previsao": "2026-11-15",
+    "quando": "hoje",
+    "cta": "Manda pra quem mora em Volta Redonda.",
+    "horario_brt": "06:00",
+    "media_id": "18019893263976126",
+    "publicado_em_utc": "2026-11-15T09:00:37.282858+00:00"
   }
 ]
