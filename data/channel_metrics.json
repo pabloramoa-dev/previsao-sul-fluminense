@@ -2017,11 +2017,83 @@
         "horario_brt": "06:00",
         "cta": "Manda pra quem passa por Barra Mansa hoje."
       }
+    },
+    {
+      "media_id": "17973353187192064",
+      "window": "24h",
+      "age_hours": 35.38,
+      "collected_at": "2026-11-15T20:23:36.449016+00:00",
+      "metrics": {
+        "reach": 132,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Itatiaia, bairro Vila de Maringá: 30 graus hoje.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Itatiaia."
+      }
+    },
+    {
+      "media_id": "17919817608531189",
+      "window": "24h",
+      "age_hours": 47.38,
+      "collected_at": "2026-11-15T20:23:36.449016+00:00",
+      "metrics": {
+        "reach": 14,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Barra do Piraí, bairro Centro: 26 graus amanhã.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18440884096197710",
+      "window": "72h",
+      "age_hours": 83.38,
+      "collected_at": "2026-11-15T20:23:36.449016+00:00",
+      "metrics": {
+        "reach": 76,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Resende, bairro Itapuca: 27 graus hoje.",
+        "cidade_destaque": "Resende",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Resende."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-14T19:55:48.533495+00:00",
+  "updated_at": "2026-11-15T20:23:36.449016+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-14T19:55:50.349763+00:00"
+  "organicos_atualizados_em_utc": "2026-11-15T20:23:37.885553+00:00"
 }
