@@ -179,5 +179,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18139752649710342",
     "publicado_em_utc": "2026-11-16T09:00:39.447911+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Quatis: 28 graus amanhã. Bairro em foco: São Benedito.",
+    "cidade_destaque": "Quatis",
+    "bairro_destaque": "São Benedito",
+    "cidade_maior_chuva": "Pinheiral",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 3.7,
+    "temperatura_destaque": 28,
+    "dia_previsao": "2026-11-17",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Pinheiral.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18643841254020112",
+    "publicado_em_utc": "2026-11-16T21:01:34.887883+00:00"
   }
 ]
