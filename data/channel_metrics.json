@@ -2089,11 +2089,155 @@
         "horario_brt": "06:00",
         "cta": "Manda pra quem mora em Resende."
       }
+    },
+    {
+      "media_id": "18024069440939598",
+      "window": "24h",
+      "age_hours": 26.73,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 114,
+        "shares": 0,
+        "saved": 1,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Volta Redonda, bairro Santo Agostinho: 27 graus amanhã.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Volta Redonda."
+      }
+    },
+    {
+      "media_id": "18019893263976126",
+      "window": "24h",
+      "age_hours": 38.73,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 101,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Volta Redonda, bairro Jardim Amália: 30 graus hoje.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Volta Redonda."
+      }
+    },
+    {
+      "media_id": "18122817725092816",
+      "window": "24h",
+      "age_hours": 50.73,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 130,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Itatiaia, bairro Vila Odete: 28 graus amanhã.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Itatiaia."
+      }
+    },
+    {
+      "media_id": "17919817608531189",
+      "window": "72h",
+      "age_hours": 74.73,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 14,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Barra do Piraí, bairro Centro: 26 graus amanhã.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18059859740801319",
+      "window": "72h",
+      "age_hours": 86.72,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 109,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra do Piraí, bairro Roseira: 28 graus hoje.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18120632786007006",
+      "window": "72h",
+      "age_hours": 98.71,
+      "collected_at": "2026-11-16T23:44:17.927347+00:00",
+      "metrics": {
+        "reach": 9,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Resende, bairro Paraíso: 27 graus amanhã.",
+        "cidade_destaque": "Resende",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Resende."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-15T20:23:36.449016+00:00",
+  "updated_at": "2026-11-16T23:44:17.927347+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-15T20:23:37.885553+00:00"
+  "organicos_atualizados_em_utc": "2026-11-16T23:44:21.162331+00:00"
 }
