@@ -60,3 +60,9 @@ jobs:
 
       - name: Rodizio de bairros com nomes validos e turnos distintos
         run: python estudio/test_bairros_foco.py
+
+      - name: Instalar dependencia leve dos roteiros regionais
+        run: python -m pip install num2words
+
+      - name: Rodizio das cidades e CTA contextual
+        run: python estudio/test_regional_rodizio.py
