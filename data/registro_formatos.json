@@ -162,5 +162,22 @@
     "horario_brt": "18:00",
     "media_id": "18024069440939598",
     "publicado_em_utc": "2026-11-15T21:00:34.720347+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Porto Real: 27 graus hoje. Bairro em foco: Bulhões.",
+    "cidade_destaque": "Porto Real",
+    "bairro_destaque": "Bulhões",
+    "cidade_maior_chuva": "Barra do Piraí",
+    "bairro_maior_chuva": "Maracanã",
+    "maior_chuva_mm": 29.8,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-16",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Barra do Piraí.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18139752649710342",
+    "publicado_em_utc": "2026-11-16T09:00:39.447911+00:00"
   }
 ]
