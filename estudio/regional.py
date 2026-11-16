@@ -4,32 +4,49 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from num2words import num2words
-from coletar_tempo import resumo_cinco, MAIORES
+from coletar_tempo import resumo_cinco, MAIORES, CIDADES
 from bairros_foco import bairro_do_dia
 
 TZ = ZoneInfo("America/Sao_Paulo")
 
-def escolher_destaque(cidades, data_publicacao=None):
-    """Cinco maiores do cadastro editorial; gira por data local, sem inventar audiência."""
+def escolher_destaque(cidades, data_publicacao=None, personagem="bira"):
+    """Alterna a abertura entre os dez municípios, distinguindo manhã e tarde.
+
+    Mantém as maiores audiências no quadro de cinco cidades, sem duplicações.
+    A escolha é determinística por data de publicação e personagem.
+    """
     if len(cidades) < 5:
         raise ValueError("São necessárias cinco cidades distintas")
     data_publicacao = data_publicacao or datetime.now(TZ).date()
     por_nome = {c["nome"]: c for c in cidades}
-    disponiveis = [nome for nome in MAIORES if nome in por_nome]
-    if len(disponiveis) != 5:
-        raise ValueError("Ausência de cidade de maior audiência; publicação bloqueada")
-    nome = disponiveis[data_publicacao.toordinal() % 5]
-    resumo = [dict(c, vento_kmh=c.get("rajada_kmh")) for c in resumo_cinco(cidades)]
-    # Mantém cinco cidades sem duplicar e garante a escolhida no primeiro quadro.
-    restantes = [c for c in resumo if c["nome"] != nome]
-    escolhidas = [dict(por_nome[nome], vento_kmh=por_nome[nome].get("rajada_kmh"))] + restantes[:4]
+    disponiveis = [nome for nome, _, _ in CIDADES if nome in por_nome]
+    if len(disponiveis) != len(CIDADES):
+        raise ValueError("Ausência de município regular; publicação bloqueada")
+
+    deslocamento = 5 if personagem == "bia" else 0
+    nome = disponiveis[(data_publicacao.toordinal() + deslocamento) % len(disponiveis)]
+    # A cidade principal abre. As outras quatro priorizam as maiores audiências.
+    escolhidas = [dict(por_nome[nome], vento_kmh=por_nome[nome].get("rajada_kmh"))]
+    for candidata in MAIORES:
+        if len(escolhidas) == 5:
+            break
+        if candidata in por_nome and candidata != nome:
+            c = por_nome[candidata]
+            escolhidas.append(dict(c, vento_kmh=c.get("rajada_kmh")))
+    if len(escolhidas) < 5:
+        for candidata in disponiveis:
+            if len(escolhidas) == 5:
+                break
+            if candidata not in {c["nome"] for c in escolhidas}:
+                c = por_nome[candidata]
+                escolhidas.append(dict(c, vento_kmh=c.get("rajada_kmh")))
     return escolhidas
 
 def preparar_boletim(dia, personagem, destino):
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     data_publicacao = datetime.now(TZ).date()
-    cidades = escolher_destaque(dia["cidades"], data_publicacao)
+    cidades = escolher_destaque(dia["cidades"], data_publicacao, personagem)
     manha = personagem == "bira"
     for cidade in cidades:
         cidade["bairro"] = bairro_do_dia(cidade["nome"], data_publicacao, personagem)
