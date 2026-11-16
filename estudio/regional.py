@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from num2words import num2words
-from coletar_tempo import resumo_cinco, MAIORES, CIDADES
+from coletar_tempo import MAIORES, CIDADES
 from bairros_foco import bairro_do_dia
 
 TZ = ZoneInfo("America/Sao_Paulo")
@@ -23,6 +23,8 @@ def escolher_destaque(cidades, data_publicacao=None, personagem="bira"):
     if len(disponiveis) != len(CIDADES):
         raise ValueError("Ausência de município regular; publicação bloqueada")
 
+    if personagem not in ("bira", "bia"):
+        raise ValueError("Personagem desconhecido")
     deslocamento = 5 if personagem == "bia" else 0
     nome = disponiveis[(data_publicacao.toordinal() + deslocamento) % len(disponiveis)]
     # A cidade principal abre. As outras quatro priorizam as maiores audiências.
@@ -55,8 +57,10 @@ def preparar_boletim(dia, personagem, destino):
     destaque = cidades[0]
     temperatura = round(destaque["max"])
     bairro = destaque.get("bairro")
-    abertura = (f"{destaque['nome']}, bairro {bairro}: {temperatura} graus {quando}."
-                if bairro else f"{destaque['nome']}: {temperatura} graus {quando}.")
+    # Temperatura municipal no primeiro segundo; bairro apenas como referência.
+    abertura = f"{destaque['nome']}: {temperatura} graus {quando}."
+    if bairro:
+        abertura += f" Bairro em foco: {bairro}."
     # Minima e maxima continuam visiveis; fala resumida abre espaco para os bairros.
     outras = [f"{c['nome']}, {num2words(round(c['max']), lang='pt_BR')}"
               for c in cidades[1:]]
@@ -77,7 +81,17 @@ def preparar_boletim(dia, personagem, destino):
     else:
         frase_chuva = "Sem chuva significativa prevista entre as cidades monitoradas."
         texto_chuva = frase_chuva
-    chamada = f"Manda pra quem mora em {destaque['nome']}."
+    # CTA único, útil e atrelado aos dados reais do boletim.
+    if tem_chuva and pico["nome"] == destaque["nome"]:
+        chamada = f"Envia pra quem mora em {destaque['nome']} e precisa se preparar pra chuva."
+    elif tem_chuva:
+        chamada = f"Envia pra quem conhece alguém em {pico['nome']}."
+    elif temperatura >= 32:
+        chamada = f"Envia pra quem vai sair no calor de {destaque['nome']}."
+    elif temperatura <= 17:
+        chamada = f"Envia pra quem vai sair cedo em {destaque['nome']}."
+    else:
+        chamada = f"Envia pra alguém de {destaque['nome']} conferir a previsão."
     def batida(tipo, fala, **dados):
         return {"tipo": tipo, "fala": fala, "legenda": fala, "dados": dados}
     batidas = [
@@ -118,6 +132,7 @@ def preparar_boletim(dia, personagem, destino):
         "quando": quando,
         "cta": chamada,
         "horario_brt": "06:00" if manha else "18:00",
+        "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     }
     (destino / "REEL.metadata.json").write_text(
         json.dumps(ficha, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
