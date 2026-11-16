@@ -47,7 +47,7 @@ Os workflows antigos, carrosséis e pilotos fora de produção foram movidos par
 ## Como funciona
 
 1. `reels/coletar_tempo.py` consulta o Open-Meteo em lote para os dez municípios regulares e adiciona Angra dos Reis na sexta e no domingo. Em falhas transitórias (incluindo 429 e 5xx), tenta até três vezes; dados com contagem incorreta de cidades são rejeitados.
-2. `reels/coletar_tempo.py:resumo_cinco()` seleciona as cinco cidades exibidas. `estudio/regional.py` exige cinco cidades e alterna o primeiro destaque entre as cinco maiores do cadastro editorial; o monitor de alerta continua cobrindo os dez municípios.
+2. `reels/coletar_tempo.py:resumo_cinco()` seleciona as cinco cidades exibidas. `estudio/regional.py` exige cinco cidades e alterna a abertura entre os dez municípios regulares, separando Bira e Bia por cinco posições no ciclo; o monitor de alerta continua cobrindo os dez municípios.
 3. O motor do RJ produz áudio e vídeo; `tools/finalizar_reel_sulflu.py` insere o destaque numérico no início, verifica área segura e duração, e gera `CAPA.jpg`.
 4. `reels/postar_reel.py` publica os vídeos, registra formato/gancho/ID confirmado em `data/registro_formatos.json` e publica uma pergunta curta no primeiro comentário.
 5. O workflow publica com a Instagram Graph API, verifica o processamento da mídia e executa limpeza de arquivos temporários.
@@ -79,3 +79,32 @@ No GitHub, em **Settings → Secrets and variables → Actions**, configure `IG_
 Bira usa `pm_alex:0.82+pm_santa:0.18` e Bia usa `pf_dora:0.85+af_heart:0.15`. Cada apresentador mantém seu timbre quando aparece nos dois canais.
 
 A narração termina com um único convite de envio ligado ao assunto do vídeo.
+
+## Rodízio editorial e estratégia de compartilhamento (novembro de 2026)
+
+O primeiro destaque alterna entre **os dez municípios regulares**, um novo por dia
+para cada apresentador, com diferença de cinco posições entre os turnos.
+Os cinco municípios do quadro são o destaque do turno e quatro cidades
+priorizadas pelo histórico de audiência; nunca há cidade duplicada.
+A edição considera todos os municípios coletados para o maior acumulado de
+chuva previsto. Angra dos Reis permanece no conjunto de previsões de sexta e
+domingo, mas não substitui a rotação regular de abertura.
+
+Os primeiros segundos mostram **cidade, temperatura e referência de dia**;
+o bairro editorial (quando cadastrado) serve para identificação, não para
+afirmar medições meteorológicas específicas do bairro. A capa, a primeira
+linha da legenda e o vídeo compartilham a mesma cidade. Há **um CTA final**,
+adaptado ao assunto: chuva (cidade do maior volume), calor, frio ou previsão
+local. É proibido fabricar alertas ou volumes de chuva para aumentar alcance.
+
+A renderização mantém o motor do RJ com HyperFrames, as vozes e o QA:
+formato 9:16, 1080×1920, 20–25 segundos e área segura. Não se substitui
+a trilha editorial ou os dados do SulFlu pelos do Rio.
+
+**Validação:** `python estudio/test_regional_rodizio.py` (requer `num2words`);
+o CI executa este teste junto dos demais. Os resultados publicados são
+monitorados pelo workflow `channel-metrics.yml` em janelas de 24h/72h.
+Para avaliar a melhoria, comparar alcance, compartilhamentos por mil pessoas
+alcançadas e seguidores conquistados por Reel quando disponíveis. Os
+insights existentes não comprovam retenção nos três primeiros segundos nem
+a causa do crescimento do perfil do Rio.
