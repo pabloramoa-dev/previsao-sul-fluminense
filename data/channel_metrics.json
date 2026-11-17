@@ -2233,11 +2233,107 @@
         "horario_brt": "18:00",
         "cta": "Manda pra quem mora em Resende."
       }
+    },
+    {
+      "media_id": "18643841254020112",
+      "window": "24h",
+      "age_hours": 25.85,
+      "collected_at": "2026-11-17T22:52:26.015081+00:00",
+      "metrics": {
+        "reach": 137,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Quatis: 28 graus amanhã. Bairro em foco: São Benedito.",
+        "cidade_destaque": "Quatis",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Pinheiral."
+      }
+    },
+    {
+      "media_id": "18139752649710342",
+      "window": "24h",
+      "age_hours": 37.87,
+      "collected_at": "2026-11-17T22:52:26.015081+00:00",
+      "metrics": {
+        "reach": 92,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Porto Real: 27 graus hoje. Bairro em foco: Bulhões.",
+        "cidade_destaque": "Porto Real",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18122817725092816",
+      "window": "72h",
+      "age_hours": 73.87,
+      "collected_at": "2026-11-17T22:52:26.015081+00:00",
+      "metrics": {
+        "reach": 130,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Itatiaia, bairro Vila Odete: 28 graus amanhã.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Itatiaia."
+      }
+    },
+    {
+      "media_id": "17973353187192064",
+      "window": "72h",
+      "age_hours": 85.86,
+      "collected_at": "2026-11-17T22:52:26.015081+00:00",
+      "metrics": {
+        "reach": 132,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Itatiaia, bairro Vila de Maringá: 30 graus hoje.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Itatiaia."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-16T23:44:17.927347+00:00",
+  "updated_at": "2026-11-17T22:52:26.015081+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-16T23:44:21.162331+00:00"
+  "organicos_atualizados_em_utc": "2026-11-17T22:52:27.314857+00:00"
 }
