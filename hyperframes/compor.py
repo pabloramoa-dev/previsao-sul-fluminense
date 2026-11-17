@@ -232,10 +232,13 @@ def cena_quadro(p, cena, bat):
         def cel(v, cls):
             s = f"{int(v):02d}" if int(v) >= 0 else str(int(v))
             return "".join(f'<span class="flap {cls}" data-alvo="{ch}">{ch}</span>' for ch in s)
+        mm = c.get("chuva_mm")
+        volume = f"{mm:.1f}".replace(".", ",") + " mm" if isinstance(mm, (int, float)) and 0 <= mm < float("inf") else "—"
         linhas.append(f'''
   <div class="qd-linha" id="qd-l{k}">
    <div class="qd-barra"></div>
    <div class="qd-cidade">{esc(c["nome"].upper())}</div>
+   <div class="qd-volume">VOLUME {volume}</div>
    <div class="qd-cels"><div class="qd-cel qd-min">{cel(c["min"], "fmin")}<i>°</i></div>
    <div class="qd-cel qd-max">{cel(c["max"], "fmax")}<i>°</i></div></div>
   </div>''')
@@ -422,7 +425,8 @@ html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: {NAVY
 .qd-cols b {{ font-weight: 700; }}
 .qd-linha {{ position: relative; display: flex; align-items: center; justify-content: space-between; height: 100px; padding-left: 22px; border-top: 3px solid #22324a; }}
 .qd-barra {{ position: absolute; left: 0; top: 14px; width: 10px; height: 72px; background-color: {YEL}; border-radius: 5px; }}
-.qd-cidade {{ font-family: "BarlowC", sans-serif; font-size: 56px; color: #ffffff; white-space: nowrap; }}
+.qd-cidade {{ font-family: "BarlowC", sans-serif; font-size: 46px; line-height: 1; color: #ffffff; max-width: 44%; }}
+.qd-volume {{ position: absolute; left: 52%; transform: translateX(-50%); bottom: 8px; font-family: "BarlowCB", sans-serif; font-size: 30px; color: #ffffff; white-space: nowrap; }}
 .qd-cels {{ display: flex; gap: 16px; }}
 .qd-cel {{ display: flex; align-items: center; gap: 4px; }}
 .qd-cel i {{ font-style: normal; font-family: "BarlowC", sans-serif; font-size: 44px; color: #9fb3c8; }}
