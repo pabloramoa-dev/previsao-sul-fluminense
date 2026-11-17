@@ -213,5 +213,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18644088922012418",
     "publicado_em_utc": "2026-11-17T09:00:54.249290+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Barra Mansa: 31 graus amanhã. Bairro em foco: Jardim Boa Vista.",
+    "cidade_destaque": "Barra Mansa",
+    "bairro_destaque": "Jardim Boa Vista",
+    "cidade_maior_chuva": "Barra do Piraí",
+    "bairro_maior_chuva": "Parque Santana",
+    "maior_chuva_mm": 1.9,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-18",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Barra do Piraí.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18348729343284973",
+    "publicado_em_utc": "2026-11-17T21:00:43.901972+00:00"
   }
 ]
