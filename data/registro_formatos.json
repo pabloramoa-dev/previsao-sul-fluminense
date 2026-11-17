@@ -196,5 +196,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18643841254020112",
     "publicado_em_utc": "2026-11-16T21:01:34.887883+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Rio Claro: 28 graus hoje. Bairro em foco: Getulândia.",
+    "cidade_destaque": "Rio Claro",
+    "bairro_destaque": "Getulândia",
+    "cidade_maior_chuva": "Porto Real",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 2.2,
+    "temperatura_destaque": 28,
+    "dia_previsao": "2026-11-17",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Porto Real.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18644088922012418",
+    "publicado_em_utc": "2026-11-17T09:00:54.249290+00:00"
   }
 ]
