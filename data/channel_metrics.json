@@ -2329,11 +2329,107 @@
         "horario_brt": "06:00",
         "cta": "Manda pra quem mora em Itatiaia."
       }
+    },
+    {
+      "media_id": "18348729343284973",
+      "window": "24h",
+      "age_hours": 25.59,
+      "collected_at": "2026-11-18T22:35:45.805270+00:00",
+      "metrics": {
+        "reach": 17,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Barra Mansa: 31 graus amanhã. Bairro em foco: Jardim Boa Vista.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18644088922012418",
+      "window": "24h",
+      "age_hours": 37.58,
+      "collected_at": "2026-11-18T22:35:45.805270+00:00",
+      "metrics": {
+        "reach": 106,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Rio Claro: 28 graus hoje. Bairro em foco: Getulândia.",
+        "cidade_destaque": "Rio Claro",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Porto Real."
+      }
+    },
+    {
+      "media_id": "18024069440939598",
+      "window": "72h",
+      "age_hours": 73.59,
+      "collected_at": "2026-11-18T22:35:45.805270+00:00",
+      "metrics": {
+        "reach": 117,
+        "shares": 0,
+        "saved": 1,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Volta Redonda, bairro Santo Agostinho: 27 graus amanhã.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "18:00",
+        "cta": "Manda pra quem mora em Volta Redonda."
+      }
+    },
+    {
+      "media_id": "18019893263976126",
+      "window": "72h",
+      "age_hours": 85.59,
+      "collected_at": "2026-11-18T22:35:45.805270+00:00",
+      "metrics": {
+        "reach": 104,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Volta Redonda, bairro Jardim Amália: 30 graus hoje.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "06:00",
+        "cta": "Manda pra quem mora em Volta Redonda."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-17T22:52:26.015081+00:00",
+  "updated_at": "2026-11-18T22:35:45.805270+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-17T22:52:27.314857+00:00"
+  "organicos_atualizados_em_utc": "2026-11-18T22:35:47.387318+00:00"
 }
