@@ -208,26 +208,9 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
 
 
 def checar_chuva_acumulada(cidades) -> dict[str, Any] | None:
-    """
-    Gatilho "Choveu quanto?": se acumulado das ultimas 24h >= 30mm em
-    qualquer cidade. Max 1 por dia. Retorna ranking ou None.
-    """
-    estado = _carregar()
-    hoje = _agora().date().isoformat()
-    if estado.get("chuva_acumulada_publicada") == hoje:
-        return None
-
-    # Esta rotina só pode dizer "choveu" se houver medições observadas.
-    # A série horária de clima.py é previsão FUTURA, não pluviômetro.
-    # Mantemos o gatilho suspenso até a integração INMET/CEMADEN com QC.
-    return None
-
-    # Código antigo de soma de previsões removido intencionalmente.
-    ranking.sort(key=lambda x: x["mm"], reverse=True)
-    if ranking and ranking[0]["mm"] >= MM_ACUMULADO_24H:
-        estado["chuva_acumulada_publicada"] = hoje
-        _salvar(estado)
-        return {"ranking": ranking}
+    """Desativado: sem pluviômetros observados não se deve afirmar que 'choveu'."""
+    # A precipitação em cidade.horarias representa previsão, não observação.
+    # Reativar somente após integrar medições INMET/CEMADEN validadas por hora.
     return None
 
 
