@@ -247,5 +247,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18094758680665267",
     "publicado_em_utc": "2026-11-18T09:01:04.533385+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Pinheiral: 31 graus amanhã. Bairro em foco: Centro.",
+    "cidade_destaque": "Pinheiral",
+    "bairro_destaque": "Centro",
+    "cidade_maior_chuva": "Resende",
+    "bairro_maior_chuva": "Jardim Jalisco",
+    "maior_chuva_mm": 14.1,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-19",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Resende.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "17892078933687339",
+    "publicado_em_utc": "2026-11-18T21:00:42.080025+00:00"
   }
 ]
