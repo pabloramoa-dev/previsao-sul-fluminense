@@ -230,5 +230,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18348729343284973",
     "publicado_em_utc": "2026-11-17T21:00:43.901972+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Barra do Piraí: 31 graus hoje. Bairro em foco: Parque Santana.",
+    "cidade_destaque": "Barra do Piraí",
+    "bairro_destaque": "Parque Santana",
+    "cidade_maior_chuva": "Quatis",
+    "bairro_maior_chuva": "Mirandópolis",
+    "maior_chuva_mm": 13.1,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-18",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Quatis.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18094758680665267",
+    "publicado_em_utc": "2026-11-18T09:01:04.533385+00:00"
   }
 ]
