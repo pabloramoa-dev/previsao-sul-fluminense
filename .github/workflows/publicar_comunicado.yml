@@ -1,0 +1,69 @@
+name: Publicar comunicado pronto
+
+# Publica no @previsaosulflu um Reel AVULSO já renderizado (ex.: comunicado
+# em dupla feito pelo previsao-modelo: alerta, agenda, previsão do feriadão).
+# O vídeo, a capa e a legenda chegam como assets de um Release:
+#   REEL.mp4, CAPA.jpg (opcional) e LEGENDA.txt
+# Sem "publicar", só mostra a legenda e confere as travas (dry-run).
+# Depois de publicar, o Release temporário é apagado.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag do Release com REEL.mp4, CAPA.jpg e LEGENDA.txt"
+        type: string
+        required: true
+      publicar:
+        description: "Publicar no Instagram? Desmarcado = só confere a legenda"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sulflu-comunicado
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Dependências
+        run: pip install requests
+
+      - name: Baixar a legenda do Release
+        run: |
+          mkdir -p saida
+          gh release download "$TAG" --pattern LEGENDA.txt --dir saida
+          gh release view "$TAG" --json assets --jq '.assets[].name' | tee saida/assets.txt
+          grep -qx REEL.mp4 saida/assets.txt || { echo "Release sem REEL.mp4"; exit 1; }
+          { echo "## Legenda"; echo '```'; cat saida/LEGENDA.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Conferir a legenda (dry-run)
+        working-directory: reels
+        run: python postar_reel.py --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/REEL.mp4" --legenda-arquivo ../saida/LEGENDA.txt --dry-run
+
+      - name: Publicar no Instagram do SulFlu
+        if: inputs.publicar
+        working-directory: reels
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG"
+          capa=""
+          grep -qx CAPA.jpg ../saida/assets.txt && capa="$url/CAPA.jpg"
+          python postar_reel.py --video "$url/REEL.mp4" ${capa:+--capa-url "$capa"} --legenda-arquivo ../saida/LEGENDA.txt
+
+      - name: Apagar o Release temporário
+        if: ${{ always() && inputs.publicar }}
+        run: gh release delete "$TAG" --cleanup-tag --yes || true
