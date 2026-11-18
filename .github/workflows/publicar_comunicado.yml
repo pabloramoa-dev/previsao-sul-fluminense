@@ -2,16 +2,19 @@ name: Publicar comunicado pronto
 
 # Publica no @previsaosulflu um Reel AVULSO já renderizado (ex.: comunicado
 # em dupla feito pelo previsao-modelo: alerta, agenda, previsão do feriadão).
-# O vídeo, a capa e a legenda chegam como assets de um Release:
+# O vídeo, a capa e a legenda ficam numa pasta de um branch temporário
+# (ex.: comunicado/angra-20261118, pasta comunicados/angra-20261118/):
 #   REEL.mp4, CAPA.jpg (opcional) e LEGENDA.txt
-# Sem "publicar", só mostra a legenda e confere as travas (dry-run).
-# Depois de publicar, o Release temporário é apagado.
+# Rode o workflow escolhendo esse branch. Sem "publicar", só mostra a legenda
+# e confere as travas (dry-run). Ao publicar, o MP4 vai a um Release
+# temporário (URL pública para a Meta), que é apagado no fim junto com o
+# branch.
 
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Tag do Release com REEL.mp4, CAPA.jpg e LEGENDA.txt"
+      pasta:
+        description: "Pasta com REEL.mp4, CAPA.jpg e LEGENDA.txt (ex.: comunicados/angra-20261118)"
         type: string
         required: true
       publicar:
@@ -31,7 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      TAG: ${{ inputs.tag }}
+      PASTA: ${{ inputs.pasta }}
+      TAG: comunicado-${{ github.run_id }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -40,17 +44,23 @@ jobs:
       - name: Dependências
         run: pip install requests
 
-      - name: Baixar a legenda do Release
+      - name: Conferir os arquivos
         run: |
-          mkdir -p saida
-          gh release download "$TAG" --pattern LEGENDA.txt --dir saida
-          gh release view "$TAG" --json assets --jq '.assets[].name' | tee saida/assets.txt
-          grep -qx REEL.mp4 saida/assets.txt || { echo "Release sem REEL.mp4"; exit 1; }
+          test -f "$PASTA/REEL.mp4" || { echo "Falta $PASTA/REEL.mp4"; exit 1; }
+          test -f "$PASTA/LEGENDA.txt" || { echo "Falta $PASTA/LEGENDA.txt"; exit 1; }
+          mkdir -p saida && cp "$PASTA"/* saida/
           { echo "## Legenda"; echo '```'; cat saida/LEGENDA.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Conferir a legenda (dry-run)
         working-directory: reels
-        run: python postar_reel.py --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/REEL.mp4" --legenda-arquivo ../saida/LEGENDA.txt --dry-run
+        run: python postar_reel.py --video "https://example.invalid/REEL.mp4" --legenda-arquivo ../saida/LEGENDA.txt --dry-run
+
+      - name: Hospedar o MP4 em Release temporário
+        if: inputs.publicar
+        run: |
+          arquivos="saida/REEL.mp4"
+          test -f saida/CAPA.jpg && arquivos="$arquivos saida/CAPA.jpg"
+          gh release create "$TAG" $arquivos --title "$TAG" --notes "Comunicado avulso" --target "$GITHUB_SHA"
 
       - name: Publicar no Instagram do SulFlu
         if: inputs.publicar
@@ -61,9 +71,13 @@ jobs:
         run: |
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG"
           capa=""
-          grep -qx CAPA.jpg ../saida/assets.txt && capa="$url/CAPA.jpg"
+          test -f ../saida/CAPA.jpg && capa="$url/CAPA.jpg"
           python postar_reel.py --video "$url/REEL.mp4" ${capa:+--capa-url "$capa"} --legenda-arquivo ../saida/LEGENDA.txt
 
-      - name: Apagar o Release temporário
+      - name: Apagar o Release e o branch temporários
         if: ${{ always() && inputs.publicar }}
-        run: gh release delete "$TAG" --cleanup-tag --yes || true
+        run: |
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          case "$GITHUB_REF_NAME" in
+            comunicado/*) gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$GITHUB_REF_NAME" || true ;;
+          esac
