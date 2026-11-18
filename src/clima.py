@@ -171,6 +171,7 @@ def coletar_forecast(cidade: dict[str, Any]) -> dict[str, Any]:
             "precipitation",
             "apparent_temperature",
             "windspeed_10m",
+            "wind_gusts_10m",
             "weathercode",
         ]),
     }
@@ -260,6 +261,7 @@ def processar_cidade(cidade: dict[str, Any]) -> CidadeClima:
         "precipitation_probability": hourly.get("precipitation_probability", []),
         "precipitation": hourly.get("precipitation", []),
         "windspeed_10m": hourly.get("windspeed_10m", []),
+        "wind_gusts_10m": hourly.get("wind_gusts_10m", []),
         "weathercode": hourly.get("weathercode", []),
     }
     return c
