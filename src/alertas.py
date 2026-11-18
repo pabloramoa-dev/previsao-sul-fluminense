@@ -82,7 +82,8 @@ def _indice_agora(cidade) -> int:
     try:
         return horas.index(alvo)
     except ValueError:
-        return 0
+        # Sem hora correspondente, não usar a meia-noite como se fosse agora.
+        return len(horas)
 
 
 def _proximas_horas(cidade, n: int = 3) -> dict[str, list]:
@@ -216,12 +217,12 @@ def checar_chuva_acumulada(cidades) -> dict[str, Any] | None:
     if estado.get("chuva_acumulada_publicada") == hoje:
         return None
 
-    ranking = []
-    for c in cidades:
-        mm_series = [m for m in c.horarias.get("precipitation", [])[:24] if m is not None]
-        total = sum(mm_series)
-        ranking.append({"nome": c.nome, "mm": round(total, 1)})
+    # Esta rotina só pode dizer "choveu" se houver medições observadas.
+    # A série horária de clima.py é previsão FUTURA, não pluviômetro.
+    # Mantemos o gatilho suspenso até a integração INMET/CEMADEN com QC.
+    return None
 
+    # Código antigo de soma de previsões removido intencionalmente.
     ranking.sort(key=lambda x: x["mm"], reverse=True)
     if ranking and ranking[0]["mm"] >= MM_ACUMULADO_24H:
         estado["chuva_acumulada_publicada"] = hoje
