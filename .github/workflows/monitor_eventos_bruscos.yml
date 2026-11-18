@@ -1,0 +1,30 @@
+name: Monitor experimental — mudanças bruscas (sem publicação)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 10-22/2 * * *"
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependências de coleta
+        run: pip install -r requirements.txt
+      - name: Executar testes do detector
+        run: python -m unittest discover -s tests -p test_eventos_bruscos.py
+      - name: Detectar eventos com dados reais sem publicar
+        run: python -m tools.monitor_eventos_bruscos --saida saida/eventos_bruscos/relatorio.json
+      - name: Salvar relatório de candidatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidatos-eventos-${{ github.run_id }}
+          path: saida/eventos_bruscos/relatorio.json
+          if-no-files-found: warn
+          retention-days: 3
