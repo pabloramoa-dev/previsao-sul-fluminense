@@ -264,5 +264,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "17892078933687339",
     "publicado_em_utc": "2026-11-18T21:00:42.080025+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Itatiaia: 29 graus hoje. Bairro em foco: Vila Odete.",
+    "cidade_destaque": "Itatiaia",
+    "bairro_destaque": "Vila Odete",
+    "cidade_maior_chuva": "Barra do Piraí",
+    "bairro_maior_chuva": "Muqueca",
+    "maior_chuva_mm": 13.1,
+    "temperatura_destaque": 29,
+    "dia_previsao": "2026-11-19",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Barra do Piraí.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18023323514730884",
+    "publicado_em_utc": "2026-11-19T09:00:40.318672+00:00"
   }
 ]
