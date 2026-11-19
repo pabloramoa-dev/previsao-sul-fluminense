@@ -281,5 +281,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18023323514730884",
     "publicado_em_utc": "2026-11-19T09:00:40.318672+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Resende: 31 graus amanhã. Bairro em foco: Itapuca.",
+    "cidade_destaque": "Resende",
+    "bairro_destaque": "Itapuca",
+    "cidade_maior_chuva": "Porto Real",
+    "bairro_maior_chuva": "Bulhões",
+    "maior_chuva_mm": 3.0,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-20",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Porto Real.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18001786430840271",
+    "publicado_em_utc": "2026-11-19T21:00:59.588778+00:00"
   }
 ]
