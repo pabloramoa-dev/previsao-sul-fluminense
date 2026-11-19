@@ -2425,11 +2425,124 @@
         "horario_brt": "06:00",
         "cta": "Manda pra quem mora em Volta Redonda."
       }
+    },
+    {
+      "media_id": "18001632027033978",
+      "window": "24h",
+      "age_hours": 24.92,
+      "collected_at": "2026-11-19T22:39:47.541430+00:00",
+      "metrics": {
+        "reach": 193,
+        "shares": 3,
+        "saved": 0,
+        "likes": 3,
+        "comments": 1,
+        "shares_per_1000_reached": 15.54,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "17892078933687339",
+      "window": "24h",
+      "age_hours": 25.65,
+      "collected_at": "2026-11-19T22:39:47.541430+00:00",
+      "metrics": {
+        "reach": 107,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Pinheiral: 31 graus amanhã. Bairro em foco: Centro.",
+        "cidade_destaque": "Pinheiral",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Resende."
+      }
+    },
+    {
+      "media_id": "18094758680665267",
+      "window": "24h",
+      "age_hours": 37.65,
+      "collected_at": "2026-11-19T22:39:47.541430+00:00",
+      "metrics": {
+        "reach": 27,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra do Piraí: 31 graus hoje. Bairro em foco: Parque Santana.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Quatis."
+      }
+    },
+    {
+      "media_id": "18643841254020112",
+      "window": "72h",
+      "age_hours": 73.64,
+      "collected_at": "2026-11-19T22:39:47.541430+00:00",
+      "metrics": {
+        "reach": 139,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Quatis: 28 graus amanhã. Bairro em foco: São Benedito.",
+        "cidade_destaque": "Quatis",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Pinheiral."
+      }
+    },
+    {
+      "media_id": "18139752649710342",
+      "window": "72h",
+      "age_hours": 85.65,
+      "collected_at": "2026-11-19T22:39:47.541430+00:00",
+      "metrics": {
+        "reach": 94,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Porto Real: 27 graus hoje. Bairro em foco: Bulhões.",
+        "cidade_destaque": "Porto Real",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Barra do Piraí."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-18T22:35:45.805270+00:00",
+  "updated_at": "2026-11-19T22:39:47.541430+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-18T22:35:47.387318+00:00"
+  "organicos_atualizados_em_utc": "2026-11-19T22:39:50.330896+00:00"
 }
