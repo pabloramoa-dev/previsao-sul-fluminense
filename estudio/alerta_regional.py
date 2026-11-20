@@ -7,6 +7,8 @@ NOMES = {'temporal': 'risco de temporal', 'chuva': 'chuva intensa',
          'granizo': 'possibilidade de granizo', 'vento': 'ventos fortes'}
 
 def preparar_boletim(rel, personagem, destino):
+    if rel.get('modo') == 'aviso_oficial_inmet':
+        return preparar_aviso_oficial(rel, destino)
     if not rel.get('publicar') or not rel.get('eventos'):
         raise ValueError('Sem evento confirmado nos dois modelos')
     e = rel['eventos'][0]
@@ -46,3 +48,45 @@ def preparar_boletim(rel, personagem, destino):
     # Sem painel de temperaturas: o plantão só mostra o evento comprovado na previsão.
     cidades = [{'nome': e['local'], 'cond': 'chuva'}]
     return {'forecast': {'today': bloco, 'tomorrow': bloco}}, cidades, batidas
+
+def preparar_aviso_oficial(rel, destino):
+    """Plantão dedicado ao aviso público e válido do INMET, sem inferir ocorrência certa."""
+    if not rel.get('publicar') or not rel.get('aviso_oficial'):
+        raise ValueError('Sem aviso oficial válido')
+    aviso = rel['aviso_oficial']
+    fim = datetime.fromisoformat(aviso['fim'])
+    if aviso.get('fonte') != 'INMET' or aviso.get('evento') != 'Tempestade':
+        raise ValueError('Tipo de comunicado não permitido')
+    if not rel.get('oficiais', {}).get('completa'):
+        raise ValueError('Fontes oficiais incompletas')
+    hora = fim.strftime('%Hh%M')
+    foco = ['Volta Redonda', 'Barra Mansa', 'Resende']
+    nomes = [n for n in foco if n in aviso['cidades']]
+    if len(nomes) < 3:
+        raise ValueError('Cobertura regional do aviso insuficiente')
+    abertura = (f"Atenção, Sul Fluminense! O INMET mantém alerta amarelo de tempestade "
+                f"válido hoje até as {hora}. O aviso inclui {', '.join(nomes)} e outros municípios.")
+    detalhe = ("Segundo o INMET, existe possibilidade de chuva entre 20 e 30 milímetros por hora, "
+               "ventos de 40 a 60 quilômetros por hora e queda de granizo.")
+    cautela = ("O nível amarelo indica perigo potencial. Não significa temporal certo em toda a região. "
+               "Durante rajadas, evite ficar sob árvores e acompanhe a Defesa Civil.")
+    fecho = "Compartilhe este aviso com quem mora no Sul Fluminense."
+    def b(tipo, fala, **dados):
+        return {'tipo': tipo, 'fala': fala, 'legenda': fala, 'dados': dados}
+    batidas = [b('frase', abertura), b('alerta', detalhe, titulo='ALERTA AMARELO DO INMET',
+                 detalhe='RISCO DE TEMPESTADE'), b('frase', cautela), b('cta', fecho, chamada='COMPARTILHE')]
+    destino = Path(destino)
+    destino.mkdir(parents=True, exist_ok=True)
+    cidades = ', '.join(aviso['cidades'])
+    legenda = (f"ALERTA AMARELO DO INMET — SUL FLUMINENSE | {rel['data']}\\n\\n"
+               f"O INMET mantém aviso de perigo potencial de tempestade até {hora} de hoje "
+               f"para: {cidades}.\\n\\n"
+               "Possibilidade de chuva entre 20 e 30 mm/h (até 50 mm/dia), rajadas de 40 a 60 km/h "
+               "e queda de granizo. Isto NÃO significa que esses fenômenos ocorrerão em todas as cidades.\\n\\n"
+               "Não se abrigue debaixo de árvores em caso de rajadas. Em emergência: Defesa Civil 199 e Bombeiros 193.\\n"
+               f"Fonte: INMET — {aviso['url']}. Emissão do boletim: {aviso['emitido_em']}. "
+               "Este comunicado informa um AVISO OFICIAL, não uma concordância de dois modelos numéricos.\\n"
+               "@previsaosulflu #AlertaDeTempestade #SulFluminense")
+    (destino/'LEGENDA.txt').write_text(legenda, encoding='utf-8')
+    bloco = {'date': rel['data'], 'locations': []}
+    return {'forecast': {'today': bloco, 'tomorrow': bloco}}, [], batidas
