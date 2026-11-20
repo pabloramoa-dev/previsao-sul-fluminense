@@ -315,5 +315,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18138885736774713",
     "publicado_em_utc": "2026-11-20T09:00:37.843769+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Piraí: 33 graus amanhã. Bairro em foco: Monumento.",
+    "cidade_destaque": "Piraí",
+    "bairro_destaque": "Monumento",
+    "cidade_maior_chuva": "Barra Mansa",
+    "bairro_maior_chuva": "Vila Nova",
+    "maior_chuva_mm": 3.3,
+    "temperatura_destaque": 33,
+    "dia_previsao": "2026-11-21",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Barra Mansa.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "17921811159539583",
+    "publicado_em_utc": "2026-11-20T21:01:09.362453+00:00"
   }
 ]
