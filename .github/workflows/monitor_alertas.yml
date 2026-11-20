@@ -116,28 +116,15 @@ jobs:
           if original not in s:
               raise RuntimeError('Ticker do estúdio mudou; revisar antes de publicar')
           s = s.replace(original, novo)
+          s = s.replace('quando = "AMANHÃ" if p["formato"] == "amanha_no_rio" else "HOJE"', 'quando = "HOJE"')
           p.write_text(s)
+          a = Path('hyperframes/gerar_hf.py')
+          codigo = a.read_text()
+          if "'ceu': cidades[0]['cond']," not in codigo:
+              raise RuntimeError('Estúdio regional mudou o ponto de céu; revisar')
+          codigo = codigo.replace("'ceu': cidades[0]['cond'],", "'ceu': (cidades[0]['cond'] if cidades else 'tempestade'),")
+          a.write_text(codigo)
           PY
-      - name: Preparar roteiro do plantão e legenda da publicação
-        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
-        working-directory: motor
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('hyperframes/gerar_hf.py')
-          s = p.read_text()
-          if 'from src.previsao_rj.editorial.formats import prepare' not in s or "batidas = prepare(snapshot, formato, topic=topico)['beats']" not in s:
-              raise RuntimeError('Motor sem ponto de integração esperado')
-          s = s.replace('from src.previsao_rj.editorial.formats import prepare', 'from regional import preparar_boletim')
-          s = s.replace("batidas = prepare(snapshot, formato, topic=topico)['beats']", "snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')")
-          s = s.replace("'ceu': ceu_do_dia(locs),", "'ceu': 'tempestade' if not locs else ceu_do_dia(locs),")
-          p.write_text(s)
-          c = Path('hyperframes/compor.py')
-          html = c.read_text()
-          html = html.replace('quando = "AMANHÃ" if p["formato"] == "amanha_no_rio" else "HOJE"', 'quando = "HOJE"')
-          c.write_text(html)
-          PY
-          echo "PREVISAO_RJ_HORA_ALVO=$(TZ=America/Sao_Paulo date +%H)" >> "$GITHUB_ENV"
       - name: Renderizar somente previsão corroborada
         if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         run: |
