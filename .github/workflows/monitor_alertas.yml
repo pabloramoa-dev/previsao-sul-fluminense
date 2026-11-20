@@ -45,7 +45,8 @@ jobs:
         run: python -m tools.alerta_14h
       - name: Sem risco corroborado
         if: steps.consulta.outputs.publicar != 'true'
-        run: echo 'Publicação bloqueada: sem risco corroborado ou consulta oficial incompleta. Consulte o relatório de fontes. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo 'Publicação bloqueada: sem risco corroborado ou consulta oficial incompleta. Consulte o relatório de fontes. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
         if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
         with:
