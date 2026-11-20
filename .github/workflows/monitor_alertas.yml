@@ -106,6 +106,7 @@ jobs:
           (cd video && npx --no-install hyperframes browser ensure)
           git apply ../estudio/regional.patch
           git apply ../estudio/vozes.patch
+          python ../estudio/aplicar_pronuncia_horas.py
           cp ../estudio/alerta_regional.py hyperframes/regional.py
           python - <<'PY'
           from pathlib import Path
