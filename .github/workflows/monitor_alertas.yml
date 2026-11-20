@@ -11,6 +11,8 @@ on:
   push:
     paths:
       - 'tools/alerta_14h.py'
+      - 'tools/avisos_oficiais.py'
+      - 'tests/test_avisos_oficiais.py'
       - 'tools/publicar_alerta_14h.py'
       - 'estudio/alerta_regional.py'
       - 'tests/test_alerta_14h.py'
@@ -35,13 +37,15 @@ jobs:
       - name: Instalar dependências de consulta
         run: pip install requests
       - name: Testar bloqueios e retomada
-        run: python -m unittest discover -s tests -p test_alerta_14h.py -v
-      - name: Consultar dois modelos nas dez cidades
+        run: |
+          python -m unittest discover -s tests -p test_alerta_14h.py -v
+          python -m unittest discover -s tests -p test_avisos_oficiais.py -v
+      - name: Consultar Defesa Civil, INMET e dois modelos nas dez cidades
         id: consulta
         run: python -m tools.alerta_14h
       - name: Sem risco corroborado
         if: steps.consulta.outputs.publicar != 'true'
-        run: echo 'Sem risco corroborado. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Publicação bloqueada: sem risco corroborado ou consulta oficial incompleta. Consulte o relatório de fontes. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
         if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
         with:

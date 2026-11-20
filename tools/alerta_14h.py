@@ -64,6 +64,8 @@ def confirmar(a, b, cidade):
 
 def verificar(agora=None):
     agora = agora or datetime.now(TZ)
+    from tools.avisos_oficiais import coletar, correspondentes
+    oficiais = coletar(CIDADES, agora)
     respostas = {}
     for modelo in MODELOS:
         respostas[modelo] = _get_json(FORECAST_URL, {
@@ -83,16 +85,19 @@ def verificar(agora=None):
     # Um plantão por dia, foco no evento mais relevante; demais locais na legenda.
     return dict(emitido_em=agora.isoformat(), data=agora.date().isoformat(),
                 fonte=FORECAST_URL, modelos=list(MODELOS), eventos=eventos,
-                publicar=bool(eventos), cidades_consultadas=len(CIDADES))
+                publicar=bool(eventos) and oficiais['completa'], cidades_consultadas=len(CIDADES),
+                oficiais=oficiais, avisos_oficiais_correspondentes=correspondentes(eventos, oficiais))
 
 def validar(relatorio, agora=None):
     agora = agora or datetime.now(TZ)
     emitido = datetime.fromisoformat(relatorio['emitido_em'])
     if not timedelta(0) <= agora-emitido <= timedelta(hours=2):
         raise ValueError('Consulta vencida; publicação bloqueada')
+    if relatorio.get('oficiais') and not relatorio['oficiais']['completa']:
+        raise ValueError('Consulta oficial incompleta; publicação bloqueada')
     if not relatorio.get('publicar') or not relatorio.get('eventos'):
         raise ValueError('Sem previsão corroborada; publicação bloqueada')
-    if not any(datetime.fromisoformat(e['fim']) > agora for e in relatorio['eventos']):
+    if datetime.fromisoformat(relatorio['eventos'][0]['fim']) <= agora:
         raise ValueError('Todos os eventos já passaram')
 
 def main():

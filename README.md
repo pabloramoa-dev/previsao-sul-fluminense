@@ -132,3 +132,17 @@ push roda testes e consulta real, sem render nem publicação. O monitor
 experimental de mudanças bruscas continua apenas produzindo relatórios.
 
 Documentação da fonte: https://open-meteo.com/en/docs
+
+A checagem das 14h também consulta os avisos CAP do **INMET** e os painéis do
+**CEMADEN-RJ/Defesa Civil RJ**: severidade meteorológica das regionais Sul I/Sul II,
+risco hidrológico e risco de deslizamento dos dez municípios. O relatório guarda
+fonte, horário de consulta, níveis e avisos; erro de acesso fica como
+`indisponivel`, nunca como ausência de alerta. Consulta oficial incompleta bloqueia
+publicação. A trava de dois modelos permanece.
+
+Avisos do INMET precisam ser reais, públicos, não cancelados, válidos na janela
+analisada e incluir explicitamente o município com UF RJ. Só avisos do mesmo
+fenômeno, cidade e período do vídeo entram na legenda com link e validade.
+Níveis de risco hidrológico/geológico sem validade explícita ficam como contexto;
+não são transformados em previsão de tempestade ou granizo. Notícias antigas e
+sites não oficiais não alimentam o gatilho automático.

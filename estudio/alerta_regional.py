@@ -33,8 +33,13 @@ def preparar_boletim(rel, personagem, destino):
         if chave in vistos: continue
         vistos.add(chave)
         linhas.append(f"{ev['local']}: {NOMES[ev['tipo']]}")
+    oficiais = rel.get('avisos_oficiais_correspondentes', [])
+    if oficiais:
+        linhas += ['', 'Avisos oficiais válidos para os eventos citados:']
+        linhas += [f"INMET: {a['evento']} — válido até {a['fim']}. {a['url']}" for a in oficiais[:2]]
     linhas += ['', f"Consulta: {rel['emitido_em']}",
                'Fontes: modelos DWD ICON e NOAA GFS via Open-Meteo.',
+               'Consulta complementar: INMET e CEMADEN-RJ/Defesa Civil.',
                '@previsaosulflu #SulFluminense #PrevisãoDoTempo']
     (destino/'LEGENDA.txt').write_text('\n'.join(linhas), encoding='utf-8')
     bloco = {'date': rel['data'], 'locations': []}
