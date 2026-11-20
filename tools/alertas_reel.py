@@ -5,6 +5,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from reels.gerar_voz_kokoro import normalizar_horario_para_voz
 from zoneinfo import ZoneInfo
 
 from src import alertas, captions
@@ -26,7 +27,7 @@ def criar_video(capa, arquivo, cidade, hora, titulo):
     cidade_txt.write_text(cidade.upper(), encoding="utf-8")
     hora_txt.write_text(f"BOLETIM {hora}  •  SUL FLUMINENSE", encoding="utf-8")
     titulo_txt.write_text(titulo.replace("ALERTA:", "").strip(), encoding="utf-8")
-    fala = f"Atenção, {cidade}! {titulo.replace('ALERTA:', '')}. Boletim das {hora.replace(':', ' e ')}. Acompanhe novas atualizações."
+    fala = f"Atenção, {cidade}! {titulo.replace('ALERTA:', '')}. Boletim das {normalizar_horario_para_voz(hora)}. Acompanhe novas atualizações."
     executar("espeak-ng", "-v", "pt-br", "-s", "150", "-w", str(audio), fala)
     vf = ",".join([
         "scale=1080:1920",
