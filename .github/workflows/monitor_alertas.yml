@@ -44,24 +44,24 @@ jobs:
         id: consulta
         run: |
           python -m tools.alerta_14h
-          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_EVENT_PATH" != "" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "push" && -f "$GITHUB_EVENT_PATH" ]]; then
             if grep -Fq '[publicar-alerta-20-11-2026]' "$GITHUB_EVENT_PATH"; then
               python - <<'PY'
-              import json, os
-              from datetime import datetime
-              from pathlib import Path
-              from zoneinfo import ZoneInfo
-              p = Path('saida/alertas/consulta.json')
-              r = json.loads(p.read_text())
-              agora = datetime.now(ZoneInfo('America/Sao_Paulo'))
-              validos = [e for e in r['eventos'] if datetime.fromisoformat(e['inicio']).date() == agora.date() and datetime.fromisoformat(e['fim']) > agora]
-              r['eventos'] = validos
-              r['publicar'] = bool(validos) and r['oficiais']['completa']
-              p.write_text(json.dumps(r, ensure_ascii=False, indent=2))
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                  print('publicar=' + str(r['publicar']).lower(), file=f)
-              print('Plantão hoje:', len(validos), 'publicar:', r['publicar'])
-              PY
+          import json, os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          p = Path('saida/alertas/consulta.json')
+          r = json.loads(p.read_text())
+          agora = datetime.now(ZoneInfo('America/Sao_Paulo'))
+          validos = [e for e in r['eventos'] if datetime.fromisoformat(e['inicio']).date() == agora.date() and datetime.fromisoformat(e['fim']) > agora]
+          r['eventos'] = validos
+          r['publicar'] = bool(validos) and r['oficiais']['completa']
+          p.write_text(json.dumps(r, ensure_ascii=False, indent=2))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              print('publicar=' + str(r['publicar']).lower(), file=f)
+          print('Plantão hoje:', len(validos), 'publicar:', r['publicar'])
+          PY
             fi
           fi
       - name: Sem risco corroborado
@@ -110,12 +110,14 @@ jobs:
           from pathlib import Path
           p = Path('hyperframes/gerar_hf.py')
           s = p.read_text()
-          antes = """        from src.previsao_rj.editorial.formats import prepare
-        snap, demo = snapshot, False
-        batidas = prepare(snapshot, formato, topic=topico)['beats']"""
-          depois = """        from regional import preparar_boletim
-        snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')
-        demo = False"""
+          a = "        from src.previsao_rj.editorial.formats import prepare"
+          b = "        snap, demo = snapshot, False"
+          c = "        batidas = prepare(snapshot, formato, topic=topico)['beats']"
+          antes = '\n'.join((a, b, c))
+          a2 = "        from regional import preparar_boletim"
+          b2 = "        snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')"
+          c2 = "        demo = False"
+          depois = '\n'.join((a2, b2, c2))
           if antes not in s:
               raise RuntimeError('O motor mudou e o plantão requer revisão')
           s = s.replace(antes, depois)
