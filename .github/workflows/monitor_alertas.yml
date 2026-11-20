@@ -45,7 +45,7 @@ jobs:
         run: |
           python -m tools.alerta_14h
           if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_EVENT_PATH" != "" ]]; then
-            if grep -q '[publicar-alerta-20-11-2026]' "$GITHUB_EVENT_PATH"; then
+            if grep -Fq '[publicar-alerta-20-11-2026]' "$GITHUB_EVENT_PATH"; then
               python - <<'PY'
               import json, os
               from datetime import datetime
@@ -59,7 +59,7 @@ jobs:
               r['publicar'] = bool(validos) and r['oficiais']['completa']
               p.write_text(json.dumps(r, ensure_ascii=False, indent=2))
               with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                  f.write('publicar=' + str(r['publicar']).lower() + '\\n')
+                  print('publicar=' + str(r['publicar']).lower(), file=f)
               print('Plantão hoje:', len(validos), 'publicar:', r['publicar'])
               PY
             fi
