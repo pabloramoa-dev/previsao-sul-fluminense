@@ -2538,11 +2538,107 @@
         "horario_brt": "06:00",
         "cta": "Envia pra quem conhece alguém em Barra do Piraí."
       }
+    },
+    {
+      "media_id": "18001786430840271",
+      "window": "24h",
+      "age_hours": 25.23,
+      "collected_at": "2026-11-20T22:14:36.009988+00:00",
+      "metrics": {
+        "reach": 124,
+        "shares": 2,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 16.13,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Resende: 31 graus amanhã. Bairro em foco: Itapuca.",
+        "cidade_destaque": "Resende",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Porto Real."
+      }
+    },
+    {
+      "media_id": "18023323514730884",
+      "window": "24h",
+      "age_hours": 37.23,
+      "collected_at": "2026-11-20T22:14:36.009988+00:00",
+      "metrics": {
+        "reach": 103,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Itatiaia: 29 graus hoje. Bairro em foco: Vila Odete.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18348729343284973",
+      "window": "72h",
+      "age_hours": 73.23,
+      "collected_at": "2026-11-20T22:14:36.009988+00:00",
+      "metrics": {
+        "reach": 20,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Barra Mansa: 31 graus amanhã. Bairro em foco: Jardim Boa Vista.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Barra do Piraí."
+      }
+    },
+    {
+      "media_id": "18644088922012418",
+      "window": "72h",
+      "age_hours": 85.23,
+      "collected_at": "2026-11-20T22:14:36.009988+00:00",
+      "metrics": {
+        "reach": 108,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Rio Claro: 28 graus hoje. Bairro em foco: Getulândia.",
+        "cidade_destaque": "Rio Claro",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Porto Real."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-19T22:39:47.541430+00:00",
+  "updated_at": "2026-11-20T22:14:36.009988+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-19T22:39:50.330896+00:00"
+  "organicos_atualizados_em_utc": "2026-11-20T22:14:37.736107+00:00"
 }
