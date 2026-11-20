@@ -126,17 +126,10 @@ jobs:
           from pathlib import Path
           p = Path('hyperframes/gerar_hf.py')
           s = p.read_text()
-          a = "        from src.previsao_rj.editorial.formats import prepare"
-          b = "        snap, demo = snapshot, False"
-          c = "        batidas = prepare(snapshot, formato, topic=topico)['beats']"
-          antes = '\n'.join((a, b, c))
-          a2 = "        from regional import preparar_boletim"
-          b2 = "        snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')"
-          c2 = "        demo = False"
-          depois = '\n'.join((a2, b2, c2))
-          if antes not in s:
-              raise RuntimeError('O motor mudou e o plantão requer revisão')
-          s = s.replace(antes, depois)
+          if 'from src.previsao_rj.editorial.formats import prepare' not in s or "batidas = prepare(snapshot, formato, topic=topico)['beats']" not in s:
+              raise RuntimeError('Motor sem ponto de integração esperado')
+          s = s.replace('from src.previsao_rj.editorial.formats import prepare', 'from regional import preparar_boletim')
+          s = s.replace("batidas = prepare(snapshot, formato, topic=topico)['beats']", "snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')")
           s = s.replace("'ceu': ceu_do_dia(locs),", "'ceu': 'tempestade' if not locs else ceu_do_dia(locs),")
           p.write_text(s)
           c = Path('hyperframes/compor.py')
