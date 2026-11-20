@@ -78,14 +78,14 @@ def preparar_aviso_oficial(rel, destino):
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     cidades = ', '.join(aviso['cidades'])
-    legenda = (f"ALERTA AMARELO DO INMET — SUL FLUMINENSE | {rel['data']}\\n\\n"
+    legenda = (f"ALERTA AMARELO DO INMET — SUL FLUMINENSE | {rel['data']}\n\n"
                f"O INMET mantém aviso de perigo potencial de tempestade até {hora} de hoje "
-               f"para: {cidades}.\\n\\n"
+               f"para: {cidades}.\n\n"
                "Possibilidade de chuva entre 20 e 30 mm/h (até 50 mm/dia), rajadas de 40 a 60 km/h "
-               "e queda de granizo. Isto NÃO significa que esses fenômenos ocorrerão em todas as cidades.\\n\\n"
-               "Não se abrigue debaixo de árvores em caso de rajadas. Em emergência: Defesa Civil 199 e Bombeiros 193.\\n"
+               "e queda de granizo. Isto NÃO significa que esses fenômenos ocorrerão em todas as cidades.\n\n"
+               "Não se abrigue debaixo de árvores em caso de rajadas. Em emergência: Defesa Civil 199 e Bombeiros 193.\n"
                f"Fonte: INMET — {aviso['url']}. Emissão do boletim: {aviso['emitido_em']}. "
-               "Este comunicado informa um AVISO OFICIAL, não uma concordância de dois modelos numéricos.\\n"
+               "Este comunicado informa um AVISO OFICIAL, não uma concordância de dois modelos numéricos.\n"
                "@previsaosulflu #AlertaDeTempestade #SulFluminense")
     (destino/'LEGENDA.txt').write_text(legenda, encoding='utf-8')
     bloco = {'date': rel['data'], 'locations': []}
