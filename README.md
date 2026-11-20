@@ -108,3 +108,27 @@ Para avaliar a melhoria, comparar alcance, compartilhamentos por mil pessoas
 alcançadas e seguidores conquistados por Reel quando disponíveis. Os
 insights existentes não comprovam retenção nos três primeiros segundos nem
 a causa do crescimento do perfil do Rio.
+
+### Plantão diário das 14h (Brasília)
+
+`monitor_alertas.yml` consulta diariamente às 17h UTC (14h BRT), nas dez cidades
+regulares, os modelos DWD ICON e NOAA GFS via Open-Meteo. O GitHub pode atrasar
+inícios agendados. Publica **um plantão com Bia no Reels e nos Stories**, somente
+se ambos os modelos indicarem o mesmo risco com janelas sobrepostas nas próximas
+24 horas. Os demais boletins de 6h/18h continuam independentes.
+
+Critérios editoriais conservadores (não equivalem a aviso oficial): temporal
+WMO 95/96/99; granizo somente 96/99 nos dois modelos; chuva >=20 mm/1h,
+>=30 mm/3h ou >=50 mm/24h; rajadas >=60 km/h. Temperatura, calor e chuva comum
+não liberam este plantão. Dados incompletos, falha na API, divergência ou consulta
+com mais de duas horas bloqueiam a publicação. A narração distingue previsão
+de certeza, com cidade, data e janela do evento. Uma possibilidade de granizo
+em apenas um modelo não é anunciada como granizo corroborado.
+
+As evidências e os arquivos ficam no artifact da execução. Os recibos separados
+em `data/alertas_14h_publicados.json` permitem retomar o Story sem duplicar o
+Reel. Falhas de Story fazem o job falhar. Disparo manual começa em `dry_run=true`;
+push roda testes e consulta real, sem render nem publicação. O monitor
+experimental de mudanças bruscas continua apenas produzindo relatórios.
+
+Documentação da fonte: https://open-meteo.com/en/docs

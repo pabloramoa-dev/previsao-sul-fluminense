@@ -1,13 +1,20 @@
-name: Monitor de Alertas — Reel regional (7h–19h BRT)
+name: Alerta SulFlu — checagem diária 14h BRT
 on:
   schedule:
-    - cron: "0 10-22/2 * * *"
+    - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Gerar MP4 e capa sem publicar"
+        description: 'Verificar e renderizar sem publicar'
         type: boolean
         default: true
+  push:
+    paths:
+      - 'tools/alerta_14h.py'
+      - 'tools/publicar_alerta_14h.py'
+      - 'estudio/alerta_regional.py'
+      - 'tests/test_alerta_14h.py'
+      - '.github/workflows/monitor_alertas.yml'
 permissions:
   contents: write
 concurrency:
@@ -16,70 +23,93 @@ concurrency:
 jobs:
   monitorar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
+    env:
+      TZ: America/Sao_Paulo
+      PREVISAO_RJ_HORA_ALVO: '14'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Dependências para previsão, card e Reel
+          python-version: '3.12'
+      - name: Instalar dependências de consulta
+        run: pip install requests
+      - name: Testar bloqueios e retomada
+        run: python -m unittest discover -s tests -p test_alerta_14h.py -v
+      - name: Consultar dois modelos nas dez cidades
+        id: consulta
+        run: python -m tools.alerta_14h
+      - name: Sem risco corroborado
+        if: steps.consulta.outputs.publicar != 'true'
+        run: echo 'Sem risco corroborado. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v4
+        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        with:
+          repository: pabloramoa-dev/previsao-rj
+          ref: 91e8aa72e9947575126a92b53cea8f3c5002fff9
+          path: motor
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        with:
+          node-version: '24'
+      - name: Preparar Bia no estúdio SulFlu
+        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        working-directory: motor
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg espeak-ng fonts-dejavu-core
-          pip install -r requirements.txt
-          python -m playwright install --with-deps chromium
-      - name: Detectar gatilhos reais e produzir Reels de 14s
+          sudo apt-get install -y -q ffmpeg espeak-ng libpango1.0-dev libcairo2-dev pkg-config
+          pip install -r requirements/test.txt -r requirements/characters.txt num2words requests -r ../reels/requirements.txt
+          npm ci --prefix video
+          (cd video && npx --no-install hyperframes browser ensure)
+          git apply ../estudio/regional.patch
+          git apply ../estudio/vozes.patch
+          cp ../estudio/alerta_regional.py hyperframes/regional.py
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('hyperframes/compor.py')
+          s = p.read_text().replace('AMANHÃ NO SUL FLU', 'ALERTA NO SUL FLU').replace('AMANHÃ NO SUL FLUMINENSE', 'PLANTÃO SUL FLUMINENSE').replace('PREVISÃO DAS 18H', 'CHECAGEM DAS 14H')
+          original = '''f'{esc(c["nome"].upper())} <b>{round(c["min"])}°/{round(c["max"])}°</b>' '''.strip()
+          novo = '''f'{esc(c["nome"].upper())} — PREVISÃO DE TEMPO SEVERO' '''.strip()
+          if original not in s:
+              raise RuntimeError('Ticker do estúdio mudou; revisar antes de publicar')
+          s = s.replace(original, novo)
+          p.write_text(s)
+          PY
+      - name: Renderizar somente previsão corroborada
+        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
-            python -m tools.alertas_reel --saida saida/alertas --dry-run
-          else
-            python -m tools.alertas_reel --saida saida/alertas
+          python motor/hyperframes/gerar_hf.py --snapshot saida/alertas/consulta.json --personagem bia --format amanha_no_rio --out "$GITHUB_WORKSPACE/saida/alertas/ALERTA.mp4"
+      - name: Publicar Reel e Story com recibos independentes
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          tag="alerta-sulflu-14h-$GITHUB_RUN_ID"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" saida/alertas/ALERTA.mp4 --title "$tag" --notes 'Plantão com previsão corroborada em dois modelos'
           fi
-      - name: Preservar MP4, capa, legenda e metadados
+          python -m tools.publicar_alerta_14h --consulta saida/alertas/consulta.json --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/ALERTA.mp4" --legenda saida/alertas/LEGENDA.txt
+          gh release delete "$tag" --cleanup-tag --yes
+      - name: Preservar recibos inclusive em falha parcial
+        if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+        run: |
+          if [[ ! -f data/alertas_14h_publicados.json ]]; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/alertas_14h_publicados.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Recibos de Reel e Story do alerta 14h [skip ci]'
+          git pull --rebase && git push
+      - name: Preservar consulta, evidências, vídeo e recibos
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: alertas-sulflu-${{ github.run_id }}
-          path: saida/alertas/
-          if-no-files-found: error
+          name: alerta-14h-${{ github.run_id }}
+          path: |
+            saida/alertas/
+            data/alertas_14h_publicados.json
+          if-no-files-found: warn
           retention-days: 3
-      - name: Publicar somente alertas disparados
-        if: "${{ github.event_name == 'schedule' || inputs.dry_run != true }}"
-        env:
-          GH_TOKEN: "${{ github.token }}"
-          IG_USER_ID: "${{ secrets.IG_USER_ID }}"
-          IG_TOKEN: "${{ secrets.IG_ACCESS_TOKEN }}"
-        run: |
-          shopt -s nullglob
-          metadados=(saida/alertas/alerta_*.json)
-          if (( ${#metadados[@]} == 0 )); then
-            echo "Nenhum alerta válido; nada a publicar"
-            exit 0
-          fi
-          tag="alerta-sulflu-${{ github.run_id }}"
-          arquivos=(saida/alertas/alerta_*.mp4 saida/alertas/alerta_*.jpg)
-          gh release create "$tag" "${arquivos[@]}" --title "$tag" --notes "Reel de alerta Sul Fluminense"
-          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
-          for meta in "${metadados[@]}"; do
-            nome="$(basename "$meta" .json)"
-            python reels/postar_reel.py \
-              --video "$url/$nome.mp4" \
-              --capa-url "$url/$nome.jpg" \
-              --legenda-arquivo "saida/alertas/$nome.txt" \
-              --metadata-arquivo "$meta" \
-              --sem-stories
-          done
-          gh release delete "$tag" --cleanup-tag --yes
-      - name: Salvar antispam e recibos após publicação confirmada
-        if: "${{ success() && (github.event_name == 'schedule' || inputs.dry_run != true) }}"
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/estado.json data/registro_formatos.json || true
-          git diff --cached --quiet && exit 0
-          git commit -m "Estado e recibos de alertas [skip ci]"
-          git pull --rebase && git push
-      - name: Diagnóstico da falha
-        if: failure()
-        run: |
-          echo "Alerta não concluído: veja as etapas e os artifacts desta execução." >> "$GITHUB_STEP_SUMMARY"
-          echo "Nenhum alerta é marcado como publicado sem confirmação da Meta." >> "$GITHUB_STEP_SUMMARY"
