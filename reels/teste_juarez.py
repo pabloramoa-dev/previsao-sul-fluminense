@@ -315,8 +315,8 @@ def crons_ativos(arquivo):
 checar("o juarez.yml tem tres crons redundantes de manha",
        crons_ativos("juarez.yml"), ['- cron: "0 9 * * *"', '- cron: "19 9 * * *"', '- cron: "42 9 * * *"'])
 checar("Ranzinza foi arquivado", os.path.exists(os.path.join(os.path.dirname(WF), "..", "arquivo", "workflows", "ranzinza.yml")), True)
-checar("o monitor de alertas voltou a rodar em horario comercial",
-       crons_ativos("monitor_alertas.yml"), ['- cron: "0 10-22/2 * * *"'])
+checar("o monitor de alertas roda diariamente às 14h BRT",
+       crons_ativos("monitor_alertas.yml"), ["- cron: '0 17 * * *'"])
 # quem publica Reel no perfil do experimento
 publicam_reel = sorted(f for f in os.listdir(WF)
                        if f.endswith(".yml")
