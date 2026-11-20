@@ -298,5 +298,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18001786430840271",
     "publicado_em_utc": "2026-11-19T21:00:59.588778+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Volta Redonda: 32 graus hoje. Bairro em foco: Vila Mury.",
+    "cidade_destaque": "Volta Redonda",
+    "bairro_destaque": "Vila Mury",
+    "cidade_maior_chuva": "Resende",
+    "bairro_maior_chuva": "Itapuca",
+    "maior_chuva_mm": 4.6,
+    "temperatura_destaque": 32,
+    "dia_previsao": "2026-11-20",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Resende.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18138885736774713",
+    "publicado_em_utc": "2026-11-20T09:00:37.843769+00:00"
   }
 ]
