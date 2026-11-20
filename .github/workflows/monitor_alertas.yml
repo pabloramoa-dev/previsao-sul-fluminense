@@ -55,6 +55,22 @@ jobs:
           r = json.loads(p.read_text())
           agora = datetime.now(ZoneInfo('America/Sao_Paulo'))
           validos = [e for e in r['eventos'] if datetime.fromisoformat(e['inicio']).date() == agora.date() and datetime.fromisoformat(e['fim']) > agora]
+          if not validos:
+              avisos = r['oficiais']['fontes']['inmet']['dados']
+              for aviso in avisos:
+                  if aviso.get('fonte') != 'INMET' or aviso.get('evento') != 'Tempestade':
+                      continue
+                  if not (datetime.fromisoformat(aviso['inicio']) <= agora < datetime.fromisoformat(aviso['fim'])):
+                      continue
+                  if not {'Volta Redonda', 'Barra Mansa', 'Resende'}.issubset(set(aviso['cidades'])):
+                      continue
+                  r['modo'] = 'aviso_oficial_inmet'
+                  r['aviso_oficial'] = aviso
+                  r['avisos_oficiais_correspondentes'] = [aviso]
+                  validos = [{'tipo': 'temporal', 'local': 'Sul Fluminense',
+                              'inicio': aviso['inicio'], 'fim': aviso['fim']}]
+                  print('Aviso INMET ativo para hoje: comunicado oficial autorizado')
+                  break
           r['eventos'] = validos
           r['publicar'] = bool(validos) and r['oficiais']['completa']
           p.write_text(json.dumps(r, ensure_ascii=False, indent=2))
