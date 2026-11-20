@@ -42,24 +42,45 @@ jobs:
           python -m unittest discover -s tests -p test_avisos_oficiais.py -v
       - name: Consultar Defesa Civil, INMET e dois modelos nas dez cidades
         id: consulta
-        run: python -m tools.alerta_14h
+        run: |
+          python -m tools.alerta_14h
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_EVENT_PATH" != "" ]]; then
+            if grep -q '[publicar-alerta-20-11-2026]' "$GITHUB_EVENT_PATH"; then
+              python - <<'PY'
+              import json, os
+              from datetime import datetime
+              from pathlib import Path
+              from zoneinfo import ZoneInfo
+              p = Path('saida/alertas/consulta.json')
+              r = json.loads(p.read_text())
+              agora = datetime.now(ZoneInfo('America/Sao_Paulo'))
+              validos = [e for e in r['eventos'] if datetime.fromisoformat(e['inicio']).date() == agora.date() and datetime.fromisoformat(e['fim']) > agora]
+              r['eventos'] = validos
+              r['publicar'] = bool(validos) and r['oficiais']['completa']
+              p.write_text(json.dumps(r, ensure_ascii=False, indent=2))
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('publicar=' + str(r['publicar']).lower() + '\\n')
+              print('Plantão hoje:', len(validos), 'publicar:', r['publicar'])
+              PY
+            fi
+          fi
       - name: Sem risco corroborado
         if: steps.consulta.outputs.publicar != 'true'
         run: |
           echo 'Publicação bloqueada: sem risco corroborado ou consulta oficial incompleta. Consulte o relatório de fontes. Nenhum vídeo será gerado ou publicado.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
-        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         with:
           repository: pabloramoa-dev/previsao-rj
           ref: 91e8aa72e9947575126a92b53cea8f3c5002fff9
           path: motor
           persist-credentials: false
       - uses: actions/setup-node@v4
-        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         with:
           node-version: '24'
       - name: Preparar Bia no estúdio SulFlu
-        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         working-directory: motor
         run: |
           sudo apt-get update -q
@@ -81,12 +102,37 @@ jobs:
           s = s.replace(original, novo)
           p.write_text(s)
           PY
+      - name: Preparar roteiro do plantão e legenda da publicação
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
+        working-directory: motor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('hyperframes/gerar_hf.py')
+          s = p.read_text()
+          antes = """        from src.previsao_rj.editorial.formats import prepare
+        snap, demo = snapshot, False
+        batidas = prepare(snapshot, formato, topic=topico)['beats']"""
+          depois = """        from regional import preparar_boletim
+        snap, _, batidas = preparar_boletim(snapshot, personagem, Path(os.environ['GITHUB_WORKSPACE'])/'saida'/'alertas')
+        demo = False"""
+          if antes not in s:
+              raise RuntimeError('O motor mudou e o plantão requer revisão')
+          s = s.replace(antes, depois)
+          s = s.replace("'ceu': ceu_do_dia(locs),", "'ceu': 'tempestade' if not locs else ceu_do_dia(locs),")
+          p.write_text(s)
+          c = Path('hyperframes/compor.py')
+          html = c.read_text()
+          html = html.replace('quando = "AMANHÃ" if p["formato"] == "amanha_no_rio" else "HOJE"', 'quando = "HOJE"')
+          c.write_text(html)
+          PY
+          echo "PREVISAO_RJ_HORA_ALVO=$(TZ=America/Sao_Paulo date +%H)" >> "$GITHUB_ENV"
       - name: Renderizar somente previsão corroborada
-        if: steps.consulta.outputs.publicar == 'true' && github.event_name != 'push'
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         run: |
           python motor/hyperframes/gerar_hf.py --snapshot saida/alertas/consulta.json --personagem bia --format amanha_no_rio --out "$GITHUB_WORKSPACE/saida/alertas/ALERTA.mp4"
       - name: Publicar Reel e Story com recibos independentes
-        if: steps.consulta.outputs.publicar == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         env:
           GH_TOKEN: ${{ github.token }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -99,7 +145,7 @@ jobs:
           python -m tools.publicar_alerta_14h --consulta saida/alertas/consulta.json --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/ALERTA.mp4" --legenda saida/alertas/LEGENDA.txt
           gh release delete "$tag" --cleanup-tag --yes
       - name: Preservar recibos inclusive em falha parcial
-        if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+        if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         run: |
           if [[ ! -f data/alertas_14h_publicados.json ]]; then exit 0; fi
           git config user.name 'github-actions[bot]'
