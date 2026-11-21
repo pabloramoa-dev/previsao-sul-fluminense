@@ -32,7 +32,7 @@ def preparar_boletim(rel, personagem, destino):
         trechos = resumo(e['local'], grupos=1, locais_por_grupo=2)
         if trechos:
             batidas.append(batida('frase',
-                f"Em {e['local']}, atenção a {trechos}. "
+                f"Atenção em {e['local']}: {trechos}. "
                 "São áreas com histórico de alagamento, não uma cheia confirmada."))
     batidas += [batida('frase', fechamento),
                 batida('cta', 'Compartilhe com quem está nessa região.', chamada='COMPARTILHE')]
