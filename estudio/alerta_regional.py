@@ -101,9 +101,15 @@ def preparar_aviso_oficial(rel, destino):
     fecho = "Compartilhe este aviso com quem mora no Sul Fluminense."
     def b(tipo, fala, **dados):
         return {'tipo': tipo, 'fala': fala, 'legenda': fala, 'dados': dados}
+    # Rodízio editorial ENTRE municípios cobertos pelo aviso; a escolha não
+    # significa maior risco na cidade sorteada. Uma área por vídeo para ser curto.
+    municipio_foco = nomes[int(rel['data'][-2:]) % len(nomes)]
+    trecho_foco = resumo(municipio_foco, grupos=1, locais_por_grupo=2)
+    contexto = (f"Em {municipio_foco}, atenção a {trecho_foco}. "
+                "É histórico de alagamento, não cheia confirmada. Outros locais na legenda.")
     batidas = [b('frase', abertura), b('alerta', detalhe, titulo='ALERTA AMARELO DO INMET',
                  detalhe='RISCO DE TEMPESTADE'),
-               b('frase', 'Em áreas ribeirinhas e bairros com histórico de alagamentos, redobre a atenção. Confira os locais na legenda.'),
+               b('frase', contexto),
                b('frase', cautela), b('cta', fecho, chamada='COMPARTILHE')]
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
