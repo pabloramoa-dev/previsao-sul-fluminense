@@ -5,7 +5,7 @@ alertas.py - Deteccao de variacao brusca do tempo + gatilho "choveu quanto".
 
 Thresholds (os NUMEROS moram em limiares.py, na raiz do repo, desde
 2026-09-04; aqui fica so a descricao do que cada um significa):
-- Queda ou subida >= 6C em relacao a leitura anterior (estado.json)
+- Queda >= 6C em relacao a leitura anterior (estado.json)
 - Chuva forte: prob > 70% e > 10mm nas proximas 3h, ausente na previsao da manha
 - Vento forte (rajadas a 10m >= 50 km/h) previsto
 - Weathercode de tempestade (95-99) nas proximas horas
@@ -52,7 +52,6 @@ SEVERIDADE = {
     "vento": 3,
     "chuva_forte": 2,
     "queda_temperatura": 1,
-    "subida_temperatura": 1,
 }
 
 
@@ -140,14 +139,12 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
         ventos = [v for v in prox["vento"] if v is not None]
         codes = [x for x in prox["code"] if x is not None]
 
-        # 1. Variacao de temperatura vs leitura anterior
+        # 1. Queda de temperatura vs leitura anterior
         anterior = leitura_anterior.get(c.nome)
         if anterior is not None and temps:
             delta = temps[0] - anterior
             if delta <= -DELTA_TEMP:
                 afetadas.setdefault("queda_temperatura", []).append(c.nome)
-            elif delta >= DELTA_TEMP:
-                afetadas.setdefault("subida_temperatura", []).append(c.nome)
 
         # 2. Chuva forte proximas 3h
         if probs and mms and max(probs) > PROB_CHUVA_FORTE and sum(mms) > MM_CHUVA_FORTE:
@@ -163,14 +160,12 @@ def detectar_alertas(cidades) -> list[dict[str, Any]]:
 
     detalhes = {
         "queda_temperatura": "Queda brusca de temperatura nas próximas horas",
-        "subida_temperatura": "Elevação brusca de temperatura nas próximas horas",
         "chuva_forte": "Chuva forte prevista para as próximas 3h",
         "vento": "Rajadas de vento previstas de pelo menos 50 km/h",
         "tempestade": "Risco de tempestade nas próximas horas",
     }
     titulos = {
         "queda_temperatura": "ALERTA: QUEDA BRUSCA DE TEMPERATURA",
-        "subida_temperatura": "ALERTA: CALOR CHEGANDO COM FORÇA",
         "chuva_forte": "ALERTA: CHUVA FORTE A CAMINHO",
         "vento": "ALERTA: VENTO FORTE",
         "tempestade": "ALERTA: RISCO DE TEMPESTADE",
