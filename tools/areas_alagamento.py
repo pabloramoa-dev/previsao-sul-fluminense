@@ -70,7 +70,10 @@ def resumo(cidade: str, *, grupos: int = 1, locais_por_grupo: int = 2) -> str:
     """Texto compacto: localidade e curso d'água, SEM afirmar alagamento atual."""
     partes = []
     for rio, locais, _ in pontos(cidade)[:grupos]:
-        partes.append(f"{', '.join(locais[:locais_por_grupo])} (entorno de {rio})")
+        prep = ('da' if rio.startswith('drenagem ')
+                else 'dos' if rio.startswith(('Rios ', "cursos d'água"))
+                else 'do')
+        partes.append(f"{', '.join(locais[:locais_por_grupo])} (perto {prep} {rio})")
     return "; ".join(partes)
 
 
