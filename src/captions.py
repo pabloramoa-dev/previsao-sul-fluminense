@@ -115,17 +115,15 @@ def caption_noite(data_extenso: str, cidades: list, pergunta: str) -> str:
 
 
 def caption_alerta(tipo: str, detalhe: str, cidades_afetadas: list) -> str:
-    """tipo: queda_temperatura, subida_temperatura, chuva_forte, vento, tempestade."""
+    """tipo: queda_temperatura, chuva_forte, vento, tempestade."""
     titulos = {
         "queda_temperatura": "ALERTA: QUEDA BRUSCA DE TEMPERATURA",
-        "subida_temperatura": "ALERTA: CALOR CHEGANDO COM FORÇA",
         "chuva_forte": "ALERTA: CHUVA FORTE A CAMINHO",
         "vento": "ALERTA: RAJADAS DE VENTO",
         "tempestade": "ALERTA: RISCO DE TEMPESTADE",
     }
     dicas = {
         "queda_temperatura": "Separa o casaco e se agasalha bem!",
-        "subida_temperatura": "Hidrate-se e evite o sol do meio-dia!",
         "chuva_forte": "Evite áreas de alagamento e atenção no trânsito!",
         "vento": "Cuidado com estruturas soltas e árvores!",
         "tempestade": "Se possível, evite se deslocar durante a tempestade!",
