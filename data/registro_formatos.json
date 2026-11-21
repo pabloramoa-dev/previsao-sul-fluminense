@@ -332,5 +332,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "17921811159539583",
     "publicado_em_utc": "2026-11-20T21:01:09.362453+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Porto Real: 31 graus amanhã. Bairro em foco: Bulhões.",
+    "cidade_destaque": "Porto Real",
+    "bairro_destaque": "Bulhões",
+    "cidade_maior_chuva": "Barra do Piraí",
+    "bairro_maior_chuva": "Areal",
+    "maior_chuva_mm": 10.4,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-22",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Barra do Piraí.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18115711706225138",
+    "publicado_em_utc": "2026-11-21T21:00:39.902630+00:00"
   }
 ]
