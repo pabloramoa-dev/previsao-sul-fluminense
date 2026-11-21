@@ -29,6 +29,8 @@ jobs:
     env:
       TZ: America/Sao_Paulo
       PREVISAO_RJ_HORA_ALVO: '14'
+      # O estúdio copiado de previsao-rj precisa ler a base regional do SulFlu.
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
