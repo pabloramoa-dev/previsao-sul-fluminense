@@ -107,7 +107,8 @@ class Alertas(unittest.TestCase):
             self.assertIn('Nova Esperança', legenda)
             self.assertIn('Parque Ipiranga', legenda)
             self.assertIn('NÃO há confirmação de transbordamento', legenda)
-            self.assertIn('histórico de alagamentos', ' '.join(b['fala'] for b in batidas))
+            self.assertIn('histórico de alagamento', ' '.join(b['fala'] for b in batidas))
+            self.assertIn('não cheia confirmada', ' '.join(b['fala'] for b in batidas))
 
     def test_story_retomado_sem_duplicar_reel(self):
         with tempfile.TemporaryDirectory() as d, patch.object(pub, 'ESTADO', Path(d)/'recibos.json'), patch.object(pub, 'validar'), patch.dict('os.environ', {'IG_USER_ID':'user', 'IG_TOKEN':'fake'}), patch.object(pub, '_post', return_value={'id':'container'}), patch.object(pub, 'esperar_container'), patch('reels.postar_reel._get', return_value={'status_code':'FINISHED'}), patch.object(pub, 'publicar_com_retentativa', side_effect=[{'id':'reel'}, RuntimeError('story falhou'), {'id':'story'}]) as enviar:
