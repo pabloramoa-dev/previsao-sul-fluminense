@@ -47,7 +47,9 @@ def preparar_boletim(rel, personagem, destino):
         if ev['tipo'] not in tipos:
             tipos.append(ev['tipo'])
     for nome, tipos in por_cidade.items():
-        linhas.append(f"{nome}: {', '.join(NOMES[t] for t in tipos)}")
+        principais = ', '.join(NOMES[t] for t in tipos[:2])
+        extra = f" (+{len(tipos)-2} outros sinais)" if len(tipos) > 2 else ""
+        linhas.append(f"{nome}: {principais}{extra}")
     # Legenda: explicitar rios/bairros por MUNICÍPIO, sem misturar com a previsão
     # de outra cidade e sem prometer que haverá alagamento.
     if cidades_chuva:
