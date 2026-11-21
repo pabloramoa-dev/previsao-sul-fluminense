@@ -28,7 +28,7 @@ def preparar_boletim(rel, personagem, destino):
     # Só nomear bairros quando houver CHUVA INTENSA confirmada na mesma cidade
     # pelos dois modelos (não basta WMO de tempestade ou chuva em outra cidade).
     cidades_chuva = cidades_com_chuva_intensa(rel['eventos'])
-    if e['local'] in cidades_chuva and e['tipo'] in ('temporal', 'chuva'):
+    if e['local'] in cidades_chuva:
         trechos = resumo(e['local'], grupos=1, locais_por_grupo=2)
         if trechos:
             batidas.append(batida('frase',
