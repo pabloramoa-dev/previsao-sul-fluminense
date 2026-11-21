@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import patch
 from tools.alerta_14h import TZ, horas, sinais, confirmar, validar
 from tools import publicar_alerta_14h as pub
-from estudio.alerta_regional import preparar_boletim
+from estudio.alerta_regional import preparar_boletim, preparar_aviso_oficial
+from tools.areas_alagamento import PONTOS, resumo, cidades_com_chuva_intensa
 
 AGORA = datetime(2026, 11, 20, 14, tzinfo=TZ)
 
@@ -55,6 +56,59 @@ class Alertas(unittest.TestCase):
             self.assertIn('não uma certeza', ' '.join(b['fala'] for b in batidas))
             self.assertIn('Volta Redonda', Path(d, 'LEGENDA.txt').read_text())
             with self.assertRaises(ValueError): preparar_boletim({'publicar': False}, 'bia', d)
+    def test_base_hidrologica_cobre_dez_cidades_sem_inventar_risco_bairro(self):
+        self.assertEqual(len(PONTOS), 10)
+        self.assertIn('Vila Santa Cecília', resumo('Volta Redonda'))
+        self.assertIn('Ribeirão dos Quatis', resumo('Quatis'))
+        self.assertNotIn('Jardim Real', resumo('Porto Real'))
+        self.assertEqual(resumo('Cidade inexistente'), '')
+
+    def test_sem_alto_volume_nao_citar_bairros_no_video(self):
+        with tempfile.TemporaryDirectory() as d:
+            _, _, batidas = preparar_boletim(relatorio(), 'bia', d)
+            texto = ' '.join(b['fala'] for b in batidas)
+            self.assertNotIn('Córrego Secades', texto)
+            self.assertNotIn('Vila Santa Cecília', texto)
+            self.assertNotIn('Áreas historicamente', Path(d, 'LEGENDA.txt').read_text())
+
+    def test_alto_volume_mesma_cidade_libera_contexto_nao_cheia(self):
+        rel = relatorio()
+        rel['eventos'] += confirmar(eventos(mm=20), eventos(mm=20), 'Volta Redonda')
+        with tempfile.TemporaryDirectory() as d:
+            _, _, batidas = preparar_boletim(rel, 'bia', d)
+            texto = ' '.join(b['fala'] for b in batidas)
+            legenda = Path(d, 'LEGENDA.txt').read_text()
+            self.assertIn('Vila Santa Cecília', texto)
+            self.assertIn('não uma cheia confirmada', texto)
+            self.assertIn('Córrego Secades', legenda)
+            self.assertIn('NÃO alagamentos confirmados', legenda)
+
+    def test_chuva_outra_cidade_nao_empresta_bairro_ao_destaque(self):
+        rel = relatorio()
+        rel['eventos'] += confirmar(eventos(mm=20), eventos(mm=20), 'Barra Mansa')
+        with tempfile.TemporaryDirectory() as d:
+            _, _, batidas = preparar_boletim(rel, 'bia', d)
+            self.assertNotIn('Vila Santa Cecília', ' '.join(b['fala'] for b in batidas))
+            legenda = Path(d, 'LEGENDA.txt').read_text()
+            self.assertIn('Barra Mansa: Nova Esperança', legenda)
+            self.assertNotIn('Volta Redonda: Vila Santa Cecília', legenda)
+
+    def test_alerta_oficial_identifica_historico_sem_afirmar_transbordo(self):
+        rel = dict(data='2026-11-20', publicar=True, modo='aviso_oficial_inmet',
+                   oficiais={'completa': True},
+                   aviso_oficial={'fonte': 'INMET', 'evento': 'Tempestade',
+                     'fim': '2026-11-20T23:00:00-03:00',
+                     'emitido_em': '2026-11-20T14:00:00-03:00',
+                     'url': 'https://avisos.inmet.gov.br/',
+                     'cidades': ['Volta Redonda', 'Barra Mansa', 'Resende']})
+        with tempfile.TemporaryDirectory() as d:
+            _, _, batidas = preparar_aviso_oficial(rel, d)
+            legenda = Path(d, 'LEGENDA.txt').read_text()
+            self.assertIn('Nova Esperança', legenda)
+            self.assertIn('Parque Ipiranga', legenda)
+            self.assertIn('NÃO há confirmação de transbordamento', legenda)
+            self.assertIn('histórico de alagamentos', ' '.join(b['fala'] for b in batidas))
+
     def test_story_retomado_sem_duplicar_reel(self):
         with tempfile.TemporaryDirectory() as d, patch.object(pub, 'ESTADO', Path(d)/'recibos.json'), patch.object(pub, 'validar'), patch.dict('os.environ', {'IG_USER_ID':'user', 'IG_TOKEN':'fake'}), patch.object(pub, '_post', return_value={'id':'container'}), patch.object(pub, 'esperar_container'), patch('reels.postar_reel._get', return_value={'status_code':'FINISHED'}), patch.object(pub, 'publicar_com_retentativa', side_effect=[{'id':'reel'}, RuntimeError('story falhou'), {'id':'story'}]) as enviar:
             with self.assertRaises(RuntimeError): pub.publicar(relatorio(), 'https://example.test/video.mp4', 'Previsão')
