@@ -39,12 +39,15 @@ def preparar_boletim(rel, personagem, destino):
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     linhas = [abertura, detalhe, fechamento, '', 'Outras previsões corroboradas:']
-    vistos = set()
+    # Resumir por cidade para evitar legendas com dezenas de linhas duplicadas
+    # e respeitar o limite de 2.200 caracteres do Instagram.
+    por_cidade = {}
     for ev in rel['eventos']:
-        chave = ev['local'], ev['tipo']
-        if chave in vistos: continue
-        vistos.add(chave)
-        linhas.append(f"{ev['local']}: {NOMES[ev['tipo']]}")
+        tipos = por_cidade.setdefault(ev['local'], [])
+        if ev['tipo'] not in tipos:
+            tipos.append(ev['tipo'])
+    for nome, tipos in por_cidade.items():
+        linhas.append(f"{nome}: {', '.join(NOMES[t] for t in tipos)}")
     # Legenda: explicitar rios/bairros por MUNICÍPIO, sem misturar com a previsão
     # de outra cidade e sem prometer que haverá alagamento.
     if cidades_chuva:
