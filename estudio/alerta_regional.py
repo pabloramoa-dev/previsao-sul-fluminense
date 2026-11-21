@@ -2,6 +2,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from tools.areas_alagamento import resumo, cidades_com_chuva_intensa
 
 NOMES = {'temporal': 'risco de temporal', 'chuva': 'chuva intensa',
          'granizo': 'possibilidade de granizo', 'vento': 'ventos fortes'}
@@ -23,9 +24,18 @@ def preparar_boletim(rel, personagem, destino):
     def batida(tipo, fala, **dados):
         return dict(tipo=tipo, fala=fala, legenda=fala, dados=dados)
     batidas = [batida('frase', abertura),
-               batida('alerta', detalhe, titulo=NOMES[e['tipo']], detalhe=e['local']),
-               batida('frase', fechamento),
-               batida('cta', 'Compartilhe com quem está nessa região.', chamada='COMPARTILHE')]
+               batida('alerta', detalhe, titulo=NOMES[e['tipo']], detalhe=e['local'])]
+    # Só nomear bairros quando houver CHUVA INTENSA confirmada na mesma cidade
+    # pelos dois modelos (não basta WMO de tempestade ou chuva em outra cidade).
+    cidades_chuva = cidades_com_chuva_intensa(rel['eventos'])
+    if e['local'] in cidades_chuva and e['tipo'] in ('temporal', 'chuva'):
+        trechos = resumo(e['local'], grupos=1, locais_por_grupo=2)
+        if trechos:
+            batidas.append(batida('frase',
+                f"Em {e['local']}, atenção a {trechos}. "
+                "São áreas com histórico de alagamento, não uma cheia confirmada."))
+    batidas += [batida('frase', fechamento),
+                batida('cta', 'Compartilhe com quem está nessa região.', chamada='COMPARTILHE')]
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     linhas = [abertura, detalhe, fechamento, '', 'Outras previsões corroboradas:']
@@ -35,6 +45,19 @@ def preparar_boletim(rel, personagem, destino):
         if chave in vistos: continue
         vistos.add(chave)
         linhas.append(f"{ev['local']}: {NOMES[ev['tipo']]}")
+    # Legenda: explicitar rios/bairros por MUNICÍPIO, sem misturar com a previsão
+    # de outra cidade e sem prometer que haverá alagamento.
+    if cidades_chuva:
+        linhas += ['', 'Áreas historicamente afetadas ou suscetíveis a cheias (atenção preventiva):']
+        por_cidade = list(dict.fromkeys(ev['local'] for ev in rel['eventos']
+                                       if ev['local'] in cidades_chuva))
+        for nome in por_cidade[:6]:
+            trecho = resumo(nome, grupos=2, locais_por_grupo=3)
+            if trecho:
+                linhas.append(f"{nome}: {trecho}.")
+        if len(por_cidade) > 6:
+            linhas.append('Outros municípios também têm chuva intensa prevista; consulte a Defesa Civil local.')
+        linhas.append('São históricos/pontos de atenção, NÃO alagamentos confirmados nem previsão por bairro.')
     oficiais = rel.get('avisos_oficiais_correspondentes', [])
     if oficiais:
         linhas += ['', 'Avisos oficiais válidos para os eventos citados:']
@@ -74,7 +97,9 @@ def preparar_aviso_oficial(rel, destino):
     def b(tipo, fala, **dados):
         return {'tipo': tipo, 'fala': fala, 'legenda': fala, 'dados': dados}
     batidas = [b('frase', abertura), b('alerta', detalhe, titulo='ALERTA AMARELO DO INMET',
-                 detalhe='RISCO DE TEMPESTADE'), b('frase', cautela), b('cta', fecho, chamada='COMPARTILHE')]
+                 detalhe='RISCO DE TEMPESTADE'),
+               b('frase', 'Em áreas ribeirinhas e bairros com histórico de alagamentos, redobre a atenção. Confira os locais na legenda.'),
+               b('frase', cautela), b('cta', fecho, chamada='COMPARTILHE')]
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     cidades = ', '.join(aviso['cidades'])
@@ -87,6 +112,14 @@ def preparar_aviso_oficial(rel, destino):
                f"Fonte: INMET — {aviso['url']}. Emissão do boletim: {aviso['emitido_em']}. "
                "Este comunicado informa um AVISO OFICIAL, não uma concordância de dois modelos numéricos.\n"
                "@previsaosulflu #AlertaDeTempestade #SulFluminense")
+    # Apenas os municípios COBERTOS pelo aviso oficial, e como histórico.
+    historicos = [f"{nome}: {resumo(nome, grupos=2, locais_por_grupo=3)}."
+                  for nome in nomes if resumo(nome)]
+    if historicos:
+        legenda += ("\n\nPONTOS HISTORICAMENTE AFETADOS OU SUSCETÍVEIS A ALAGAMENTOS:\n"
+                    + "\n".join(historicos)
+                    + "\nAtenção preventiva: NÃO há confirmação de transbordamento nesses locais."
+                    + "\nAcompanhe orientações oficiais e não atravesse ruas alagadas.")
     (destino/'LEGENDA.txt').write_text(legenda, encoding='utf-8')
     bloco = {'date': rel['data'], 'locations': []}
     return {'forecast': {'today': bloco, 'tomorrow': bloco}}, [], batidas
