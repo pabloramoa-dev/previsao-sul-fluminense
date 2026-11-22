@@ -366,5 +366,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18363314242221428",
     "publicado_em_utc": "2026-11-22T09:00:36.519361+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Rio Claro: 31 graus amanhã. Bairro em foco: Centro.",
+    "cidade_destaque": "Rio Claro",
+    "bairro_destaque": "Centro",
+    "cidade_maior_chuva": "Rio Claro",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 14.1,
+    "temperatura_destaque": 31,
+    "dia_previsao": "2026-11-23",
+    "quando": "amanhã",
+    "cta": "Envia pra quem mora em Rio Claro e precisa se preparar pra chuva.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18154385782528872",
+    "publicado_em_utc": "2026-11-22T21:00:51.406659+00:00"
   }
 ]
