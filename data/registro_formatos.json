@@ -349,5 +349,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18115711706225138",
     "publicado_em_utc": "2026-11-21T21:00:39.902630+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Barra Mansa: 32 graus hoje. Bairro em foco: Vila Coringa.",
+    "cidade_destaque": "Barra Mansa",
+    "bairro_destaque": "Vila Coringa",
+    "cidade_maior_chuva": "Pinheiral",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 19.4,
+    "temperatura_destaque": 32,
+    "dia_previsao": "2026-11-22",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Pinheiral.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18363314242221428",
+    "publicado_em_utc": "2026-11-22T09:00:36.519361+00:00"
   }
 ]
