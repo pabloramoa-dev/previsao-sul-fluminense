@@ -1,7 +1,7 @@
-name: Alerta SulFlu — checagem diária 11h BRT
+name: Alerta severo diário — 10h40 BRT
 on:
   schedule:
-    - cron: '0 14 * * *'
+    - cron: '40 13 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
