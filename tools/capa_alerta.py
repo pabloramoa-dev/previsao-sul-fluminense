@@ -14,6 +14,7 @@ EVENTOS = {
     "chuva": ("CHUVA", "INTENSA", (80, 210, 255)),
     "granizo": ("RISCO DE", "GRANIZO", (166, 204, 255)),
     "vento": ("VENTOS", "FORTES", (105, 226, 198)),
+    "ciclone": ("AVISO DE", "CICLONE", (255, 195, 77)),
 }
 
 
@@ -33,9 +34,12 @@ def detalhes(rel):
         raise ValueError("Sem alerta confirmado para criar capa")
     if rel.get("modo") == "aviso_oficial_inmet":
         av = rel.get("aviso_oficial") or {}
-        if av.get("fonte") != "INMET" or av.get("evento") != "Tempestade":
+        if av.get("fonte") != "INMET" or (av.get("evento") != "Tempestade" and av.get("tipo") != "ciclone"):
             raise ValueError("Aviso INMET inválido")
         fim = datetime.fromisoformat(av["fim"])
+        if av.get("tipo") == "ciclone":
+            return ("AVISO DE", "CICLONE", (255, 195, 77),
+                    "SUL FLUMINENSE", fim, "AVISO OFICIAL DO INMET")
         return ("ALERTA", "AMARELO", (255, 195, 77),
                 "SUL FLUMINENSE", fim, "AVISO OFICIAL DO INMET")
     eventos = rel.get("eventos") or []
