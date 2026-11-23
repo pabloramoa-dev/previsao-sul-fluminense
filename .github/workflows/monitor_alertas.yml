@@ -14,6 +14,7 @@ on:
       - 'tools/avisos_oficiais.py'
       - 'tests/test_avisos_oficiais.py'
       - 'tools/publicar_alerta_14h.py'
+      - 'tools/capa_alerta.py'
       - 'estudio/alerta_regional.py'
       - 'tests/test_alerta_14h.py'
       - '.github/workflows/monitor_alertas.yml'
@@ -37,7 +38,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Instalar dependências de consulta
-        run: pip install requests
+        run: pip install requests pillow
       - name: Testar bloqueios e retomada
         run: |
           python -m unittest discover -s tests -p test_alerta_14h.py -v
@@ -135,6 +136,11 @@ jobs:
         if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         run: |
           python motor/hyperframes/gerar_hf.py --snapshot saida/alertas/consulta.json --personagem bia --format amanha_no_rio --out "$GITHUB_WORKSPACE/saida/alertas/ALERTA.mp4"
+      - name: Gerar capa específica para a grade do Instagram
+        if: steps.consulta.outputs.publicar == 'true' && (github.event_name != 'push' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
+        run: |
+          python -m tools.capa_alerta --consulta saida/alertas/consulta.json --saida saida/alertas/CAPA_ALERTA.jpg
+          test -s saida/alertas/CAPA_ALERTA.jpg
       - name: Publicar Reel e Story com recibos independentes
         if: steps.consulta.outputs.publicar == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
         env:
@@ -144,9 +150,11 @@ jobs:
         run: |
           tag="alerta-sulflu-14h-$GITHUB_RUN_ID"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" saida/alertas/ALERTA.mp4 --title "$tag" --notes 'Plantão com previsão corroborada em dois modelos'
+            gh release create "$tag" saida/alertas/ALERTA.mp4 saida/alertas/CAPA_ALERTA.jpg --title "$tag" --notes 'Plantão SulFlu com capa específica para a grade do Instagram'
+          else
+            gh release upload "$tag" saida/alertas/CAPA_ALERTA.jpg --clobber
           fi
-          python -m tools.publicar_alerta_14h --consulta saida/alertas/consulta.json --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/ALERTA.mp4" --legenda saida/alertas/LEGENDA.txt
+          python -m tools.publicar_alerta_14h --consulta saida/alertas/consulta.json --video "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/ALERTA.mp4" --legenda saida/alertas/LEGENDA.txt --capa "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/CAPA_ALERTA.jpg"
           gh release delete "$tag" --cleanup-tag --yes
       - name: Preservar recibos inclusive em falha parcial
         if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publicar-alerta-20-11-2026]')))
