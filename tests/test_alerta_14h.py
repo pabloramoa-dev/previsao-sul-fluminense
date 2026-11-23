@@ -7,6 +7,8 @@ from pathlib import Path
 from unittest.mock import patch
 from tools.alerta_14h import TZ, horas, sinais, confirmar, validar
 from tools import publicar_alerta_14h as pub
+from tools.capa_alerta import detalhes, gerar_capa
+from PIL import Image
 from estudio.alerta_regional import preparar_boletim, preparar_aviso_oficial
 from tools.areas_alagamento import PONTOS, resumo, cidades_com_chuva_intensa
 
@@ -110,12 +112,36 @@ class Alertas(unittest.TestCase):
             self.assertIn('histórico de alagamento', ' '.join(b['fala'] for b in batidas))
             self.assertIn('não cheia confirmada', ' '.join(b['fala'] for b in batidas))
 
+    def test_capa_da_grade_legivel_e_baseada_no_evento_real(self):
+        rel = relatorio()
+        a, b, _, cidade, fim, base = detalhes(rel)
+        self.assertEqual((a, b), ('RISCO DE', 'TEMPORAL'))
+        self.assertEqual(cidade, 'VOLTA REDONDA')
+        self.assertEqual(base, 'PREVISÃO • 2 MODELOS')
+        with tempfile.TemporaryDirectory() as d:
+            jpg = gerar_capa(rel, Path(d) / 'CAPA_ALERTA.jpg')
+            with Image.open(jpg) as capa:
+                self.assertEqual(capa.format, 'JPEG')
+                self.assertEqual(capa.size, (1080, 1920))
+            self.assertGreater(jpg.stat().st_size, 18000)
+
+    def test_capa_rejeita_risco_sem_confirmacao_e_inmet_errado(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(ValueError):
+                gerar_capa({'publicar': False}, Path(d) / 'capa.jpg')
+            with self.assertRaises(ValueError):
+                detalhes({'publicar': True, 'modo': 'aviso_oficial_inmet',
+                          'aviso_oficial': {'fonte': 'OUTRA', 'evento': 'Tempestade'}})
+
     def test_story_retomado_sem_duplicar_reel(self):
-        with tempfile.TemporaryDirectory() as d, patch.object(pub, 'ESTADO', Path(d)/'recibos.json'), patch.object(pub, 'validar'), patch.dict('os.environ', {'IG_USER_ID':'user', 'IG_TOKEN':'fake'}), patch.object(pub, '_post', return_value={'id':'container'}), patch.object(pub, 'esperar_container'), patch('reels.postar_reel._get', return_value={'status_code':'FINISHED'}), patch.object(pub, 'publicar_com_retentativa', side_effect=[{'id':'reel'}, RuntimeError('story falhou'), {'id':'story'}]) as enviar:
-            with self.assertRaises(RuntimeError): pub.publicar(relatorio(), 'https://example.test/video.mp4', 'Previsão')
+        with tempfile.TemporaryDirectory() as d, patch.object(pub, 'ESTADO', Path(d)/'recibos.json'), patch.object(pub, 'validar'), patch.dict('os.environ', {'IG_USER_ID':'user', 'IG_TOKEN':'fake'}), patch.object(pub, '_post', return_value={'id':'container'}) as enviar_container, patch.object(pub, 'esperar_container'), patch('reels.postar_reel._get', return_value={'status_code':'FINISHED'}), patch.object(pub, 'publicar_com_retentativa', side_effect=[{'id':'reel'}, RuntimeError('story falhou'), {'id':'story'}]) as enviar:
+            with self.assertRaises(RuntimeError): pub.publicar(relatorio(), 'https://example.test/video.mp4', 'Previsão', 'https://example.test/CAPA_ALERTA.jpg')
             self.assertEqual(json.loads(pub.ESTADO.read_text())['2026-11-20']['REELS'], 'reel')
-            pub.publicar(relatorio(), 'https://example.test/video.mp4', 'Previsão')
+            pub.publicar(relatorio(), 'https://example.test/video.mp4', 'Previsão', 'https://example.test/CAPA_ALERTA.jpg')
             self.assertEqual(enviar.call_count, 3)
+            criacoes = [call.args[1] for call in enviar_container.call_args_list if call.args[1].get('media_type')]
+            self.assertEqual(criacoes[0]['cover_url'], 'https://example.test/CAPA_ALERTA.jpg')
+            self.assertNotIn('cover_url', criacoes[1])
             self.assertEqual(json.loads(pub.ESTADO.read_text())['2026-11-20']['STORIES'], 'story')
 
 if __name__ == '__main__': unittest.main()
