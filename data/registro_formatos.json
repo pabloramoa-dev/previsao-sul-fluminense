@@ -383,5 +383,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18154385782528872",
     "publicado_em_utc": "2026-11-22T21:00:51.406659+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Pinheiral: 33 graus hoje. Bairro em foco: Centro.",
+    "cidade_destaque": "Pinheiral",
+    "bairro_destaque": "Centro",
+    "cidade_maior_chuva": "Volta Redonda",
+    "bairro_maior_chuva": "São Geraldo",
+    "maior_chuva_mm": 21.7,
+    "temperatura_destaque": 33,
+    "dia_previsao": "2026-11-23",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Volta Redonda.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18089609015313498",
+    "publicado_em_utc": "2026-11-23T09:00:36.402128+00:00"
   }
 ]
