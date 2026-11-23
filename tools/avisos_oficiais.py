@@ -67,7 +67,7 @@ def ler_cap(conteudo, cidades, agora):
         locais=municipios(params.get('Municipios',''),cidades)
         if not locais: continue
         evento=normalizar(dado('event'))
-        tipo={'TEMPESTADE':'temporal','CHUVAS INTENSAS':'chuva','ACUMULADO DE CHUVA':'chuva','VENDAVAL':'vento','GRANIZO':'granizo'}.get(evento)
+        tipo={'TEMPESTADE':'temporal','CHUVAS INTENSAS':'chuva','ACUMULADO DE CHUVA':'chuva','VENDAVAL':'vento','GRANIZO':'granizo', 'CICLONE':'ciclone', 'CICLONE EXTRATROPICAL':'ciclone', 'CICLONE TROPICAL':'ciclone', 'CICLONE SUBTROPICAL':'ciclone'}.get(evento)
         if not tipo: continue
         link=dado('web')
         if urlparse(link).hostname != 'avisos.inmet.gov.br': continue
