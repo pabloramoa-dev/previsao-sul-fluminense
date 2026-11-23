@@ -5,7 +5,7 @@ from pathlib import Path
 from tools.areas_alagamento import resumo, cidades_com_chuva_intensa
 
 NOMES = {'temporal': 'risco de temporal', 'chuva': 'chuva intensa',
-         'granizo': 'possibilidade de granizo', 'vento': 'ventos fortes'}
+         'granizo': 'possibilidade de granizo', 'vento': 'ventos fortes', 'ciclone': 'aviso de ciclone'}
 
 def preparar_boletim(rel, personagem, destino):
     if rel.get('modo') == 'aviso_oficial_inmet':
@@ -77,11 +77,45 @@ def preparar_boletim(rel, personagem, destino):
     cidades = [{'nome': e['local'], 'cond': 'chuva'}]
     return {'forecast': {'today': bloco, 'tomorrow': bloco}}, cidades, batidas
 
+def preparar_ciclone_oficial(rel, destino):
+    """Roteiro restrito ao texto e validade de um aviso INMET sobre ciclone."""
+    aviso = rel['aviso_oficial']
+    if aviso.get('tipo') != 'ciclone' or aviso.get('fonte') != 'INMET':
+        raise ValueError('Ausência de aviso oficial de ciclone')
+    inicio = datetime.fromisoformat(aviso['inicio'])
+    fim = datetime.fromisoformat(aviso['fim'])
+    locais = ', '.join(aviso['cidades'][:5])
+    abertura = (f"Atenção, Sul Fluminense! O INMET emitiu aviso de "
+                f"{aviso['evento'].lower()} para municípios da região.")
+    detalhe = (f"O aviso inclui {locais}, com validade de "
+               f"{inicio:%d/%m às %Hh} até {fim:%d/%m às %Hh}. "
+               "A presença do fenômeno e seus efeitos não são uniformes.")
+    cautela = ("Confira as orientações do INMET e da Defesa Civil. "
+               "Evite áreas expostas a ventos intensos e não atravesse locais alagados.")
+    fecho = "Compartilhe este aviso com quem mora na região."
+    def b(tipo, fala, **dados):
+        return {'tipo':tipo, 'fala':fala, 'legenda':fala, 'dados':dados}
+    batidas = [b('frase',abertura),
+               b('alerta',detalhe,titulo='AVISO OFICIAL DE CICLONE',detalhe='SUL FLUMINENSE'),
+               b('frase',cautela),b('cta',fecho,chamada='COMPARTILHE')]
+    destino = Path(destino)
+    destino.mkdir(parents=True,exist_ok=True)
+    legenda = ('AVISO OFICIAL INMET — CICLONE | SUL FLUMINENSE\\n\\n'
+               + '\\n\\n'.join([abertura,detalhe,cautela,fecho])
+               + f"\\n\\nFonte: {aviso['url']} | Emitido: {aviso['emitido_em']}"
+               + '\\nPrevisão de risco, não confirmação de impacto em cada cidade.'
+               + '\\n@previsaosulflu #AlertaMeteorologico')
+    (destino/'LEGENDA.txt').write_text(legenda,encoding='utf-8')
+    bloco = {'date':rel['data'],'locations':[]}
+    return {'forecast':{'today':bloco,'tomorrow':bloco}}, [], batidas
+
 def preparar_aviso_oficial(rel, destino):
     """Plantão dedicado ao aviso público e válido do INMET, sem inferir ocorrência certa."""
     if not rel.get('publicar') or not rel.get('aviso_oficial'):
         raise ValueError('Sem aviso oficial válido')
     aviso = rel['aviso_oficial']
+    if aviso.get('tipo') == 'ciclone':
+        return preparar_ciclone_oficial(rel, destino)
     fim = datetime.fromisoformat(aviso['fim'])
     if aviso.get('fonte') != 'INMET' or aviso.get('evento') != 'Tempestade':
         raise ValueError('Tipo de comunicado não permitido')
