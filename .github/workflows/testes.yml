@@ -62,7 +62,7 @@ jobs:
         run: python estudio/test_bairros_foco.py
 
       - name: Instalar dependencias leves de roteiros e alertas
-        run: python -m pip install num2words requests
+        run: python -m pip install num2words requests pillow
 
       - name: Validar alertas e pontos historicos de alagamento
         run: python -m unittest discover -s tests -p test_alerta_14h.py -v
