@@ -82,11 +82,23 @@ def verificar(agora=None):
         eventos += confirmar(a, b, cidade['nome'])
     prioridade = {'granizo': 4, 'temporal': 3, 'chuva': 2, 'vento': 1}
     eventos.sort(key=lambda e: (-prioridade[e['tipo']], -e['valor'], e['inicio']))
+    # Um aviso CAP de ciclone vigente na área pode fundamentar o plantão
+    # independentemente dos modelos; nunca deduzir ciclone a partir de vento.
+    aviso_ciclone = next((a for a in oficiais['fontes']['inmet']['dados']
+        if a.get('tipo') == 'ciclone' and a.get('fonte') == 'INMET'
+        and a.get('cidades') and datetime.fromisoformat(a['fim']) > agora
+        and datetime.fromisoformat(a['inicio']) <= agora + timedelta(hours=24)), None)
+    if aviso_ciclone:
+        eventos.insert(0, dict(tipo='ciclone', local=aviso_ciclone['cidades'][0],
+            inicio=aviso_ciclone['inicio'], fim=aviso_ciclone['fim'],
+            aviso_id=aviso_ciclone['id']))
     # Um plantão por dia, foco no evento mais relevante; demais locais na legenda.
     return dict(emitido_em=agora.isoformat(), data=agora.date().isoformat(),
                 fonte=FORECAST_URL, modelos=list(MODELOS), eventos=eventos,
-                publicar=bool(eventos) and oficiais['completa'], cidades_consultadas=len(CIDADES),
-                oficiais=oficiais, avisos_oficiais_correspondentes=correspondentes(eventos, oficiais))
+                publicar=bool(eventos) and oficiais['completa'],
+                modo='aviso_oficial_inmet' if aviso_ciclone else 'dois_modelos',
+                aviso_oficial=aviso_ciclone, cidades_consultadas=len(CIDADES),
+                oficiais=oficiais, avisos_oficiais_correspondentes=([aviso_ciclone] if aviso_ciclone else correspondentes(eventos, oficiais)))
 
 def validar(relatorio, agora=None):
     agora = agora or datetime.now(TZ)
