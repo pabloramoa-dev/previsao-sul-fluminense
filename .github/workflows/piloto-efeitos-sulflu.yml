@@ -1,9 +1,11 @@
 name: PILOTO HyperFrames SulFlu - imagens e voz originais - NAO PUBLICAR
 
 on:
-  push:
-    branches: ['experimento/hf-sulflu-efeitos-20261123']
-    paths: ['.github/workflows/piloto-efeitos-sulflu.yml']
+  pull_request:
+    branches: ['main']
+    paths:
+      - '.github/workflows/piloto-efeitos-sulflu.yml'
+      - 'tools/piloto_hf_efeitos.py'
   workflow_dispatch:
 
 permissions:
