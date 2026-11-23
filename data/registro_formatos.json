@@ -400,5 +400,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18089609015313498",
     "publicado_em_utc": "2026-11-23T09:00:36.402128+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Barra do Piraí: 33 graus amanhã. Bairro em foco: Ponte Preta.",
+    "cidade_destaque": "Barra do Piraí",
+    "bairro_destaque": "Ponte Preta",
+    "cidade_maior_chuva": "Itatiaia",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 11.9,
+    "temperatura_destaque": 33,
+    "dia_previsao": "2026-11-24",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Itatiaia.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18388534351235354",
+    "publicado_em_utc": "2026-11-23T21:00:45.342189+00:00"
   }
 ]
