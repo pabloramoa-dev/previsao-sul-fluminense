@@ -3,14 +3,18 @@ import argparse
 import json
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 from tools.alerta_14h import validar
 from reels.postar_reel import _post, esperar_container, publicar_com_retentativa, validar_legenda
 
 ESTADO = Path('data/alertas_14h_publicados.json')
 
-def publicar(rel, url, legenda):
+def publicar(rel, url, legenda, capa_url):
     validar(rel)
     validar_legenda(legenda)
+    parsed = urlsplit(capa_url)
+    if parsed.scheme != 'https' or not parsed.netloc or not parsed.path.lower().endswith(('.jpg', '.jpeg')):
+        raise ValueError('Reel de alerta exige URL HTTPS de capa JPG pública')
     uid, token = os.environ['IG_USER_ID'], os.environ['IG_TOKEN']
     estado = json.loads(ESTADO.read_text()) if ESTADO.exists() else {}
     dia = rel['data']
@@ -26,7 +30,7 @@ def publicar(rel, url, legenda):
         chave = tipo + '_container'
         if not recibo.get(chave):
             corpo = dict(media_type=tipo, video_url=url, access_token=token)
-            if tipo == 'REELS': corpo.update(caption=legenda, share_to_feed='true')
+            if tipo == 'REELS': corpo.update(caption=legenda, share_to_feed='true', cover_url=capa_url)
             recibo[chave] = _post(f'{uid}/media', corpo)['id']
             salvar()
         from reels.postar_reel import _get
@@ -46,5 +50,6 @@ if __name__ == '__main__':
     ap.add_argument('--consulta', required=True)
     ap.add_argument('--video', required=True)
     ap.add_argument('--legenda', required=True)
+    ap.add_argument('--capa', required=True, help='URL HTTPS pública de CAPA_ALERTA.jpg')
     a = ap.parse_args()
-    publicar(json.loads(Path(a.consulta).read_text()), a.video, Path(a.legenda).read_text())
+    publicar(json.loads(Path(a.consulta).read_text()), a.video, Path(a.legenda).read_text(), a.capa)
