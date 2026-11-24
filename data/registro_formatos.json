@@ -417,5 +417,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18388534351235354",
     "publicado_em_utc": "2026-11-23T21:00:45.342189+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Resende: 29 graus hoje. Bairro em foco: Campos Elíseos.",
+    "cidade_destaque": "Resende",
+    "bairro_destaque": "Campos Elíseos",
+    "cidade_maior_chuva": "Barra Mansa",
+    "bairro_maior_chuva": "Nove de Abril",
+    "maior_chuva_mm": 13.4,
+    "temperatura_destaque": 29,
+    "dia_previsao": "2026-11-24",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Barra Mansa.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18118963547117396",
+    "publicado_em_utc": "2026-11-24T09:00:43.592658+00:00"
   }
 ]
