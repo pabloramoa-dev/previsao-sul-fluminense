@@ -434,5 +434,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18118963547117396",
     "publicado_em_utc": "2026-11-24T09:00:43.592658+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Itatiaia: 32 graus amanhã. Bairro em foco: Fazenda Penedo.",
+    "cidade_destaque": "Itatiaia",
+    "bairro_destaque": "Fazenda Penedo",
+    "cidade_maior_chuva": "Resende",
+    "bairro_maior_chuva": "Cidade Alegria",
+    "maior_chuva_mm": 49.9,
+    "temperatura_destaque": 32,
+    "dia_previsao": "2026-11-25",
+    "quando": "amanhã",
+    "cta": "Envia pra quem conhece alguém em Resende.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18015640791000089",
+    "publicado_em_utc": "2026-11-24T21:00:48.197515+00:00"
   }
 ]
