@@ -2836,11 +2836,141 @@
         "horario_brt": "18:00",
         "cta": "Envia pra quem conhece alguém em Resende."
       }
+    },
+    {
+      "media_id": "18154385782528872",
+      "window": "24h",
+      "age_hours": 29.2,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 47,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Rio Claro: 31 graus amanhã. Bairro em foco: Centro.",
+        "cidade_destaque": "Rio Claro",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem mora em Rio Claro e precisa se preparar pra chuva."
+      }
+    },
+    {
+      "media_id": "17936986020417302",
+      "window": "24h",
+      "age_hours": 32.33,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 128,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 2,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 1,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18363314242221428",
+      "window": "24h",
+      "age_hours": 41.2,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 175,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra Mansa: 32 graus hoje. Bairro em foco: Vila Coringa.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Pinheiral."
+      }
+    },
+    {
+      "media_id": "17921811159539583",
+      "window": "72h",
+      "age_hours": 77.19,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 114,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Piraí: 33 graus amanhã. Bairro em foco: Monumento.",
+        "cidade_destaque": "Piraí",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Barra Mansa."
+      }
+    },
+    {
+      "media_id": "17969082672077660",
+      "window": "72h",
+      "age_hours": 79.09,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 127,
+        "shares": 8,
+        "saved": 0,
+        "likes": 4,
+        "comments": 0,
+        "shares_per_1000_reached": 62.99,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18138885736774713",
+      "window": "72h",
+      "age_hours": 89.2,
+      "collected_at": "2026-11-24T02:12:27.547217+00:00",
+      "metrics": {
+        "reach": 109,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Volta Redonda: 32 graus hoje. Bairro em foco: Vila Mury.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Resende."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-22T21:03:28.252789+00:00",
+  "updated_at": "2026-11-24T02:12:27.547217+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-22T21:03:32.193683+00:00"
+  "organicos_atualizados_em_utc": "2026-11-24T02:12:30.075539+00:00"
 }
