@@ -451,5 +451,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18015640791000089",
     "publicado_em_utc": "2026-11-24T21:00:48.197515+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Piraí: 32 graus hoje. Bairro em foco: Monumento.",
+    "cidade_destaque": "Piraí",
+    "bairro_destaque": "Monumento",
+    "cidade_maior_chuva": "Porto Real",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 52.0,
+    "temperatura_destaque": 32,
+    "dia_previsao": "2026-11-25",
+    "quando": "hoje",
+    "cta": "Envia pra quem conhece alguém em Porto Real.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18198852097397975",
+    "publicado_em_utc": "2026-11-25T09:00:35.809852+00:00"
   }
 ]
