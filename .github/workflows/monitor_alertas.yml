@@ -1,7 +1,7 @@
-name: Alerta severo diário — 10h40 BRT
+name: Alerta severo diário — 10h00 BRT
 on:
   schedule:
-    - cron: '40 13 * * *'
+    - cron: '0 13 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 90
     env:
       TZ: America/Sao_Paulo
-      PREVISAO_RJ_HORA_ALVO: '11'
+      PREVISAO_RJ_HORA_ALVO: '10'
       # O estúdio copiado de previsao-rj precisa ler a base regional do SulFlu.
       PYTHONPATH: ${{ github.workspace }}
     steps:
@@ -117,7 +117,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p = Path('hyperframes/compor.py')
-          s = p.read_text().replace('AMANHÃ NO SUL FLU', 'ALERTA NO SUL FLU').replace('AMANHÃ NO SUL FLUMINENSE', 'PLANTÃO SUL FLUMINENSE').replace('PREVISÃO DAS 18H', 'CHECAGEM DAS 11H')
+          s = p.read_text().replace('AMANHÃ NO SUL FLU', 'ALERTA NO SUL FLU').replace('AMANHÃ NO SUL FLUMINENSE', 'PLANTÃO SUL FLUMINENSE').replace('PREVISÃO DAS 18H', 'CHECAGEM DAS 10H')
           original = '''f'{esc(c["nome"].upper())} <b>{round(c["min"])}°/{round(c["max"])}°</b>' '''.strip()
           novo = '''f'{esc(c["nome"].upper())} — PREVISÃO DE TEMPO SEVERO' '''.strip()
           if original not in s:
@@ -164,7 +164,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/alertas_14h_publicados.json
           git diff --cached --quiet && exit 0
-          git commit -m 'Recibos de Reel e Story do alerta 11h [skip ci]'
+          git commit -m 'Recibos de Reel e Story do alerta 10h [skip ci]'
           git pull --rebase && git push
       - name: Preservar consulta, evidências, vídeo e recibos
         if: always()
