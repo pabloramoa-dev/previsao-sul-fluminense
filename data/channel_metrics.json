@@ -3038,11 +3038,158 @@
         "horario_brt": "18:00",
         "cta": "Envia pra quem conhece alguém em Barra do Piraí."
       }
+    },
+    {
+      "media_id": "18001083561023069",
+      "window": "24h",
+      "age_hours": 24.27,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 45,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18015640791000089",
+      "window": "24h",
+      "age_hours": 26.6,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 91,
+        "shares": 0,
+        "saved": 0,
+        "likes": 4,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Itatiaia: 32 graus amanhã. Bairro em foco: Fazenda Penedo.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Resende."
+      }
+    },
+    {
+      "media_id": "18118963547117396",
+      "window": "24h",
+      "age_hours": 38.6,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 110,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Resende: 29 graus hoje. Bairro em foco: Campos Elíseos.",
+        "cidade_destaque": "Resende",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Barra Mansa."
+      }
+    },
+    {
+      "media_id": "18134894008752702",
+      "window": "24h",
+      "age_hours": 46.33,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 122,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18154385782528872",
+      "window": "72h",
+      "age_hours": 74.6,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 48,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Rio Claro: 31 graus amanhã. Bairro em foco: Centro.",
+        "cidade_destaque": "Rio Claro",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem mora em Rio Claro e precisa se preparar pra chuva."
+      }
+    },
+    {
+      "media_id": "17936986020417302",
+      "window": "72h",
+      "age_hours": 77.74,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 130,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 2,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 1,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18363314242221428",
+      "window": "72h",
+      "age_hours": 86.61,
+      "collected_at": "2026-11-25T23:36:49.808882+00:00",
+      "metrics": {
+        "reach": 175,
+        "shares": 0,
+        "saved": 0,
+        "likes": 2,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Barra Mansa: 32 graus hoje. Bairro em foco: Vila Coringa.",
+        "cidade_destaque": "Barra Mansa",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Pinheiral."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-24T23:53:49.551014+00:00",
+  "updated_at": "2026-11-25T23:36:49.808882+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-24T23:53:50.787875+00:00"
+  "organicos_atualizados_em_utc": "2026-11-25T23:36:52.061956+00:00"
 }
