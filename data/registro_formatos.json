@@ -468,5 +468,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18198852097397975",
     "publicado_em_utc": "2026-11-25T09:00:35.809852+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Volta Redonda: 24 graus amanhã. Bairro em foco: Vila Santa Cecília.",
+    "cidade_destaque": "Volta Redonda",
+    "bairro_destaque": "Vila Santa Cecília",
+    "cidade_maior_chuva": "Volta Redonda",
+    "bairro_maior_chuva": "Vila Santa Cecília",
+    "maior_chuva_mm": 42.9,
+    "temperatura_destaque": 24,
+    "dia_previsao": "2026-11-26",
+    "quando": "amanhã",
+    "cta": "Salve para conferir mais tarde.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18128950666906775",
+    "publicado_em_utc": "2026-11-25T21:00:38.619681+00:00"
   }
 ]
