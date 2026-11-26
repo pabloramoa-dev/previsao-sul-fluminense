@@ -485,5 +485,22 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18128950666906775",
     "publicado_em_utc": "2026-11-25T21:00:38.619681+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Porto Real: 26 graus hoje. E as demais cidades? Bairro em foco: Bulhões.",
+    "cidade_destaque": "Porto Real",
+    "bairro_destaque": "Bulhões",
+    "cidade_maior_chuva": "Rio Claro",
+    "bairro_maior_chuva": "Passa Três",
+    "maior_chuva_mm": 38.3,
+    "temperatura_destaque": 26,
+    "dia_previsao": "2026-11-26",
+    "quando": "hoje",
+    "cta": "Siga para conferir a próxima previsão.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18116459474147800",
+    "publicado_em_utc": "2026-11-26T09:01:12.067532+00:00"
   }
 ]
