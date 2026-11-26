@@ -3185,11 +3185,141 @@
         "horario_brt": "06:00",
         "cta": "Envia pra quem conhece alguém em Pinheiral."
       }
+    },
+    {
+      "media_id": "18128950666906775",
+      "window": "24h",
+      "age_hours": 26.84,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 15,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Volta Redonda: 24 graus amanhã. Bairro em foco: Vila Santa Cecília.",
+        "cidade_destaque": "Volta Redonda",
+        "horario_brt": "18:00",
+        "cta": "Salve para conferir mais tarde."
+      }
+    },
+    {
+      "media_id": "18130547305856680",
+      "window": "24h",
+      "age_hours": 27.83,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 12,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18186870106441445",
+      "window": "24h",
+      "age_hours": 37.96,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 4,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18198852097397975",
+      "window": "24h",
+      "age_hours": 38.84,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 103,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Piraí: 32 graus hoje. Bairro em foco: Monumento.",
+        "cidade_destaque": "Piraí",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Porto Real."
+      }
+    },
+    {
+      "media_id": "18388534351235354",
+      "window": "72h",
+      "age_hours": 74.84,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 81,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Barra do Piraí: 33 graus amanhã. Bairro em foco: Ponte Preta.",
+        "cidade_destaque": "Barra do Piraí",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Itatiaia."
+      }
+    },
+    {
+      "media_id": "18089609015313498",
+      "window": "72h",
+      "age_hours": 86.84,
+      "collected_at": "2026-11-26T23:51:01.034761+00:00",
+      "metrics": {
+        "reach": 115,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Pinheiral: 33 graus hoje. Bairro em foco: Centro.",
+        "cidade_destaque": "Pinheiral",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Volta Redonda."
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-25T23:36:49.808882+00:00",
+  "updated_at": "2026-11-26T23:51:01.034761+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-25T23:36:52.061956+00:00"
+  "organicos_atualizados_em_utc": "2026-11-26T23:51:02.831449+00:00"
 }
