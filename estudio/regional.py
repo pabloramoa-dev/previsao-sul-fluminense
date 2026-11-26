@@ -160,10 +160,27 @@ def preparar_boletim(dia, personagem, destino):
     # Um bairro em foco nao e uma estacao meteorologica: o dado e municipal.
     valores = [(c, float(c.get("chuva_mm") or 0)) for c in dia["cidades"]]
     pico, chuva_max = max(valores, key=lambda v: v[1])
+    # Chuva diária >= 50 mm tem prioridade sobre o rodízio de temperatura.
+    from math import isfinite
+    fortes = sorted((c for c in dia["cidades"] if isinstance(c.get("chuva_mm"), (int, float))
+                     and not isinstance(c["chuva_mm"], bool) and isfinite(c["chuva_mm"])
+                     and c["chuva_mm"] >= 50), key=lambda c: -c["chuva_mm"])
+    if fortes:
+        pico = fortes[0]
+        chuva_max = pico["chuva_mm"]
+        nomes = ", ".join(c["nome"] for c in fortes[:2])
+        if len(fortes) > 2:
+            nomes += " e outras cidades"
+        volume = f"{chuva_max:g}".replace(".", ",")
+        abertura = (f"Se você mora em {nomes}, preste atenção! "
+                    f"Grande volume de chuva {quando}: até {volume} milímetros em 24 horas.")
     bairro_chuva = bairro_do_dia(pico["nome"], data_publicacao, personagem)
     tem_chuva = chuva_max >= 1.0
     mm = int(round(chuva_max))
-    if tem_chuva:
+    if fortes:
+        frase_chuva = "Evite áreas alagadas e acompanhe a Defesa Civil."
+        texto_chuva = f"Grande volume previsto em {nomes}: até {volume} mm em 24 horas."
+    elif tem_chuva:
         frase_chuva = (f"Maior chuva prevista em {pico['nome']}: "
                        f"{num2words(mm, lang='pt_BR')} milímetros. "
                        f"Bairro da vez: {bairro_chuva}.")
@@ -184,6 +201,8 @@ def preparar_boletim(dia, personagem, destino):
     else:
         chamada = f"Envia pra alguém de {destaque['nome']} conferir a previsão."
     chamada = engajamento_rotativo(dia["data"], quando, destaque["nome"], "sulflu")
+    if fortes:
+        chamada = "Compartilhe com quem mora nessas regiões."
     def batida(tipo, fala, **dados):
         return {"tipo": tipo, "fala": fala, "legenda": fala, "dados": dados}
     batidas = [
@@ -198,7 +217,8 @@ def preparar_boletim(dia, personagem, destino):
     data = datetime.fromisoformat(dia["data"]).strftime("%d/%m")
     tag = "#" + "".join(destaque["nome"].split())
     legenda = [
-        f"{destaque['nome']}: {temperatura} graus {quando}! {tag}",
+        (f"ATENÇÃO: {nomes} — até {volume} mm de chuva em 24h {quando}!" if fortes
+         else f"{destaque['nome']}: {temperatura} graus {quando}! {tag}"),
         f"{nome} | Previsão de {quando}, {data}",
         "",
     ]
@@ -214,6 +234,8 @@ def preparar_boletim(dia, personagem, destino):
     ficha = {
         "formato": "manha_sulflu_20_25" if manha else "amanha_sulflu_20_25",
         "gancho": abertura,
+        "alerta_chuva_24h": bool(fortes),
+        "localidades_alerta": [c["nome"] for c in fortes],
         "cidade_destaque": destaque["nome"],
         "bairro_destaque": bairro,
         "cidade_maior_chuva": pico["nome"] if tem_chuva else None,

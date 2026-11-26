@@ -38,19 +38,27 @@ def finalizar(video, metadata):
     extensao = max(0.0, 20.5 - alvo)
     titulo = video.parent / "cidade_destaque.txt"
     numero = video.parent / "temperatura_destaque.txt"
-    titulo.write_text(info["cidade_destaque"].upper(), encoding="utf-8")
-    numero.write_text(f'{info["temperatura_destaque"]}° {info["quando"].upper()}', encoding="utf-8")
-    bairro = (info.get("bairro_destaque") or "").strip()
+    alerta = info.get("alerta_chuva_24h", False)
+    if alerta:
+        titulo.write_text("GRANDE VOLUME DE CHUVA", encoding="utf-8")
+        mm = f'{info["maior_chuva_mm"]:g}'.replace(".", ",")
+        numero.write_text(f"{mm} mm / 24h", encoding="utf-8")
+        bairro = info["cidade_maior_chuva"]
+    else:
+        titulo.write_text(info["cidade_destaque"].upper(), encoding="utf-8")
+        numero.write_text(f'{info["temperatura_destaque"]}° {info["quando"].upper()}', encoding="utf-8")
+        bairro = (info.get("bairro_destaque") or "").strip()
     bairro_txt = video.parent / "bairro_destaque.txt"
-    bairro_txt.write_text(f"BAIRRO: {bairro.upper()}" if bairro else "", encoding="utf-8")
+    bairro_txt.write_text((bairro.upper() if alerta else f"BAIRRO: {bairro.upper()}") if bairro else "", encoding="utf-8")
     # Textfile elimina escapamento de acentos, dois-pontos e símbolos.
+    fundo = "0x8B2020" if alerta else "0x0B2039"
     def visual():
         fx = [f"setpts=(PTS-STARTPTS)/{fator:.5f}", "fps=25"]
         if extensao > 0:
             fx.append(f"tpad=stop_mode=clone:stop_duration={extensao:.3f}")
         fx += [
-            "drawbox=x=64:y=320:w=952:h=338:color=0x0B2039@0.92:t=fill:enable='lt(t,3.6)'",
-            f"drawtext=fontfile={fonte}:textfile={titulo}:fontcolor=white:fontsize=57:x=90:y=365:enable='lt(t,3.6)'",
+            f"drawbox=x=64:y=320:w=952:h=338:color={fundo}@0.92:t=fill:enable='lt(t,3.6)'",
+            f"drawtext=fontfile={fonte}:textfile={titulo}:fontcolor=white:fontsize={45 if alerta else 57}:x=90:y=365:enable='lt(t,3.6)'",
             f"drawtext=fontfile={fonte}:textfile={numero}:fontcolor=0xFFD166:fontsize=95:x=90:y=462:enable='lt(t,3.6)'",
         ]
         if bairro:
