@@ -8,6 +8,9 @@ jobs:
   boletim:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    outputs:
+      video_url: ${{ steps.ig.outputs.video_url }}
+      dedupe_key: ${{ steps.ig.outputs.dedupe_key }}
     env:
       TZ: America/Sao_Paulo
       PERSONAGEM: ${{ inputs.personagem }}
@@ -108,19 +111,29 @@ jobs:
               print(f"ok={'true' if valido else 'false'}", file=saida)
           PY
       - name: Publicar no Instagram do SulFlu
+        id: ig
         if: inputs.publicar && steps.trava_turno.outputs.pular != 'true' && steps.janela_turno.outputs.ok != 'false'
         env:
+          FACEBOOK_PUBLISH_ENABLED: ${{ vars.FACEBOOK_PUBLISH_ENABLED }}
           GH_TOKEN: ${{ github.token }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: |
           tag="boletim-$PERSONAGEM-$GITHUB_RUN_ID"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" saida/REEL.mp4 saida/CAPA.jpg --title "$tag" --notes "Boletim do Sul Fluminense"
+            gh release create "$tag" saida/REEL.mp4 saida/CAPA.jpg saida/LEGENDA.txt --title "$tag" --notes "Boletim do Sul Fluminense"
           fi
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
+          # Para o job `facebook` (mesmo MP4, nenhum render a mais). Gravado ANTES
+          # de postar: se o Instagram falhar, o Facebook ainda publica.
+          echo "video_url=$url/REEL.mp4" >> "$GITHUB_OUTPUT"
+          echo "dedupe_key=boletim-$PERSONAGEM-$(date +%F)" >> "$GITHUB_OUTPUT"
           python reels/postar_reel.py --video "$url/REEL.mp4" --capa-url "$url/CAPA.jpg" --metadata-arquivo saida/REEL.metadata.json --legenda-arquivo saida/LEGENDA.txt
-          gh release delete "$tag" --cleanup-tag --yes
+          # Com o Facebook ligado, quem apaga o Release é o job `facebook`, depois
+          # de publicar (sobra apagada pelo limpeza-releases.yml em 2 dias).
+          if [ "$FACEBOOK_PUBLISH_ENABLED" != "true" ]; then
+            gh release delete "$tag" --cleanup-tag --yes
+          fi
       - name: Registrar formato, gancho e ID confirmado
         if: inputs.publicar && steps.trava_turno.outputs.pular != 'true' && steps.janela_turno.outputs.ok != 'false'
         run: |
@@ -130,3 +143,72 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Registro de formato e gancho [skip ci]"
           git pull --rebase && git push
+
+  # ------------------------------------------------------------ Facebook
+  # Job SEPARADO do Instagram: falha aqui não desfaz nem repete o Reel do
+  # Instagram, e falha lá não impede o Facebook. Mesmo MP4 do Release.
+  # Desligar: apagar a variable FACEBOOK_PUBLISH_ENABLED (ou deixar != true).
+  facebook:
+    needs: boletim
+    if: ${{ always() && vars.FACEBOOK_PUBLISH_ENABLED == 'true' && needs.boletim.outputs.video_url != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: sulflu-facebook
+      cancel-in-progress: false
+    env:
+      TZ: America/Sao_Paulo
+      FACEBOOK_PUBLISH_ENABLED: ${{ vars.FACEBOOK_PUBLISH_ENABLED }}
+      FACEBOOK_REELS_ENABLED: ${{ vars.FACEBOOK_REELS_ENABLED || 'true' }}
+      FACEBOOK_STORIES_ENABLED: ${{ vars.FACEBOOK_STORIES_ENABLED || 'false' }}
+      FACEBOOK_GRAPH_VERSION: ${{ vars.FACEBOOK_GRAPH_VERSION || 'v25.0' }}
+      FACEBOOK_EXPECTED_PAGE: ${{ vars.FACEBOOK_EXPECTED_PAGE || 'Previsão Sul Fluminense' }}
+      FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q "requests>=2.32,<3"
+      - uses: actions/download-artifact@v4
+        with:
+          name: boletim-${{ inputs.personagem }}
+          path: saida/
+      - name: Reel no Facebook
+        id: reel_fb
+        continue-on-error: true
+        run: |
+          python src/facebook_publicar.py --kind reel \
+            --video-url "${{ needs.boletim.outputs.video_url }}" \
+            --caption-file saida/LEGENDA.txt --local-file saida/REEL.mp4 \
+            --dedupe-key "${{ needs.boletim.outputs.dedupe_key }}"
+      - name: Story no Facebook
+        continue-on-error: true
+        run: |
+          python src/facebook_publicar.py --kind story \
+            --video-url "${{ needs.boletim.outputs.video_url }}" \
+            --caption-file saida/LEGENDA.txt --local-file saida/REEL.mp4 \
+            --dedupe-key "${{ needs.boletim.outputs.dedupe_key }}"
+      - name: Persistir o estado do Facebook
+        if: always()
+        run: |
+          set -euo pipefail
+          test -f data/facebook_publicacoes.json || exit 0
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/facebook_publicacoes.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Facebook: estado apos execucao ${{ github.run_id }} [skip ci]"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+      - name: Apagar o Release depois do Facebook
+        if: ${{ always() && steps.reel_fb.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ needs.boletim.outputs.video_url }}
+        run: |
+          tag=$(basename "$(dirname "$URL")")
+          gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+      - name: Resultado
+        if: always()
+        run: |
+          test "${{ steps.reel_fb.outcome }}" != "failure" || { echo "::error::Reel no Facebook falhou (Instagram não foi afetado). Reenvio: facebook_reenviar.yml (o Release fica 2 dias)"; exit 1; }
