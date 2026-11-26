@@ -502,5 +502,24 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18116459474147800",
     "publicado_em_utc": "2026-11-26T09:01:12.067532+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Alô, Quatis! Máxima de 24 graus amanhã. Bairro em foco: Jardim Polastri.",
+    "alerta_chuva_24h": false,
+    "localidades_alerta": [],
+    "cidade_destaque": "Quatis",
+    "bairro_destaque": "Jardim Polastri",
+    "cidade_maior_chuva": "Itatiaia",
+    "bairro_maior_chuva": "Vila Odete",
+    "maior_chuva_mm": 2.5,
+    "temperatura_destaque": 24,
+    "dia_previsao": "2026-11-27",
+    "quando": "amanhã",
+    "cta": "Envie a previsão para alguém de Quatis.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18119531366128429",
+    "publicado_em_utc": "2026-11-26T21:00:42.698500+00:00"
   }
 ]
