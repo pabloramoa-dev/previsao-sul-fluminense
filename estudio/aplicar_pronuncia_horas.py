@@ -1,4 +1,4 @@
-"""Aplica a normalização de horários ao motor RJ fixado nos workflows SulFlu.
+"""Aplica a normalização de horários e datas ao motor RJ fixado nos workflows SulFlu.
 
 O SulFlu usa um checkout de um commit específico do estúdio RJ e depois
 aplica patches de identidade visual e voz. Este ajuste não troca o commit
@@ -25,6 +25,26 @@ def normalizar_horario_para_voz(texto: str) -> str:
         minuto = int(minuto)
         return f"{hora} {unidade} e {minuto} {'minuto' if minuto == 1 else 'minutos'}"
 
+    # Datas em português antes da síntese; não alterar a legenda original.
+    meses = ("janeiro", "fevereiro", "março", "abril", "maio", "junho",
+             "julho", "agosto", "setembro", "outubro", "novembro", "dezembro")
+
+    def trocar_data(match):
+        dia = int(match.group("dia"))
+        mes = int(match.group("mes"))
+        ano = match.group("ano")
+        if dia > (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)[mes - 1]:
+            return match.group(0)
+        falada = f"{'primeiro' if dia == 1 else dia} de {meses[mes - 1]}"
+        if ano:
+            falada += f" de {int(ano) + (2000 if len(ano) == 2 else 0)}"
+        return falada
+
+    texto = re.sub(
+        r"(?<![\w/.,-])(?P<dia>0?[1-9]|[12]\d|3[01])/"
+        r"(?P<mes>0?[1-9]|1[0-2])(?:/(?P<ano>\d{4}|\d{2}))?"
+        r"(?![\w/]|[.,]\d)", trocar_data, texto
+    )
     return _HORA_TTS_RE.sub(trocar, texto)
 
 
@@ -34,7 +54,7 @@ def normalizar_horario_para_voz(texto: str) -> str:
 def main():
     texto = ALVO.read_text(encoding="utf-8")
     if "def normalizar_horario_para_voz(" in texto:
-        print("Pronúncia de horários já normalizada.")
+        print("Pronúncia já normalizada.")
         return
     pontos = (
         "import argparse, json, os, subprocess, sys, wave",
@@ -52,7 +72,7 @@ def main():
         pontos[2], "k.create(normalizar_horario_para_voz(txt), voice="
     )
     ALVO.write_text(texto, encoding="utf-8")
-    print("Normalização de 17h -> 17 horas aplicada ao estúdio fixado.")
+    print("Normalização de horários e datas aplicada ao estúdio fixado.")
 
 
 if __name__ == "__main__":
