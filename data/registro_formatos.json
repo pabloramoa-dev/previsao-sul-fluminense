@@ -540,5 +540,30 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18134664286764163",
     "publicado_em_utc": "2026-11-27T09:00:43.183353+00:00"
+  },
+  {
+    "formato": "amanha_sulflu_20_25",
+    "gancho": "Se você mora em Rio Claro, Resende e outras cidades, preste atenção! Grande volume de chuva amanhã: até 66,9 milímetros em 24 horas.",
+    "alerta_chuva_24h": true,
+    "localidades_alerta": [
+      "Rio Claro",
+      "Resende",
+      "Itatiaia",
+      "Quatis",
+      "Porto Real"
+    ],
+    "cidade_destaque": "Barra Mansa",
+    "bairro_destaque": "Jardim Boa Vista",
+    "cidade_maior_chuva": "Rio Claro",
+    "bairro_maior_chuva": "Centro",
+    "maior_chuva_mm": 66.9,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-28",
+    "quando": "amanhã",
+    "cta": "Compartilhe com quem mora nessas regiões.",
+    "horario_brt": "18:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18205572940376989",
+    "publicado_em_utc": "2026-11-27T21:01:30.936487+00:00"
   }
 ]
