@@ -521,5 +521,24 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18119531366128429",
     "publicado_em_utc": "2026-11-26T21:00:42.698500+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Rio Claro: sabe qual a máxima hoje? 24 graus. Bairro em foco: Getulândia.",
+    "alerta_chuva_24h": false,
+    "localidades_alerta": [],
+    "cidade_destaque": "Rio Claro",
+    "bairro_destaque": "Getulândia",
+    "cidade_maior_chuva": "Angra dos Reis",
+    "bairro_maior_chuva": "Jacuecanga",
+    "maior_chuva_mm": 4.6,
+    "temperatura_destaque": 24,
+    "dia_previsao": "2026-11-27",
+    "quando": "hoje",
+    "cta": "Qual sua cidade? Comente aqui.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "18134664286764163",
+    "publicado_em_utc": "2026-11-27T09:00:43.183353+00:00"
   }
 ]
