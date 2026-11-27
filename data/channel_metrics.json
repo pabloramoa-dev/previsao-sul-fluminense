@@ -3315,11 +3315,141 @@
         "horario_brt": "06:00",
         "cta": "Envia pra quem conhece alguém em Volta Redonda."
       }
+    },
+    {
+      "media_id": "18119531366128429",
+      "window": "24h",
+      "age_hours": 26.44,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 24,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Alô, Quatis! Máxima de 24 graus amanhã. Bairro em foco: Jardim Polastri.",
+        "cidade_destaque": "Quatis",
+        "horario_brt": "18:00",
+        "cta": "Envie a previsão para alguém de Quatis."
+      }
+    },
+    {
+      "media_id": "18116459474147800",
+      "window": "24h",
+      "age_hours": 38.43,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 114,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Porto Real: 26 graus hoje. E as demais cidades? Bairro em foco: Bulhões.",
+        "cidade_destaque": "Porto Real",
+        "horario_brt": "06:00",
+        "cta": "Siga para conferir a próxima previsão."
+      }
+    },
+    {
+      "media_id": "18001083561023069",
+      "window": "72h",
+      "age_hours": 72.1,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 45,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
+    },
+    {
+      "media_id": "18015640791000089",
+      "window": "72h",
+      "age_hours": 74.44,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 91,
+        "shares": 0,
+        "saved": 0,
+        "likes": 4,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "amanha_sulflu_20_25",
+        "gancho": "Itatiaia: 32 graus amanhã. Bairro em foco: Fazenda Penedo.",
+        "cidade_destaque": "Itatiaia",
+        "horario_brt": "18:00",
+        "cta": "Envia pra quem conhece alguém em Resende."
+      }
+    },
+    {
+      "media_id": "18118963547117396",
+      "window": "72h",
+      "age_hours": 86.44,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 110,
+        "shares": 0,
+        "saved": 0,
+        "likes": 0,
+        "comments": 1,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 1,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      },
+      "editorial": {
+        "formato": "manha_sulflu_20_25",
+        "gancho": "Resende: 29 graus hoje. Bairro em foco: Campos Elíseos.",
+        "cidade_destaque": "Resende",
+        "horario_brt": "06:00",
+        "cta": "Envia pra quem conhece alguém em Barra Mansa."
+      }
+    },
+    {
+      "media_id": "18134894008752702",
+      "window": "72h",
+      "age_hours": 94.16,
+      "collected_at": "2026-11-27T23:26:54.390094+00:00",
+      "metrics": {
+        "reach": 122,
+        "shares": 0,
+        "saved": 0,
+        "likes": 1,
+        "comments": 0,
+        "shares_per_1000_reached": 0.0,
+        "comments_organic_estimate": 0,
+        "auto_comments_estimate": 0,
+        "comments_organic_method": "subtracao_estimativa_1_comentario_do_perfil"
+      }
     }
   ],
   "status": "ok",
   "errors": [],
-  "updated_at": "2026-11-26T23:51:01.034761+00:00",
+  "updated_at": "2026-11-27T23:26:54.390094+00:00",
   "account": "previsaosulflu",
-  "organicos_atualizados_em_utc": "2026-11-26T23:51:02.831449+00:00"
+  "organicos_atualizados_em_utc": "2026-11-27T23:26:56.057500+00:00"
 }
