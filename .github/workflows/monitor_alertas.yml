@@ -148,6 +148,19 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: |
+          dia=$(TZ=America/Sao_Paulo date +%F)
+          ref="tags/alerta-diario-${dia}"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/$ref" --silent 2>/dev/null; then
+            echo "Alerta diário já reservado: $dia" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if ! gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/$ref" -f "sha=$GITHUB_SHA" --silent; then
+            if gh api "repos/$GITHUB_REPOSITORY/git/ref/$ref" --silent; then
+              echo "Alerta diário já reservado: $dia" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            exit 1
+          fi
           tag="alerta-sulflu-14h-$GITHUB_RUN_ID"
           if ! gh release view "$tag" >/dev/null 2>&1; then
             gh release create "$tag" saida/alertas/ALERTA.mp4 saida/alertas/CAPA_ALERTA.jpg --title "$tag" --notes 'Plantão SulFlu com capa específica para a grade do Instagram'
