@@ -168,69 +168,200 @@ def condicao(code, tmin):
     return "sol"
 
 
-def buscar(cidades, dias=2, timeout=30):
-    lats = ",".join(f"{c[1]:.4f}" for c in cidades)
-    lons = ",".join(f"{c[2]:.4f}" for c in cidades)
-    q = urllib.parse.urlencode({
-        "latitude": lats,
-        "longitude": lons,
-        # os quatro últimos campos diários existem pro bloco da Dona Maria:
-        # UV e sensação térmica viram batida no roteiro dela, vento e horas de
-        # sol entram na leitura do dia
-        # wind_gusts_10m_max entrou em 2026-09-04: o gatilho de alerta do plano
-        # v3 é RAJADA >= 50 km/h, e wind_speed_10m_max é a velocidade média
-        # máxima — numa frente de vento a média fica em 30 e a rajada passa de
-        # 60. Sem este campo o alerta de vento simplesmente nunca dispararia.
+# ------------------------------------------------------------------ coleta
+# Run 46084225814: SSL do Open-Meteo caiu nas três tentativas e o Reel não saiu.
+# Agora: retentativas com espera exponencial + variação aleatória, lotes menores
+# quando a chamada única falha, e MET Norway como fonte alternativa. Nada é
+# inventado: campo que a fonte não tem fica de fora (o roteiro pula a fala).
+import random, ssl
+
+MET_API = "https://api.met.no/weatherapi/locationforecast/2.0/complete"
+MET_UA = "previsao-sul-fluminense/1.0 github.com/pabloramoa-dev/previsao-sul-fluminense"
+TENTATIVAS = 4
+ESPERA_MAX = 45
+TRANSITORIOS = (urllib.error.URLError, TimeoutError, ConnectionError, ssl.SSLError,
+                OSError, ValueError, UnicodeError)
+
+
+class FonteIndisponivel(RuntimeError):
+    pass
+
+
+def _espera(tentativa, retry_after=None):
+    base = min(ESPERA_MAX, 2 * 2 ** tentativa)
+    if retry_after:
+        base = max(base, min(ESPERA_MAX, retry_after))
+    return base + random.uniform(0, base / 2)
+
+
+def _get_json(url, timeout=30, headers=None, tentativas=TENTATIVAS, rotulo="fonte"):
+    ultimo = None
+    for tentativa in range(tentativas):
+        espera_ra = None
+        try:
+            req = urllib.request.Request(url, headers=headers or {})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            # 4xx permanente (menos 408/429) é erro da chamada: não insistir.
+            if exc.code not in (408, 429) and exc.code < 500:
+                raise
+            ultimo = exc
+            try:
+                espera_ra = int((exc.headers or {}).get("Retry-After", "0")) or None
+            except (ValueError, TypeError, AttributeError):
+                espera_ra = None
+        except TRANSITORIOS as exc:
+            ultimo = exc
+        if tentativa < tentativas - 1:
+            t = _espera(tentativa, espera_ra)
+            print(f"{rotulo} instavel (tentativa {tentativa + 1}/{tentativas}): {ultimo}; "
+                  f"repetindo em {t:.1f}s", file=sys.stderr)
+            time.sleep(t)
+    raise FonteIndisponivel(f"{rotulo} falhou apos {tentativas} tentativas: {ultimo}") from ultimo
+
+
+def _url_openmeteo(cidades, dias):
+    return f"{API}?" + urllib.parse.urlencode({
+        "latitude": ",".join(f"{c[1]:.4f}" for c in cidades),
+        "longitude": ",".join(f"{c[2]:.4f}" for c in cidades),
+        # wind_gusts_10m_max: o gatilho de alerta é RAJADA >= 50 km/h.
         "daily": ("temperature_2m_max,temperature_2m_min,precipitation_sum,"
                   "weather_code,uv_index_max,sunshine_duration,"
                   "wind_speed_10m_max,wind_gusts_10m_max,"
                   "apparent_temperature_max"),
-        # precipitation por HORA revela a virada do tempo à tarde; continua
-        # sendo coletada porque diz A QUE HORAS o tempo vira
         "hourly": "relative_humidity_2m,precipitation",
         "timezone": TZ,
         "forecast_days": dias,
     })
-    url = f"{API}?{q}"
-    ultimo_erro = None
-    for tentativa in range(3):
-        try:
-            with urllib.request.urlopen(url, timeout=timeout) as r:
-                dados = json.loads(r.read().decode("utf-8"))
-            # A API devolve uma lista na ordem pedida; nunca usar zip() com
-            # uma resposta parcial, pois associaria previsoes a cidades erradas.
-            respostas = dados if isinstance(dados, list) else [dados]
-            if (len(respostas) != len(cidades) or
-                    any(not isinstance(r, dict) or not isinstance(r.get("daily"), dict)
-                        for r in respostas)):
-                raise ValueError(
-                    f"Open-Meteo retornou dados incompletos: "
-                    f"{len(respostas)} respostas para {len(cidades)} cidades"
-                )
-            return respostas
-        except urllib.error.HTTPError as exc:
-            # Erros 4xx permanentes (exceto 408/429) exigem corrigir a chamada.
-            if exc.code not in (408, 429) and exc.code < 500:
-                raise
-            ultimo_erro = exc
-            espera = 2 ** tentativa
-            if exc.code == 429:
-                try:
-                    espera = max(espera, min(30, int(exc.headers.get("Retry-After", "0"))))
-                except (ValueError, TypeError, AttributeError):
-                    pass
-        except (urllib.error.URLError, TimeoutError, ConnectionError,
-                ValueError, UnicodeError) as exc:
-            ultimo_erro = exc
-            espera = 2 ** tentativa
 
-        if tentativa < 2:
-            print(f"Open-Meteo instavel (tentativa {tentativa + 1}/3): "
-                  f"{ultimo_erro}; repetindo em {espera}s", file=sys.stderr)
-            time.sleep(espera)
 
-    raise RuntimeError("Falha ao coletar previsao completa do Open-Meteo "
-                       "apos tres tentativas") from ultimo_erro
+def _openmeteo(cidades, dias, timeout):
+    dados = _get_json(_url_openmeteo(cidades, dias), timeout, rotulo="Open-Meteo")
+    respostas = dados if isinstance(dados, list) else [dados]
+    # Nunca zip() com resposta parcial: associaria previsão à cidade errada.
+    if (len(respostas) != len(cidades) or
+            any(not isinstance(r, dict) or not isinstance(r.get("daily"), dict) for r in respostas)):
+        raise FonteIndisponivel(f"Open-Meteo incompleto: {len(respostas)} respostas "
+                                f"para {len(cidades)} cidades")
+    for r in respostas:
+        r["fonte"] = "open-meteo"
+    return respostas
+
+
+def _met_wmo(simbolos, chuva_mm):
+    s = " ".join(simbolos)
+    if "thunder" in s:
+        return 95
+    if chuva_mm is not None and chuva_mm >= 0.5 and any(k in s for k in ("rain", "sleet", "showers")):
+        return 65 if "heavy" in s else 61 if chuva_mm < 2.5 else 63
+    if "fog" in s:
+        return 45
+    nub = sum(1 for x in simbolos if x.startswith(("cloudy", "partlycloudy")))
+    if simbolos and nub / len(simbolos) >= 0.6:
+        return 3 if sum(1 for x in simbolos if x.startswith("cloudy")) >= nub / 2 else 2
+    return 0
+
+
+def met_para_openmeteo(dados, dias, hoje):
+    """Converte o Locationforecast do MET Norway no formato que montar() lê.
+
+    Só entram dias com cobertura horária (>= 18 h). Sem sensação térmica, horas
+    de sol e UV real: esses campos ficam ausentes, nunca zerados.
+    """
+    tz = ZoneInfo(TZ)
+    if not isinstance(dados, dict):
+        raise FonteIndisponivel("MET Norway devolveu formato inesperado")
+    serie = (dados.get("properties") or {}).get("timeseries") or []
+    datas = [(hoje + datetime.timedelta(days=i)).isoformat() for i in range(dias)]
+    por_dia = {d: [] for d in datas}
+    for ponto in serie:
+        t = datetime.datetime.fromisoformat(ponto["time"].replace("Z", "+00:00")).astimezone(tz)
+        if t.date().isoformat() in por_dia and "next_1_hours" in ponto.get("data", {}):
+            por_dia[t.date().isoformat()].append((t.hour, ponto["data"]))
+    daily = {k: [] for k in ("time", "temperature_2m_max", "temperature_2m_min",
+                             "precipitation_sum", "weather_code",
+                             "wind_speed_10m_max", "wind_gusts_10m_max")}
+    umid, prec = [None] * (24 * dias), [None] * (24 * dias)
+    for i, d in enumerate(datas):
+        horas = por_dia[d]
+        if len(horas) < 18:
+            raise FonteIndisponivel(f"MET Norway sem cobertura horária para {d} ({len(horas)} h)")
+        inst = [h[1]["instant"]["details"] for h in horas]
+        n1 = [h[1]["next_1_hours"] for h in horas]
+        temps = [x["air_temperature"] for x in inst if x.get("air_temperature") is not None]
+        chuva = round(sum((x.get("details") or {}).get("precipitation_amount") or 0 for x in n1), 1)
+        rajadas = [x["wind_speed_of_gust"] * 3.6 for x in inst if x.get("wind_speed_of_gust") is not None]
+        ventos = [x["wind_speed"] * 3.6 for x in inst if x.get("wind_speed") is not None]
+        daily["time"].append(d)
+        daily["temperature_2m_max"].append(max(temps))
+        daily["temperature_2m_min"].append(min(temps))
+        daily["precipitation_sum"].append(chuva)
+        daily["weather_code"].append(_met_wmo([(x.get("summary") or {}).get("symbol_code", "") for x in n1], chuva))
+        daily["wind_speed_10m_max"].append(max(ventos) if ventos else None)
+        daily["wind_gusts_10m_max"].append(max(rajadas) if rajadas else None)
+        for hora_local, dado in horas:
+            umid[i * 24 + hora_local] = dado["instant"]["details"].get("relative_humidity")
+            prec[i * 24 + hora_local] = (dado["next_1_hours"].get("details") or {}).get("precipitation_amount")
+    atualizado = (dados.get("properties") or {}).get("meta", {}).get("updated_at")
+    return {"daily": daily, "hourly": {"relative_humidity_2m": umid, "precipitation": prec},
+            "fonte": "met.no", "atualizado_em": atualizado}
+
+
+def _met(cidades, dias, timeout, hoje):
+    respostas = []
+    for nome, la, lo in cidades:
+        url = f"{MET_API}?lat={la:.4f}&lon={lo:.4f}"
+        dados = _get_json(url, timeout, headers={"User-Agent": MET_UA}, rotulo=f"MET Norway ({nome})")
+        respostas.append(met_para_openmeteo(dados, dias, hoje))
+    return respostas
+
+
+def buscar(cidades, dias=2, timeout=30, hoje=None):
+    """Open-Meteo em uma chamada → Open-Meteo em lotes de 3 → MET Norway."""
+    hoje = hoje or datetime.datetime.now(ZoneInfo(TZ)).date()
+    erros = []
+    try:
+        return _openmeteo(cidades, dias, timeout)
+    except FonteIndisponivel as exc:
+        erros.append(str(exc))
+    try:
+        respostas = []
+        for i in range(0, len(cidades), 3):
+            respostas += _openmeteo(cidades[i:i + 3], dias, timeout)
+        print("Open-Meteo recuperado em lotes menores", file=sys.stderr)
+        return respostas
+    except FonteIndisponivel as exc:
+        erros.append(str(exc))
+    try:
+        respostas = _met(cidades, dias, timeout, hoje)
+        print("Open-Meteo indisponivel; usando MET Norway (fonte alternativa)", file=sys.stderr)
+        return respostas
+    except (FonteIndisponivel, KeyError, TypeError) as exc:
+        erros.append(f"MET Norway: {exc}")
+    raise RuntimeError("Nenhuma fonte meteorológica válida — nada será inventado:\n  "
+                       + "\n  ".join(erros))
+
+
+def validar(dia, cidades, esperado):
+    """Barra previsão vencida, cidade faltando ou número impossível."""
+    problemas = []
+    if dia.get("data") != esperado.isoformat():
+        problemas.append(f"data {dia.get('data')} != esperada {esperado.isoformat()}")
+    nomes = [c["nome"] for c in dia.get("cidades", [])]
+    if nomes != [c[0] for c in cidades]:
+        problemas.append(f"localidades divergentes: {nomes}")
+    for c in dia.get("cidades", []):
+        if not (-10 <= c["min"] <= c["max"] <= 48):
+            problemas.append(f"temperatura inválida em {c['nome']}: {c['min']}/{c['max']}")
+        if not (0 <= c["chuva_mm"] <= 500):
+            problemas.append(f"chuva inválida em {c['nome']}: {c['chuva_mm']}")
+    if dia.get("atualizado_em"):
+        upd = datetime.datetime.fromisoformat(dia["atualizado_em"].replace("Z", "+00:00"))
+        if datetime.datetime.now(datetime.timezone.utc) - upd > datetime.timedelta(hours=12):
+            problemas.append(f"previsão desatualizada (atualizada em {dia['atualizado_em']})")
+    if problemas:
+        raise SystemExit("validação da previsão falhou:\n  " + "\n  ".join(problemas))
 
 
 def primeira_chuva_da_tarde(precip_horaria, indice_dia, limiar=0.2,
@@ -290,7 +421,7 @@ def montar(cidades, respostas, indice_dia):
     sol_seg = diario("sunshine_duration")
     data = d0["time"][indice_dia]
 
-    return {
+    dia = {
         "data": data,
         # a cidade da vez: é ela que dá o nome ao selo na tela e, por
         # consequência, o que a miniatura da grade mostra
@@ -309,7 +440,18 @@ def montar(cidades, respostas, indice_dia):
         "chuva_hora": primeira_chuva_da_tarde(
             r0.get("hourly", {}).get("precipitation"), indice_dia),
         "gerado_em": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "fonte": r0.get("fonte", "open-meteo"),
     }
+    if r0.get("atualizado_em"):
+        dia["atualizado_em"] = r0["atualizado_em"]
+    # Campo que a fonte não tem (MET: sol, UV real, sensação) sai do JSON em vez
+    # de virar 0 — "zero horas de sol" seria informação inventada.
+    for chave, bruto in (("sol_h", sol_seg), ("uv_max", diario("uv_index_max")),
+                         ("sensacao_max", diario("apparent_temperature_max")),
+                         ("vento_kmh", diario("wind_speed_10m_max"))):
+        if bruto is None:
+            dia.pop(chave, None)
+    return dia
 
 
 def main():
@@ -340,14 +482,16 @@ def main():
         cidades = cidades_para_publicacao(desloca=desloca, sem_rodizio=a.sem_rodizio)
 
     idx = 0 if a.quando == "hoje" else 1
-    respostas = buscar(cidades, dias=idx + 1 + 1)
+    hoje = datetime.datetime.now(ZoneInfo(TZ)).date()
+    respostas = buscar(cidades, dias=idx + 1 + 1, hoje=hoje)
     dia = montar(cidades, respostas, idx)
+    validar(dia, cidades, hoje + datetime.timedelta(days=idx))
 
     json.dump(dia, open(a.saida, "w"), ensure_ascii=False, indent=2)
-    print(f"ok: {a.saida} — {dia['data']}, {len(dia['cidades'])} cidades")
+    print(f"ok: {a.saida} — {dia['data']}, {len(dia['cidades'])} cidades, fonte {dia['fonte']}")
     print(f"  cidade da vez: {dia['destaque']}")
-    print(f"  umidade mín {dia['umidade_min']}%  |  vento {dia['vento_kmh']} km/h  |  "
-          f"sol {dia['sol_h']}h  |  UV {dia['uv_max']}  |  sensação {dia['sensacao_max']}°")
+    print(f"  umidade mín {dia['umidade_min']}%  |  vento {dia.get('vento_kmh')} km/h  |  "
+          f"sol {dia.get('sol_h')}h  |  UV {dia.get('uv_max')}  |  sensação {dia.get('sensacao_max')}°")
     if dia["chuva_hora"] is not None:
         print(f"  chuva prevista a partir das {dia['chuva_hora']}h")
     for c in dia["cidades"][:4]:

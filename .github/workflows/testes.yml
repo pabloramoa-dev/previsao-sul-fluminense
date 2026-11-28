@@ -69,5 +69,8 @@ jobs:
       - name: Publicador do Facebook (Meta simulada)
         run: python -m pip install pytest && python -m pytest -q tests/test_facebook_publicar.py
 
+      - name: Coleta resiliente (retentativas, lotes, MET Norway, validacao)
+        run: python -m pytest -q tests/test_coleta_resiliente.py
+
       - name: Rodizio das cidades e CTA contextual
         run: python estudio/test_regional_rodizio.py
