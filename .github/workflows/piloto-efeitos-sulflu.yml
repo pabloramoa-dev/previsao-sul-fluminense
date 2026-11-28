@@ -1,0 +1,62 @@
+name: PILOTO HyperFrames SulFlu - imagens e voz originais - NAO PUBLICAR
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - '.github/workflows/piloto-efeitos-sulflu.yml'
+      - 'tools/piloto_hf_efeitos.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  original:
+    uses: ./.github/workflows/boletim-regional.yml
+    with:
+      personagem: bira
+      publicar: false
+    secrets: inherit
+
+  efeitos:
+    needs: original
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: boletim-bira
+          path: original
+      - name: Instalar o mesmo HyperFrames da producao
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg fonts-dejavu-core
+          npm ci --prefix video
+          (cd video && npx --no-install hyperframes browser ensure)
+      - name: Preparar efeito sobre video e narracao originais
+        run: python tools/piloto_hf_efeitos.py
+      - name: Lint e renderizacao real com HyperFrames
+        env:
+          HYPERFRAMES_NO_TELEMETRY: '1'
+        run: |
+          node video/node_modules/hyperframes/bin/hyperframes.mjs lint piloto_hf
+          mkdir -p saida-piloto
+          node video/node_modules/hyperframes/bin/hyperframes.mjs render piloto_hf --output saida-piloto/PILOTO_SULFLU_HYPERFRAMES.mp4 --workers 2 --no-browser-gpu
+          ffmpeg -y -v error -ss 0.5 -i saida-piloto/PILOTO_SULFLU_HYPERFRAMES.mp4 -frames:v 1 -q:v 3 saida-piloto/CAPA_PILOTO.jpg
+          ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration -of json saida-piloto/PILOTO_SULFLU_HYPERFRAMES.mp4 > saida-piloto/validacao.json
+          cp piloto_meta.json saida-piloto/piloto_meta.json
+          cp original/LEGENDA.txt saida-piloto/LEGENDA_ORIGINAL.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: piloto-efeitos-voz-imagens-originais-sulflu
+          path: saida-piloto/
+          if-no-files-found: error
+          retention-days: 7
