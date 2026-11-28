@@ -565,5 +565,27 @@
     "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
     "media_id": "18205572940376989",
     "publicado_em_utc": "2026-11-27T21:01:30.936487+00:00"
+  },
+  {
+    "formato": "manha_sulflu_20_25",
+    "gancho": "Se você mora em Resende, Quatis, preste atenção! Grande volume de chuva hoje: até 55,1 milímetros em 24 horas.",
+    "alerta_chuva_24h": true,
+    "localidades_alerta": [
+      "Resende",
+      "Quatis"
+    ],
+    "cidade_destaque": "Barra do Piraí",
+    "bairro_destaque": "Centro",
+    "cidade_maior_chuva": "Resende",
+    "bairro_maior_chuva": "Itapuca",
+    "maior_chuva_mm": 55.1,
+    "temperatura_destaque": 27,
+    "dia_previsao": "2026-11-28",
+    "quando": "hoje",
+    "cta": "Compartilhe com quem mora nessas regiões.",
+    "horario_brt": "06:00",
+    "estrategia": "rodizio_10_municipios_gancho_numero_cta_contextual",
+    "media_id": "17968967973216609",
+    "publicado_em_utc": "2026-11-28T09:00:39.592735+00:00"
   }
 ]
